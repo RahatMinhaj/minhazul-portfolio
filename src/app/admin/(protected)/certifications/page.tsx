@@ -1,0 +1,142 @@
+import type { Certification } from "@/generated/prisma/client";
+
+import {
+  AdminCheckbox,
+  AdminField,
+  AdminTextarea,
+} from "@/components/admin/admin-fields";
+import { AdminMutationForm } from "@/components/admin/admin-mutation-form";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  deleteCertificationAction,
+  saveCertificationAction,
+} from "@/server/actions/admin-career";
+import { getAdminCertifications } from "@/server/queries/admin-content";
+
+export default async function AdminCertificationsPage() {
+  const certifications = await getAdminCertifications();
+
+  return (
+    <main id="main-content" className="mx-auto max-w-6xl px-5 py-10 sm:px-8">
+      <AdminPageHeader
+        description="Maintain verified credentials, issuer details, dates, identifiers, and verification links."
+        title="Certifications"
+      />
+      <Card>
+        <CardHeader>
+          <CardTitle>Add certification</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <CertificationForm />
+        </CardContent>
+      </Card>
+      <div className="mt-8 space-y-5">
+        {certifications.map((certification) => (
+          <Card key={certification.id}>
+            <CardHeader>
+              <CardTitle>{certification.name}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <CertificationForm certification={certification} />
+              <AdminMutationForm
+                action={deleteCertificationAction}
+                confirmMessage="Delete this certification?"
+                submitLabel="Delete certification"
+              >
+                <input name="id" type="hidden" value={certification.id} />
+              </AdminMutationForm>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </main>
+  );
+}
+
+function CertificationForm({
+  certification,
+}: {
+  certification?: Certification;
+}) {
+  return (
+    <AdminMutationForm
+      action={saveCertificationAction}
+      className="grid gap-4 md:grid-cols-2"
+      submitLabel={
+        certification ? "Update certification" : "Create certification"
+      }
+    >
+      <input name="id" type="hidden" value={certification?.id ?? ""} />
+      <AdminField
+        defaultValue={certification?.name}
+        label="Name"
+        name="name"
+        required
+      />
+      <AdminField
+        defaultValue={certification?.issuer}
+        label="Issuer"
+        name="issuer"
+        required
+      />
+      <AdminField
+        defaultValue={certification?.credentialId ?? undefined}
+        label="Credential ID"
+        name="credentialId"
+      />
+      <AdminField
+        defaultValue={certification?.credentialUrl ?? undefined}
+        label="Verification URL"
+        name="credentialUrl"
+        type="url"
+      />
+      <AdminField
+        defaultValue={certification?.category ?? undefined}
+        label="Category"
+        name="category"
+      />
+      <AdminField
+        defaultValue={certification?.sortOrder ?? 0}
+        label="Sort order"
+        name="sortOrder"
+        type="number"
+      />
+      <AdminField
+        defaultValue={dateInput(certification?.issueDate)}
+        label="Issue date"
+        name="issueDate"
+        type="date"
+      />
+      <AdminField
+        defaultValue={dateInput(certification?.expiryDate)}
+        label="Expiry date"
+        name="expiryDate"
+        type="date"
+      />
+      <div className="md:col-span-2">
+        <AdminTextarea
+          defaultValue={certification?.description ?? undefined}
+          label="Description"
+          name="description"
+        />
+      </div>
+      <div className="flex gap-5 md:col-span-2">
+        <AdminCheckbox
+          defaultChecked={certification?.featured}
+          label="Featured"
+          name="featured"
+        />
+        <AdminCheckbox
+          defaultChecked={certification?.visible ?? true}
+          label="Visible"
+          name="visible"
+        />
+      </div>
+    </AdminMutationForm>
+  );
+}
+
+function dateInput(date?: Date | null) {
+  return date?.toISOString().slice(0, 10);
+}
