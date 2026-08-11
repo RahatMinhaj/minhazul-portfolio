@@ -323,3 +323,42 @@ export async function getVisibleUseItems() {
     },
   });
 }
+
+export async function getPublicChatContent() {
+  const [
+    profile,
+    experiences,
+    projects,
+    skillCategories,
+    certifications,
+    education,
+    posts,
+    useItems,
+    socialLinks,
+    settings,
+  ] = await Promise.all([
+    getPublicProfile(),
+    getVisibleExperiences(),
+    getVisibleProjects(),
+    getVisibleSkillCategories(),
+    getVisibleCertifications(),
+    getVisibleEducation(),
+    getPublishedPosts(),
+    getVisibleUseItems(),
+    getVisibleSocialLinks(),
+    getPublicSiteSettings(),
+  ]);
+
+  return {
+    profile,
+    experiences,
+    projects,
+    skillCategories,
+    certifications,
+    education,
+    posts: settings?.blogEnabled === false ? [] : posts,
+    useItems,
+    socialLinks,
+    settings,
+  };
+}

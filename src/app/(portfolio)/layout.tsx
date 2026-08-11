@@ -1,5 +1,7 @@
 import { PageTransition } from "@/components/animations/page-transition";
+import { connection } from "next/server";
 import { VisitorTracker } from "@/components/analytics/visitor-tracker";
+import { PortfolioChatbot } from "@/components/chat/portfolio-chatbot";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { PublicShell } from "@/components/navigation/public-shell";
 import { StructuredData } from "@/components/seo/structured-data";
@@ -7,6 +9,7 @@ import { CustomCursor } from "@/components/widgets/custom-cursor";
 import { siteConfig } from "@/config/site";
 import { getPublicNavigation } from "@/config/navigation";
 import { defaultTheme, themeIds, type ThemeId } from "@/config/themes";
+import { portfolioChatIsAvailable } from "@/features/chat/chat.service";
 import {
   getActiveThemeSlugs,
   getPublicProfile,
@@ -20,6 +23,8 @@ export default async function PortfolioLayout({
 }: {
   children: React.ReactNode;
 }) {
+  await connection();
+
   const [activeThemes, profile, projects, settings, socialLinks] =
     await Promise.all([
       getActiveThemeSlugs(),
@@ -77,6 +82,7 @@ export default async function PortfolioLayout({
         siteName={siteName}
       />
       <CustomCursor />
+      {portfolioChatIsAvailable() ? <PortfolioChatbot /> : null}
       {settings?.analyticsEnabled ? <VisitorTracker /> : null}
       <StructuredData
         data={[

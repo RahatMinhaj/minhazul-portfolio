@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { connection } from "next/server";
 
 import { siteConfig } from "@/config/site";
 import { getPublicNavigation } from "@/config/navigation";
@@ -9,6 +10,8 @@ import {
 } from "@/server/queries/public-content";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  await connection();
+
   const [projects, posts, settings] = await Promise.all([
     getVisibleProjects(),
     getPublishedPosts(),

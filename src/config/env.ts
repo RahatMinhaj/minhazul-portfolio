@@ -10,11 +10,18 @@ const serverEnvironmentSchema = z.object({
     .url()
     .default("http://localhost:3000")
     .transform((url) => url.replace(/\/$/, "")),
+  GEMINI_API_KEY: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().trim().min(20).optional(),
+  ),
+  GEMINI_MODEL: z.string().trim().min(1).default("gemini-2.5-flash"),
 });
 
 const parsedEnvironment = serverEnvironmentSchema.safeParse({
   NODE_ENV: process.env.NODE_ENV,
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+  GEMINI_MODEL: process.env.GEMINI_MODEL,
 });
 
 if (!parsedEnvironment.success) {

@@ -31,6 +31,8 @@ ADMIN_USERNAME=admin
 ADMIN_EMAIL=your-admin-email@example.com
 ADMIN_PASSWORD=choose-a-strong-password
 AUTH_SECRET=replace-with-a-random-secret-of-at-least-32-characters
+GEMINI_API_KEY=your-google-ai-studio-api-key
+GEMINI_MODEL=gemini-2.5-flash
 ```
 
 Generate a suitable authentication secret with:
@@ -58,10 +60,26 @@ Open [http://localhost:3000](http://localhost:3000).
 The portfolio is available at `/` and the administrator login is available at
 `/admin/login`.
 
+For a provider-neutral production setup with Docker, PostgreSQL, automatic
+HTTPS, and an external custom domain, follow
+[docs/deployment.md](docs/deployment.md).
+
 For a production deployment, set `NEXT_PUBLIC_SITE_URL` to the canonical HTTPS
 domain, use a managed PostgreSQL connection string, generate a separate
 `AUTH_SECRET`, and run `npm run db:deploy` followed by `npm run db:seed` during
 initial provisioning.
+
+## Portfolio chatbot
+
+The floating portfolio assistant is enabled automatically when
+`GEMINI_API_KEY`, `AUTH_SECRET`, and `DATABASE_URL` are configured. Create a
+free-tier API key in Google AI Studio and keep it server-side. The browser calls
+only `/api/chat`; it never receives the Gemini credential.
+
+Answers are grounded in public profile, experience, project, skill, education,
+certification, article, tool, and social-link records. Requests are limited to
+12 per client per hour, and chat transcripts are not persisted by this
+application.
 
 ## Résumé file
 

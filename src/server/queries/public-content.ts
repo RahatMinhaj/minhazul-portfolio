@@ -4,6 +4,7 @@ export {
   getActiveThemeSlugs,
   getPublishedPostBySlug,
   getPublishedPosts,
+  getPublicChatContent,
   getPublicProfile,
   getPublicSiteSettings,
   getVisibleCertifications,
