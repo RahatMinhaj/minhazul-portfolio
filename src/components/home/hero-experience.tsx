@@ -18,7 +18,6 @@ import {
 import Link from "next/link";
 
 import { MagneticElement } from "@/components/animations/primitives";
-import { ThemeSelector } from "@/components/themes/theme-selector";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -30,8 +29,11 @@ type HeroExperienceProps = {
   currentFocus: string;
   resumeUrl: string | null;
   projectCount: number;
-  experienceCount: number;
   technologies: string[];
+  codeFileLabel: string;
+  codeVariableName: string;
+  codeFocus: string;
+  codeStatus: string;
 };
 
 export function HeroExperience({
@@ -42,8 +44,11 @@ export function HeroExperience({
   currentFocus,
   resumeUrl,
   projectCount,
-  experienceCount,
   technologies,
+  codeFileLabel,
+  codeVariableName,
+  codeFocus,
+  codeStatus,
 }: HeroExperienceProps) {
   const reduceMotion = useReducedMotion();
   const pointerX = useMotionValue(0);
@@ -227,7 +232,7 @@ export function HeroExperience({
           <a
             className="group inline-flex h-13 items-center gap-2 px-2 text-sm text-[var(--muted)] hover:text-[var(--foreground)] max-sm:col-span-2"
             data-cursor="Scroll"
-            href="#about-overview"
+            href="#work-overview"
           >
             Explore
             <ArrowDown
@@ -236,20 +241,6 @@ export function HeroExperience({
               size={15}
             />
           </a>
-        </motion.div>
-
-        <motion.div
-          animate={{ opacity: 1 }}
-          className="mt-11 flex flex-wrap items-center gap-6 border-t border-[var(--border)] pt-6"
-          initial={reduceMotion ? false : { opacity: 0 }}
-          transition={{ delay: 1.08, duration: 0.5 }}
-        >
-          <HeroStat label="Projects" value={projectCount} />
-          <HeroStat label="Roles" value={experienceCount} />
-          <HeroStat label="Core stack" value={technologies.length} />
-          <div className="ml-auto hidden sm:block">
-            <ThemeSelector />
-          </div>
         </motion.div>
       </div>
 
@@ -268,7 +259,7 @@ export function HeroExperience({
               <span className="size-2 rounded-full bg-amber-300/70" />
               <span className="size-2 rounded-full bg-emerald-400/70" />
               <span className="ml-3 font-mono text-[10px] text-[var(--muted)]">
-                minhazul.profile.ts
+                {codeFileLabel}
               </span>
               <Sparkles
                 className="ml-auto text-[var(--accent)]"
@@ -296,17 +287,20 @@ export function HeroExperience({
               <pre className="overflow-x-auto font-mono text-xs leading-7 sm:text-sm">
                 <code>
                   <span className="text-violet-300">const</span>{" "}
-                  <span className="text-cyan-300">developer</span> = {"{"}
+                  <span className="text-cyan-300">{codeVariableName}</span> ={" "}
+                  {"{"}
                   {"\n  "}name:{" "}
                   <span className="text-amber-200">&quot;{fullName}&quot;</span>
                   ,{"\n  "}focus:{" "}
                   <span className="text-amber-200">
-                    &quot;enterprise + AI&quot;
+                    &quot;{codeFocus}&quot;
                   </span>
                   ,{"\n  "}projects:
                   <span className="text-emerald-300"> {projectCount}</span>,
                   {"\n  "}status:{" "}
-                  <span className="text-emerald-300">&quot;building&quot;</span>
+                  <span className="text-emerald-300">
+                    &quot;{codeStatus}&quot;
+                  </span>
                   {"\n"}
                   {"}"};
                 </code>
@@ -337,16 +331,5 @@ export function HeroExperience({
         </div>
       </motion.div>
     </section>
-  );
-}
-
-function HeroStat({ label, value }: { label: string; value: number }) {
-  return (
-    <div>
-      <p className="text-xl font-semibold">{String(value).padStart(2, "0")}</p>
-      <p className="font-mono text-[10px] tracking-widest text-[var(--muted)] uppercase">
-        {label}
-      </p>
-    </div>
   );
 }

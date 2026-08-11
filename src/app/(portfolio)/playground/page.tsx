@@ -36,9 +36,9 @@ export default async function PlaygroundPage() {
       <Container className="py-16 sm:py-24">
         <PlaygroundModules
           availability={
-            profile?.availabilityStatus ?? "Availability needs confirmation."
+            profile?.availabilityStatus ?? "Open to engineering conversations."
           }
-          profileName={profile?.fullName ?? "Needs confirmation"}
+          profileName={profile?.fullName ?? "Minhazul Islam"}
           projects={projects.map((project) => ({
             title: project.title,
             technologies: project.technologies,

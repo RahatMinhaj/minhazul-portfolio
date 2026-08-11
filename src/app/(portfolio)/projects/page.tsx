@@ -32,8 +32,8 @@ export default async function ProjectsPage() {
   return (
     <main id="main-content">
       <PageHero
-        description="Searchable case studies showing the problem, technical decisions, architecture, constraints, and verified outcomes."
-        eyebrow="Work / Case studies"
+        description="Searchable enterprise work spanning healthcare, government operations, distributed architecture, data, security, and reporting."
+        eyebrow="Work / Selected systems"
         status={`${projects.length} public`}
         title="Systems built with intent."
       />

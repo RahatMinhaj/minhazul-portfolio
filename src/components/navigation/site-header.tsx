@@ -8,20 +8,24 @@ import { useState } from "react";
 
 import { ThemeSelector } from "@/components/themes/theme-selector";
 import { Button } from "@/components/ui/button";
-import { publicNavigation } from "@/config/navigation";
+import type { PublicNavigationItem } from "@/config/navigation";
 import { cn } from "@/lib/utils/cn";
 
 export function SiteHeader({
+  navigation,
   onOpenCommandPalette,
+  siteName,
 }: {
+  navigation: readonly PublicNavigationItem[];
   onOpenCommandPalette: () => void;
+  siteName: string;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
 
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--background)_88%,transparent)] backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-[96rem] items-center gap-4 px-5 sm:px-8 lg:px-10">
+      <div className="mx-auto flex h-16 max-w-[88rem] items-center gap-4 px-5 sm:px-8 lg:px-12">
         <Link
           className="mr-auto flex items-center gap-2 font-mono text-sm font-semibold"
           href="/"
@@ -30,25 +34,27 @@ export function SiteHeader({
           <span className="grid size-7 place-items-center rounded-[var(--radius-control)] border border-[var(--border-strong)] text-[var(--accent)]">
             M
           </span>
-          <span className="hidden sm:inline">portfolio.dev</span>
+          <span className="hidden sm:inline">{siteName}</span>
         </Link>
 
         <nav
           aria-label="Primary navigation"
           className="hidden items-center gap-0.5 xl:flex"
         >
-          {publicNavigation.slice(0, 7).map((item) => (
-            <NavLink
-              active={
-                item.href === "/"
-                  ? pathname === "/"
-                  : pathname.startsWith(item.href)
-              }
-              href={item.href}
-              key={item.href}
-              label={item.label}
-            />
-          ))}
+          {navigation
+            .filter((item) => item.primary)
+            .map((item) => (
+              <NavLink
+                active={
+                  item.href === "/"
+                    ? pathname === "/"
+                    : pathname.startsWith(item.href)
+                }
+                href={item.href}
+                key={item.href}
+                label={item.label}
+              />
+            ))}
         </nav>
 
         <Button
@@ -87,12 +93,12 @@ export function SiteHeader({
           <motion.nav
             animate={{ height: "auto", opacity: 1 }}
             aria-label="Mobile navigation"
-            className="overflow-hidden border-t border-[var(--border)] bg-[var(--background)] xl:hidden"
+            className="max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-[var(--border)] bg-[var(--background)] xl:hidden"
             exit={{ height: 0, opacity: 0 }}
             initial={{ height: 0, opacity: 0 }}
           >
-            <div className="mx-auto grid max-w-[96rem] gap-1 px-5 py-5 sm:grid-cols-2 sm:px-8">
-              {publicNavigation.map((item, index) => (
+            <div className="mx-auto grid max-w-[88rem] gap-1 px-5 py-5 sm:grid-cols-2 sm:px-8 lg:px-12">
+              {navigation.map((item, index) => (
                 <motion.div
                   animate={{ opacity: 1, x: 0 }}
                   initial={{ opacity: 0, x: -8 }}
@@ -100,12 +106,24 @@ export function SiteHeader({
                   transition={{ delay: index * 0.025 }}
                 >
                   <Link
-                    aria-current={pathname === item.href ? "page" : undefined}
+                    aria-current={
+                      item.href === "/"
+                        ? pathname === "/"
+                          ? "page"
+                          : undefined
+                        : pathname.startsWith(item.href)
+                          ? "page"
+                          : undefined
+                    }
                     className={cn(
                       "block rounded-[var(--radius-control)] px-4 py-3 text-sm",
-                      pathname === item.href
-                        ? "bg-[var(--surface-raised)] text-[var(--accent)]"
-                        : "text-[var(--muted)] hover:text-[var(--foreground)]",
+                      item.href === "/"
+                        ? pathname === "/"
+                          ? "bg-[var(--surface-raised)] text-[var(--accent)]"
+                          : "text-[var(--muted)] hover:text-[var(--foreground)]"
+                        : pathname.startsWith(item.href)
+                          ? "bg-[var(--surface-raised)] text-[var(--accent)]"
+                          : "text-[var(--muted)] hover:text-[var(--foreground)]",
                     )}
                     href={item.href}
                     onClick={() => setMenuOpen(false)}

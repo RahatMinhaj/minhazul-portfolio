@@ -20,17 +20,19 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useAvailableThemes } from "@/components/themes/theme-availability";
-import { publicNavigation } from "@/config/navigation";
+import type { PublicNavigationItem } from "@/config/navigation";
 import { themeDefinitions } from "@/config/themes";
 
 export function CommandPalette({
   open,
   onOpenChange,
+  navigation,
   projectCommands,
   socialCommands,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  navigation: readonly PublicNavigationItem[];
   projectCommands: Array<{ label: string; href: string }>;
   socialCommands: Array<{ label: string; href: string }>;
 }) {
@@ -54,10 +56,10 @@ export function CommandPalette({
   const normalizedQuery = query.trim().toLowerCase();
   const routes = useMemo(
     () =>
-      publicNavigation.filter((item) =>
+      navigation.filter((item) =>
         item.label.toLowerCase().includes(normalizedQuery),
       ),
-    [normalizedQuery],
+    [navigation, normalizedQuery],
   );
   const themes = useMemo(
     () =>

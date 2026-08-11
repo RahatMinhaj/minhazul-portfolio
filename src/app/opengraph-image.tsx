@@ -43,7 +43,7 @@ export default function OpenGraphImage() {
         }}
       >
         <span style={{ color: "#58e6b0", fontSize: 22 }}>
-          VERIFIED ENGINEERING PROFILE
+          ENTERPRISE SOFTWARE ENGINEERING
         </span>
         <span
           style={{
@@ -54,10 +54,10 @@ export default function OpenGraphImage() {
             marginTop: 26,
           }}
         >
-          Developer Portfolio
+          Minhazul Islam
         </span>
         <span style={{ color: "#91a19b", fontSize: 26, marginTop: 28 }}>
-          Systems, experience, and technical writing—without invented data.
+          Full-stack Java · Distributed systems · Applied AI
         </span>
       </div>
     </div>,

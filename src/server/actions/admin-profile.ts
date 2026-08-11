@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { saveProfile } from "@/features/profile/profile.service";
+import { heroDeveloperCodeSchema } from "@/features/profile/hero-content";
 import { requireAdmin } from "@/lib/auth/session";
 import { failure, success } from "@/server/actions/action-helpers";
 import type { ActionState } from "@/types/action-state";
@@ -20,6 +21,10 @@ const profileSchema = z.object({
   currentCompany: z.string().trim().max(160),
   currentRole: z.string().trim().max(160),
   currentFocus: z.string().trim().max(500),
+  heroCodeFileLabel: heroDeveloperCodeSchema.shape.fileLabel,
+  heroCodeVariableName: heroDeveloperCodeSchema.shape.variableName,
+  heroCodeFocus: heroDeveloperCodeSchema.shape.focus,
+  heroCodeStatus: heroDeveloperCodeSchema.shape.status,
 });
 
 export async function saveProfileAction(
@@ -39,14 +44,25 @@ export async function saveProfileAction(
     currentCompany: formData.get("currentCompany"),
     currentRole: formData.get("currentRole"),
     currentFocus: formData.get("currentFocus"),
+    heroCodeFileLabel: formData.get("heroCodeFileLabel"),
+    heroCodeVariableName: formData.get("heroCodeVariableName"),
+    heroCodeFocus: formData.get("heroCodeFocus"),
+    heroCodeStatus: formData.get("heroCodeStatus"),
   });
 
   if (!parsed.success) {
     return failure("Profile validation failed. Review every field.");
   }
 
+  const {
+    heroCodeFileLabel,
+    heroCodeFocus,
+    heroCodeStatus,
+    heroCodeVariableName,
+    ...profileData
+  } = parsed.data;
   const data = {
-    ...parsed.data,
+    ...profileData,
     email: parsed.data.email || null,
     phone: parsed.data.phone || null,
     location: parsed.data.location || null,
@@ -55,6 +71,14 @@ export async function saveProfileAction(
     currentCompany: parsed.data.currentCompany || null,
     currentRole: parsed.data.currentRole || null,
     currentFocus: parsed.data.currentFocus || null,
+    heroContent: {
+      developerCode: {
+        fileLabel: heroCodeFileLabel,
+        variableName: heroCodeVariableName,
+        focus: heroCodeFocus,
+        status: heroCodeStatus,
+      },
+    },
   };
 
   await saveProfile(data);

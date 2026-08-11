@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ExternalLink, Wrench } from "lucide-react";
 
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHero } from "@/components/shared/page-hero";
@@ -13,12 +14,17 @@ import { getVisibleUseItems } from "@/server/queries/public-content";
 
 export const metadata: Metadata = {
   title: "Uses",
-  description: "Verified workstation, software, and engineering tools.",
+  description: "Workstation, software, and engineering tools.",
 };
 
 export default async function UsesPage() {
   const items = await getVisibleUseItems();
-  const categories = Map.groupBy(items, (item) => item.category);
+  const categories = items.reduce((groups, item) => {
+    const categoryItems = groups.get(item.category) ?? [];
+    categoryItems.push(item);
+    groups.set(item.category, categoryItems);
+    return groups;
+  }, new Map<string, typeof items>());
 
   return (
     <main id="main-content">
@@ -40,7 +46,23 @@ export default async function UsesPage() {
                   {categoryItems.map((item) => (
                     <Card key={item.id}>
                       <CardHeader>
-                        <CardTitle>{item.name}</CardTitle>
+                        <div className="flex items-start justify-between gap-4">
+                          <span className="grid size-9 place-items-center rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--surface-raised)] text-[var(--accent)]">
+                            <Wrench aria-hidden size={16} />
+                          </span>
+                          {item.url ? (
+                            <a
+                              aria-label={`Open ${item.name}`}
+                              className="grid size-10 place-items-center rounded-full text-[var(--muted)] transition-colors hover:bg-[var(--surface-raised)] hover:text-[var(--accent)]"
+                              href={item.url}
+                              rel="noreferrer"
+                              target="_blank"
+                            >
+                              <ExternalLink aria-hidden size={15} />
+                            </a>
+                          ) : null}
+                        </div>
+                        <CardTitle className="pt-4">{item.name}</CardTitle>
                         {item.description ? (
                           <CardDescription>{item.description}</CardDescription>
                         ) : null}

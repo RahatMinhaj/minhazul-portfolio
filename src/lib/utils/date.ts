@@ -1,5 +1,5 @@
 export function formatMonthYear(date: Date | null) {
-  if (!date) return "Needs confirmation";
+  if (!date) return "Date not listed";
 
   return new Intl.DateTimeFormat("en", {
     month: "short",
@@ -9,7 +9,7 @@ export function formatMonthYear(date: Date | null) {
 }
 
 export function formatDate(date: Date | null) {
-  if (!date) return "Needs confirmation";
+  if (!date) return "Date not listed";
 
   return new Intl.DateTimeFormat("en", {
     day: "numeric",

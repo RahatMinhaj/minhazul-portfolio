@@ -1,5 +1,6 @@
 import "server-only";
 
+import { parseHeroContent } from "@/features/profile/hero-content";
 import { getDatabase } from "@/lib/db/client";
 
 function database() {
@@ -7,7 +8,10 @@ function database() {
 }
 
 export async function getAdminProfile() {
-  return database().profile.findFirst();
+  const profile = await database().profile.findFirst();
+  return profile
+    ? { ...profile, heroContent: parseHeroContent(profile.heroContent) }
+    : null;
 }
 
 export async function getAdminExperiences() {

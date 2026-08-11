@@ -192,10 +192,10 @@ html {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  a,
-  button,
-  summary,
-  [data-cursor] {
+  .custom-cursor-enabled a,
+  .custom-cursor-enabled button,
+  .custom-cursor-enabled summary,
+  .custom-cursor-enabled [data-cursor] {
     cursor: none;
   }
 
@@ -337,6 +337,97 @@ html {
 
 .hero-stage {
   perspective: 1200px;
+}
+
+.hero-blueprint-grid,
+.architecture-board-grid,
+.project-visual-grid {
+  background-image:
+    linear-gradient(
+      color-mix(in srgb, var(--border) 72%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--border) 72%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 28px 28px;
+  mask-image: linear-gradient(to bottom right, black, transparent 78%);
+  opacity: 0.6;
+}
+
+.hero-blueprint::after,
+.architecture-board::after {
+  position: absolute;
+  width: 18rem;
+  height: 18rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  filter: blur(80px);
+  content: "";
+  pointer-events: none;
+}
+
+.hero-blueprint::after {
+  right: -8rem;
+  bottom: -8rem;
+}
+
+.architecture-board::after {
+  top: -9rem;
+  left: 35%;
+}
+
+.project-visual-grid {
+  background-size: 24px 24px;
+  mask-image: radial-gradient(circle at center, black, transparent 76%);
+}
+
+.project-visual-orbit {
+  top: 50%;
+  left: 50%;
+  width: 13rem;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+  border-radius: 50%;
+  background: repeating-radial-gradient(
+    circle,
+    transparent 0 2rem,
+    color-mix(in srgb, var(--accent) 8%, transparent) 2.05rem 2.1rem
+  );
+}
+
+.education-path::before {
+  position: absolute;
+  top: 1.75rem;
+  bottom: 1.75rem;
+  left: 8.93rem;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--border-strong) 8% 92%,
+    transparent
+  );
+  content: "";
+}
+
+.education-record-grid {
+  background-image: linear-gradient(
+    115deg,
+    transparent 0 72%,
+    color-mix(in srgb, var(--accent) 5%, transparent) 72% 72.5%,
+    transparent 72.5%
+  );
+  pointer-events: none;
+}
+
+@media (max-width: 39.99rem) {
+  .education-path::before {
+    display: none;
+  }
 }
 
 .hero-stage::before {

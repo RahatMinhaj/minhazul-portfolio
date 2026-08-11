@@ -1,11 +1,12 @@
 import "server-only";
 
+import { parseHeroContent } from "@/features/profile/hero-content";
 import { getDatabase, isDatabaseConfigured } from "@/lib/db/client";
 
 export async function getPublicProfile() {
   if (!isDatabaseConfigured()) return null;
 
-  return getDatabase().profile.findFirst({
+  const profile = await getDatabase().profile.findFirst({
     select: {
       fullName: true,
       professionalTitle: true,
@@ -19,11 +20,16 @@ export async function getPublicProfile() {
       yearsOfExperience: true,
       currentCompany: true,
       currentRole: true,
+      heroContent: true,
       currentFocus: true,
       learningGoals: true,
       engineeringValues: true,
     },
   });
+
+  return profile
+    ? { ...profile, heroContent: parseHeroContent(profile.heroContent) }
+    : null;
 }
 
 export async function getPublicSiteSettings() {

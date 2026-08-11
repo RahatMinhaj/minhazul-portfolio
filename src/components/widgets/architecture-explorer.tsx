@@ -53,7 +53,7 @@ export function ArchitectureExplorer({
       <CardHeader>
         <CardTitle>Architecture explorer</CardTitle>
         <CardDescription>
-          Select a system layer to inspect verified related skills and projects.
+          Select a system layer to inspect related skills and projects.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -63,6 +63,7 @@ export function ArchitectureExplorer({
             return (
               <button
                 className="relative flex min-h-28 flex-col items-center justify-center gap-3 rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface-raised)] p-4 text-sm"
+                aria-pressed={active.id === node.id}
                 key={node.id}
                 onClick={() => setActive(node)}
                 type="button"
@@ -89,14 +90,14 @@ export function ArchitectureExplorer({
             ))}
             {category?.skills.length ? null : (
               <span className="text-sm text-[var(--muted)]">
-                Related skills need confirmation.
+                No related skills are listed for this layer.
               </span>
             )}
           </div>
           <p className="mt-5 text-sm text-[var(--muted)]">
             {relatedProjects.length
               ? `Related projects: ${relatedProjects.map((project) => project.title).join(", ")}`
-              : "No verified related projects yet."}
+              : "No related projects are listed for this layer."}
           </p>
         </div>
       </CardContent>

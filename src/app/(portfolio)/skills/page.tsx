@@ -11,7 +11,7 @@ import { getVisibleSkillCategories } from "@/server/queries/public-content";
 
 export const metadata: Metadata = {
   title: "Skills",
-  description: "A categorized map of verified technical capabilities.",
+  description: "A categorized map of technical capabilities.",
 };
 
 export default async function SkillsPage() {

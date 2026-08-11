@@ -75,6 +75,8 @@ export function CustomCursor() {
   useEffect(() => {
     if (reduceMotion) return;
 
+    document.documentElement.classList.add("custom-cursor-enabled");
+
     function handlePointerMove(event: PointerEvent) {
       pointerX.set(event.clientX);
       pointerY.set(event.clientY);
@@ -125,6 +127,7 @@ export function CustomCursor() {
     window.addEventListener("pointerup", handlePointerUp, { passive: true });
 
     return () => {
+      document.documentElement.classList.remove("custom-cursor-enabled");
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerover", handlePointerOver);
       window.removeEventListener("pointerdown", handlePointerDown);

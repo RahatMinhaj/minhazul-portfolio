@@ -2,14 +2,17 @@ import {
   ArrowRight,
   Award,
   BookOpen,
-  Boxes,
+  BrainCircuit,
   BriefcaseBusiness,
   CodeXml,
-  GraduationCap,
+  Database,
+  ExternalLink,
+  Layers3,
   Mail,
   MapPin,
   MessageSquareText,
-  Rocket,
+  Network,
+  Server,
   Sparkles,
   TerminalSquare,
   Wrench,
@@ -21,13 +24,24 @@ import {
   StaggerContainer,
   StaggerItem,
 } from "@/components/animations/primitives";
+import {
+  EducationRecords,
+  type EducationRecord,
+} from "@/components/education/education-records";
 import { HeroExperience } from "@/components/home/hero-experience";
 import { InteractiveLinkCard } from "@/components/home/interactive-link-card";
 import { SectionHeading } from "@/components/home/section-heading";
+import { SystemArchitecture } from "@/components/home/system-architecture";
+import { ProjectVisual } from "@/components/projects/project-visual";
+import {
+  Chronology,
+  type ChronologyItem,
+} from "@/components/shared/chronology";
 import { Container } from "@/components/shared/container";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatMonthYear } from "@/lib/utils/date";
+import { defaultHeroContent } from "@/features/profile/hero-content";
 import {
   getPublishedPosts,
   getPublicProfile,
@@ -40,6 +54,15 @@ import {
   getVisibleSocialLinks,
   getVisibleUseItems,
 } from "@/server/queries/public-content";
+
+const capabilityIcons = [
+  Server,
+  Network,
+  CodeXml,
+  Database,
+  BrainCircuit,
+  Layers3,
+];
 
 export default async function Home() {
   const [
@@ -74,6 +97,40 @@ export default async function Home() {
     (total, category) => total + category.skills.length,
     0,
   );
+  const experienceItems: ChronologyItem[] = experiences
+    .slice(0, 3)
+    .map((item) => ({
+      id: item.id,
+      period: item.startDate
+        ? `${formatMonthYear(item.startDate)} - ${item.currentlyWorking ? "Present" : item.endDate ? formatMonthYear(item.endDate) : ""}`
+        : undefined,
+      title: item.position,
+      organization: item.company,
+      summary: item.summary,
+      technologies: item.technologies.slice(0, 6),
+      current: item.currentlyWorking,
+    }));
+  const publicEducation = education.filter(
+    (item) => item.degree.toLowerCase() !== "needs confirmation",
+  );
+  const educationRecords: EducationRecord[] = publicEducation
+    .slice(0, 3)
+    .map((item) => ({
+      id: item.id,
+      institution: item.institution,
+      degree: item.degree,
+      field: item.field,
+      period: item.startDate
+        ? `${formatMonthYear(item.startDate)} - ${item.endDate ? formatMonthYear(item.endDate) : "Present"}`
+        : undefined,
+    }));
+  const latestPost = posts[0];
+  const heroCode =
+    profile?.heroContent.developerCode ?? defaultHeroContent.developerCode;
+  const exploreEnabled =
+    (settings?.blogEnabled !== false && Boolean(latestPost)) ||
+    settings?.playgroundEnabled !== false ||
+    useItems.length > 0;
 
   return (
     <main id="main-content" className="relative isolate overflow-hidden">
@@ -86,7 +143,6 @@ export default async function Home() {
           profile?.currentFocus ??
           "Enterprise applications, distributed systems, and AI integrations."
         }
-        experienceCount={experiences.length}
         fullName={profile?.fullName ?? "Minhazul Islam"}
         professionalTitle={
           profile?.professionalTitle ?? "Full Stack Java Developer"
@@ -98,171 +154,51 @@ export default async function Home() {
           "Building robust and scalable software with Java, Spring Boot, Angular, microservices, distributed systems, and AI integrations."
         }
         technologies={highlightedTechnologies}
+        codeFileLabel={heroCode.fileLabel}
+        codeVariableName={heroCode.variableName}
+        codeFocus={heroCode.focus}
+        codeStatus={heroCode.status}
       />
 
       <section
         className="landing-section border-t border-[var(--border)]"
-        id="about-overview"
+        id="work-overview"
       >
         <Container>
           <SectionHeading
-            description="A practical engineering mindset shaped by enterprise systems, production support, distributed architecture, and applied AI."
-            eyebrow="01 / About"
-            href="/about"
-            linkLabel="Read my story"
-            title="I turn complex requirements into maintainable systems."
-          />
-          <div className="grid gap-5 lg:grid-cols-[1.25fr_0.75fr]">
-            <InteractiveLinkCard cursorLabel="About me" href="/about">
-              <Sparkles
-                className="mb-12 text-[var(--accent)]"
-                aria-hidden
-                size={24}
-              />
-              <p className="max-w-3xl text-2xl leading-9 font-medium tracking-tight text-balance sm:text-3xl sm:leading-11">
-                {profile?.shortBio ??
-                  "Full-stack engineering across backend, frontend, architecture, and AI."}
-              </p>
-              <p className="mt-8 max-w-2xl leading-7 text-[var(--muted)]">
-                {profile?.currentFocus ??
-                  "Focused on reliable enterprise software and thoughtful technical execution."}
-              </p>
-            </InteractiveLinkCard>
-            <StaggerContainer className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-              {[
-                {
-                  label: "Professional roles",
-                  value: experiences.length,
-                  icon: BriefcaseBusiness,
-                },
-                {
-                  label: "Selected systems",
-                  value: projects.length,
-                  icon: Boxes,
-                },
-                {
-                  label: "Verified skills",
-                  value: skillCount,
-                  icon: CodeXml,
-                },
-              ].map((stat) => {
-                const Icon = stat.icon;
-                return (
-                  <StaggerItem
-                    className="flex items-center justify-between rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-5"
-                    key={stat.label}
-                  >
-                    <div>
-                      <p className="text-3xl font-semibold">{stat.value}</p>
-                      <p className="mt-1 text-sm text-[var(--muted)]">
-                        {stat.label}
-                      </p>
-                    </div>
-                    <Icon
-                      className="text-[var(--accent)]"
-                      aria-hidden
-                      size={22}
-                    />
-                  </StaggerItem>
-                );
-              })}
-            </StaggerContainer>
-          </div>
-        </Container>
-      </section>
-
-      <section
-        className="landing-section landing-section-alt"
-        id="experience-overview"
-      >
-        <Container>
-          <SectionHeading
-            description="Roles where backend engineering, frontend delivery, microservices, production operations, and mentorship meet."
-            eyebrow="02 / Experience"
-            href="/experience"
-            linkLabel="Full timeline"
-            title="Engineering experience, shown in context."
-          />
-          <StaggerContainer className="grid gap-5 lg:grid-cols-2">
-            {experiences.map((experience) => (
-              <StaggerItem key={experience.id}>
-                <InteractiveLinkCard
-                  cursorLabel="View timeline"
-                  href="/experience"
-                >
-                  <div className="mb-10 flex flex-wrap items-center gap-2">
-                    {experience.currentlyWorking ? (
-                      <Badge>Current</Badge>
-                    ) : null}
-                    <Badge variant="neutral">
-                      {formatMonthYear(experience.startDate)} —{" "}
-                      {experience.currentlyWorking
-                        ? "Present"
-                        : formatMonthYear(experience.endDate)}
-                    </Badge>
-                  </div>
-                  <BriefcaseBusiness
-                    className="mb-5 text-[var(--accent)]"
-                    aria-hidden
-                    size={21}
-                  />
-                  <h3 className="pr-7 text-2xl font-semibold tracking-tight">
-                    {experience.position}
-                  </h3>
-                  <p className="mt-2 text-[var(--accent)]">
-                    {experience.company}
-                  </p>
-                  <p className="mt-5 line-clamp-3 leading-7 text-[var(--muted)]">
-                    {experience.summary}
-                  </p>
-                  <div className="mt-auto flex flex-wrap gap-2 pt-7">
-                    {experience.technologies.slice(0, 5).map((technology) => (
-                      <Badge key={technology} variant="neutral">
-                        {technology}
-                      </Badge>
-                    ))}
-                  </div>
-                </InteractiveLinkCard>
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
-        </Container>
-      </section>
-
-      <section className="landing-section" id="projects-overview">
-        <Container>
-          <SectionHeading
-            description="Enterprise platforms and domain systems built with security, scale, integration, and maintainability in mind."
-            eyebrow="03 / Projects"
+            description="Enterprise platforms designed around operational complexity, secure data, distributed workflows, and long-term maintainability."
+            eyebrow="01 / Selected work"
             href="/projects"
-            linkLabel="Explore all projects"
-            title="Selected systems built for real operations."
+            linkLabel="View all systems"
+            title="Software built for real-world operations."
           />
-          <StaggerContainer className="grid gap-5 md:grid-cols-2">
-            {projects.slice(0, 4).map((project, index) => (
+          <StaggerContainer className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {projects.slice(0, 3).map((project, index) => (
               <StaggerItem key={project.id}>
                 <InteractiveLinkCard
+                  className="min-h-full"
                   cursorLabel="Open case study"
                   href={`/projects/${project.slug}`}
                 >
-                  <div className="mb-14 flex items-center justify-between pr-8">
-                    <span className="font-mono text-xs text-[var(--accent)]">
-                      PROJECT / {String(index + 1).padStart(2, "0")}
-                    </span>
-                    <Rocket
-                      className="text-[var(--muted)]"
-                      aria-hidden
-                      size={18}
-                    />
+                  <ProjectVisual
+                    className="-mx-6 -mt-6 mb-6"
+                    index={index}
+                    projectType={project.projectType}
+                  />
+                  <div className="flex flex-wrap items-center gap-2 pr-8">
+                    {project.featured ? <Badge>Featured</Badge> : null}
+                    {project.projectType ? (
+                      <Badge variant="neutral">{project.projectType}</Badge>
+                    ) : null}
                   </div>
-                  <h3 className="max-w-xl text-2xl font-semibold tracking-tight">
+                  <h3 className="mt-5 text-2xl font-semibold tracking-tight">
                     {project.title}
                   </h3>
                   <p className="mt-4 line-clamp-3 leading-7 text-[var(--muted)]">
                     {project.shortDescription}
                   </p>
                   <div className="mt-auto flex flex-wrap gap-2 pt-7">
-                    {project.technologies.slice(0, 6).map((technology) => (
+                    {project.technologies.slice(0, 5).map((technology) => (
                       <Badge key={technology} variant="neutral">
                         {technology}
                       </Badge>
@@ -277,227 +213,282 @@ export default async function Home() {
 
       <section
         className="landing-section landing-section-alt"
-        id="skills-overview"
+        id="architecture"
       >
         <Container>
           <SectionHeading
-            description="Not percentage bars—a connected view of the technologies used across backend, frontend, data, architecture, AI, and delivery."
-            eyebrow="04 / Skills"
-            href="/skills"
-            linkLabel="Open skill map"
-            title="A stack shaped by production engineering."
+            description="This portfolio follows the same boundary-driven thinking used in production systems: server-first delivery, explicit application layers, and isolated persistence."
+            eyebrow="02 / Architecture"
+            href={
+              settings?.playgroundEnabled !== false
+                ? "/playground"
+                : "/projects"
+            }
+            linkLabel={
+              settings?.playgroundEnabled !== false
+                ? "Explore interactively"
+                : "View architecture work"
+            }
+            title="The architecture behind this portfolio."
           />
-          <StaggerContainer className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {skillCategories.map((category) => (
-              <StaggerItem key={category.id}>
-                <InteractiveLinkCard
-                  cursorLabel="Explore skills"
-                  href="/skills"
-                >
-                  <CodeXml
-                    className="mb-9 text-[var(--accent)]"
+          <SystemArchitecture />
+        </Container>
+      </section>
+
+      {experienceItems.length ? (
+        <section className="landing-section" id="experience-overview">
+          <Container>
+            <SectionHeading
+              description="A compact view of increasing responsibility across backend delivery, full-stack systems, architecture, production support, and technical mentorship."
+              eyebrow="03 / Career"
+              href="/experience"
+              linkLabel="Open full timeline"
+              title="Progress measured through responsibility."
+            />
+            <div className="grid gap-10 xl:grid-cols-[minmax(0,0.35fr)_minmax(0,0.65fr)] xl:gap-16">
+              <ScrollReveal>
+                <div className="sticky top-28 rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-6">
+                  <BriefcaseBusiness
+                    className="text-[var(--accent)]"
                     aria-hidden
-                    size={20}
+                    size={24}
                   />
-                  <div className="flex items-baseline justify-between gap-4 pr-7">
-                    <h3 className="text-xl font-semibold">{category.name}</h3>
-                    <span className="font-mono text-xs text-[var(--muted)]">
-                      {category.skills.length}
+                  <p className="mt-8 text-4xl font-semibold">
+                    {profile?.yearsOfExperience
+                      ? `${profile.yearsOfExperience}+`
+                      : experiences.length}
+                  </p>
+                  <p className="mt-2 text-sm text-[var(--muted)]">
+                    {profile?.yearsOfExperience
+                      ? "Years of professional engineering"
+                      : "Career chapters"}
+                  </p>
+                  <div className="mt-8 border-t border-[var(--border)] pt-6">
+                    <p className="eyebrow">Working principle</p>
+                    <p className="mt-3 text-sm leading-7 text-[var(--muted)]">
+                      Own the full path from requirement and system design to
+                      release, observability, and production support.
+                    </p>
+                  </div>
+                </div>
+              </ScrollReveal>
+              <Chronology compact items={experienceItems} />
+            </div>
+          </Container>
+        </section>
+      ) : null}
+
+      <section
+        className="landing-section landing-section-alt"
+        id="capabilities"
+      >
+        <Container>
+          <SectionHeading
+            description="A connected capability map rather than arbitrary proficiency percentages, organized around the layers used to ship complete systems."
+            eyebrow="04 / Capabilities"
+            href="/skills"
+            linkLabel="Browse all skills"
+            title="Depth across the delivery stack."
+          />
+          <StaggerContainer className="capability-tree grid gap-px overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--border)] md:grid-cols-2 xl:grid-cols-3">
+            {skillCategories.slice(0, 6).map((category, index) => {
+              const Icon =
+                capabilityIcons[index % capabilityIcons.length] ?? Server;
+              return (
+                <StaggerItem
+                  className="group relative bg-[var(--surface)] p-6 sm:p-7"
+                  key={category.id}
+                >
+                  <div className="flex items-start justify-between gap-5">
+                    <span className="grid size-11 place-items-center rounded-[var(--radius-control)] border border-[var(--border-strong)] bg-[var(--surface-raised)] text-[var(--accent)] transition-transform group-hover:-translate-y-1">
+                      <Icon aria-hidden size={20} />
+                    </span>
+                    <span className="font-mono text-[10px] tracking-widest text-[var(--muted)] uppercase">
+                      {String(category.skills.length).padStart(2, "0")} skills
                     </span>
                   </div>
-                  <div className="mt-6 flex flex-wrap gap-x-3 gap-y-2">
-                    {category.skills.slice(0, 7).map((skill) => (
+                  <h3 className="mt-8 text-xl font-semibold">
+                    {category.name}
+                  </h3>
+                  {category.description ? (
+                    <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
+                      {category.description}
+                    </p>
+                  ) : null}
+                  <div className="mt-6 flex flex-wrap gap-x-4 gap-y-2 border-t border-[var(--border)] pt-5">
+                    {category.skills.slice(0, 6).map((skill) => (
                       <span
-                        className="text-sm text-[var(--muted)]"
+                        className="text-xs text-[var(--muted)]"
                         key={skill.id}
                       >
                         {skill.name}
                       </span>
                     ))}
                   </div>
-                </InteractiveLinkCard>
-              </StaggerItem>
-            ))}
+                </StaggerItem>
+              );
+            })}
           </StaggerContainer>
+          <p className="mt-5 text-right font-mono text-[10px] tracking-widest text-[var(--muted)] uppercase">
+            {skillCount} technologies across {skillCategories.length} domains
+          </p>
         </Container>
       </section>
 
-      <section className="landing-section" id="learning-overview">
-        <Container>
-          <SectionHeading
-            description="Verified learning records and academic foundations, preserving unknown dates rather than filling them with assumptions."
-            eyebrow="05 / Learning"
-            href="/certifications"
-            linkLabel="View credentials"
-            title="Education backed by verifiable records."
-          />
-          <div className="grid gap-5 lg:grid-cols-2">
-            <ScrollReveal className="space-y-4">
-              <div className="mb-6 flex items-center gap-3">
-                <Award className="text-[var(--accent)]" aria-hidden size={20} />
-                <h3 className="text-xl font-semibold">Certifications</h3>
-              </div>
-              {certifications.map((certification) => (
-                <InteractiveLinkCard
-                  cursorLabel="View credentials"
-                  href="/certifications"
-                  key={certification.id}
-                >
-                  <p className="font-mono text-xs text-[var(--accent)]">
-                    {certification.issuer}
-                  </p>
-                  <h4 className="mt-4 pr-7 text-xl font-semibold">
-                    {certification.name}
-                  </h4>
-                  <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
-                    {certification.description}
-                  </p>
-                </InteractiveLinkCard>
-              ))}
-            </ScrollReveal>
-            <ScrollReveal className="space-y-4">
-              <div className="mb-6 flex items-center gap-3">
-                <GraduationCap
-                  className="text-[var(--accent)]"
-                  aria-hidden
-                  size={21}
-                />
-                <h3 className="text-xl font-semibold">Education</h3>
-              </div>
-              {education.map((item) => (
-                <InteractiveLinkCard
-                  cursorLabel="View education"
-                  href="/education"
-                  key={item.id}
-                >
-                  <p className="font-mono text-xs text-[var(--accent)]">
-                    {item.institution}
-                  </p>
-                  <h4 className="mt-4 pr-7 text-xl font-semibold">
-                    {item.degree}
-                  </h4>
-                  <p className="mt-3 text-sm text-[var(--muted)]">
-                    {item.field}
-                  </p>
-                </InteractiveLinkCard>
-              ))}
-            </ScrollReveal>
-          </div>
-        </Container>
-      </section>
-
-      {settings?.blogEnabled !== false ? (
-        <section
-          className="landing-section landing-section-alt"
-          id="blog-overview"
-        >
+      {publicEducation.length ? (
+        <section className="landing-section" id="credentials-overview">
           <Container>
             <SectionHeading
-              description="Engineering notes, architecture decisions, implementation lessons, and ideas worth making reusable."
-              eyebrow="06 / Blog"
-              href="/blog"
-              linkLabel="Read the blog"
-              title="Technical thinking, documented."
+              description="Formal programs in information technology and enterprise systems provide the academic structure behind the engineering practice."
+              eyebrow="05 / Education"
+              href="/education"
+              linkLabel="View academic path"
+              title="Knowledge built for practical delivery."
             />
-            {posts.length ? (
-              <StaggerContainer className="grid gap-5 md:grid-cols-3">
-                {posts.slice(0, 3).map((post) => (
-                  <StaggerItem key={post.id}>
-                    <InteractiveLinkCard
-                      cursorLabel="Read article"
-                      href={`/blog/${post.slug}`}
-                    >
-                      <BookOpen
-                        className="mb-10 text-[var(--accent)]"
-                        aria-hidden
-                        size={21}
-                      />
-                      <h3 className="pr-7 text-xl font-semibold">
-                        {post.title}
-                      </h3>
-                      <p className="mt-4 line-clamp-3 leading-7 text-[var(--muted)]">
-                        {post.excerpt}
-                      </p>
-                      <div className="mt-auto flex flex-wrap gap-2 pt-7">
-                        {post.tags.slice(0, 3).map((tag) => (
-                          <Badge key={tag} variant="neutral">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    </InteractiveLinkCard>
-                  </StaggerItem>
-                ))}
-              </StaggerContainer>
-            ) : (
-              <InteractiveLinkCard cursorLabel="Open blog" href="/blog">
-                <BookOpen
-                  className="mb-10 text-[var(--accent)]"
-                  aria-hidden
-                  size={24}
-                />
-                <h3 className="text-2xl font-semibold">
-                  The publication queue is being prepared.
-                </h3>
-                <p className="mt-4 text-[var(--muted)]">
-                  The blog section is live and ready for the first published
-                  engineering note.
-                </p>
-              </InteractiveLinkCard>
-            )}
+            <ScrollReveal>
+              <EducationRecords
+                compact
+                headingLevel={3}
+                records={educationRecords}
+              />
+            </ScrollReveal>
           </Container>
         </section>
       ) : null}
 
-      <section className="landing-section" id="explore-overview">
-        <Container>
-          <SectionHeading
-            description="A closer look at the tools behind the work and a hands-on space for safe developer-focused interactions."
-            eyebrow="07 / Explore"
-            href="/playground"
-            linkLabel="Enter playground"
-            title="The setup and the experimental side."
-          />
-          <div className="grid gap-5 lg:grid-cols-2">
-            <InteractiveLinkCard cursorLabel="View my tools" href="/uses">
-              <Wrench
-                className="mb-14 text-[var(--accent)]"
-                aria-hidden
-                size={24}
-              />
-              <p className="eyebrow">Uses / Toolkit</p>
-              <h3 className="mt-4 text-3xl font-semibold tracking-tight">
-                The tools behind the delivery.
-              </h3>
-              <p className="mt-5 leading-7 text-[var(--muted)]">
-                {useItems.length
-                  ? `${useItems.length} verified tools across the working environment.`
-                  : "Frameworks, IDEs, delivery tools, and AI assistants extracted from the verified technical profile."}
-              </p>
-            </InteractiveLinkCard>
-            {settings?.playgroundEnabled !== false ? (
-              <InteractiveLinkCard
-                cursorLabel="Launch playground"
-                href="/playground"
-              >
-                <TerminalSquare
-                  className="mb-14 text-[var(--accent)]"
-                  aria-hidden
-                  size={25}
-                />
-                <p className="eyebrow">Playground / Interactive</p>
-                <h3 className="mt-4 text-3xl font-semibold tracking-tight">
-                  Terminal, architecture, and a typing challenge.
-                </h3>
-                <p className="mt-5 leading-7 text-[var(--muted)]">
-                  Explore the portfolio through safe commands, inspect system
-                  layers, or try a lightweight developer mini-game.
-                </p>
-              </InteractiveLinkCard>
-            ) : null}
-          </div>
-        </Container>
-      </section>
+      {certifications.length ? (
+        <section
+          className="landing-section landing-section-alt"
+          id="certifications-overview"
+        >
+          <Container>
+            <SectionHeading
+              description="Focused courses and independently verifiable credentials that extend the formal academic foundation."
+              eyebrow="06 / Certifications"
+              href="/certifications"
+              linkLabel="View all credentials"
+              title="Professional learning, documented separately."
+            />
+            <StaggerContainer className="grid gap-5 md:grid-cols-2">
+              {certifications.slice(0, 4).map((item, index) => (
+                <StaggerItem key={item.id}>
+                  <article className="relative flex h-full min-h-64 flex-col overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)] transition-colors hover:border-[var(--border-strong)] sm:p-8">
+                    <div className="flex items-start justify-between gap-5">
+                      <span className="grid size-11 place-items-center rounded-[var(--radius-control)] border border-[var(--border-strong)] bg-[var(--surface-raised)] text-[var(--accent)]">
+                        <Award aria-hidden size={20} />
+                      </span>
+                      <span className="font-mono text-[10px] tracking-[0.16em] text-[var(--muted)] uppercase">
+                        Credential {String(index + 1).padStart(2, "0")}
+                      </span>
+                    </div>
+                    <p className="eyebrow mt-8">{item.issuer}</p>
+                    <h3 className="mt-3 text-2xl font-semibold tracking-tight">
+                      {item.name}
+                    </h3>
+                    {item.description ? (
+                      <p className="mt-4 text-sm leading-7 text-[var(--muted)]">
+                        {item.description}
+                      </p>
+                    ) : null}
+                    <div className="mt-auto flex items-end justify-between gap-4 pt-7">
+                      {item.category ? (
+                        <Badge variant="neutral">{item.category}</Badge>
+                      ) : (
+                        <span />
+                      )}
+                      {item.credentialUrl ? (
+                        <a
+                          className="inline-flex min-h-10 items-center gap-2 text-sm font-medium text-[var(--accent)]"
+                          href={item.credentialUrl}
+                          rel="noreferrer"
+                          target="_blank"
+                        >
+                          Verify
+                          <ExternalLink aria-hidden size={14} />
+                        </a>
+                      ) : null}
+                    </div>
+                  </article>
+                </StaggerItem>
+              ))}
+            </StaggerContainer>
+          </Container>
+        </section>
+      ) : null}
+
+      {exploreEnabled ? (
+        <section className="landing-section" id="explore-overview">
+          <Container>
+            <SectionHeading
+              description="Technical notes, tooling choices, and interactive experiments reveal the thinking that sits around the finished software."
+              eyebrow="07 / Engineering lab"
+              href={
+                settings?.playgroundEnabled !== false ? "/playground" : "/uses"
+              }
+              linkLabel="Open the lab"
+              title="Explore beyond the final commit."
+            />
+            <div className="grid gap-5 lg:grid-cols-3">
+              {settings?.blogEnabled !== false && latestPost ? (
+                <InteractiveLinkCard
+                  cursorLabel="Read article"
+                  href={`/blog/${latestPost.slug}`}
+                >
+                  <BookOpen
+                    className="mb-12 text-[var(--accent)]"
+                    aria-hidden
+                    size={23}
+                  />
+                  <p className="eyebrow">Latest writing</p>
+                  <h3 className="mt-4 text-2xl font-semibold tracking-tight">
+                    {latestPost.title}
+                  </h3>
+                  <p className="mt-4 line-clamp-3 text-sm leading-7 text-[var(--muted)]">
+                    {latestPost.excerpt}
+                  </p>
+                </InteractiveLinkCard>
+              ) : null}
+              {useItems.length ? (
+                <InteractiveLinkCard cursorLabel="View toolkit" href="/uses">
+                  <Wrench
+                    className="mb-12 text-[var(--accent)]"
+                    aria-hidden
+                    size={23}
+                  />
+                  <p className="eyebrow">Tools / Environment</p>
+                  <h3 className="mt-4 text-2xl font-semibold tracking-tight">
+                    A deliberate working toolkit.
+                  </h3>
+                  <p className="mt-4 text-sm leading-7 text-[var(--muted)]">
+                    {useItems.length} tools across development, delivery,
+                    design, and focused engineering work.
+                  </p>
+                </InteractiveLinkCard>
+              ) : null}
+              {settings?.playgroundEnabled !== false ? (
+                <InteractiveLinkCard
+                  cursorLabel="Launch playground"
+                  href="/playground"
+                >
+                  <TerminalSquare
+                    className="mb-12 text-[var(--accent)]"
+                    aria-hidden
+                    size={24}
+                  />
+                  <p className="eyebrow">Interactive / Playground</p>
+                  <h3 className="mt-4 text-2xl font-semibold tracking-tight">
+                    Inspect, type, and experiment.
+                  </h3>
+                  <p className="mt-4 text-sm leading-7 text-[var(--muted)]">
+                    Use a safe terminal, inspect technology relationships, or
+                    try a developer-focused typing challenge.
+                  </p>
+                </InteractiveLinkCard>
+              ) : null}
+            </div>
+          </Container>
+        </section>
+      ) : null}
 
       {settings?.contactEnabled !== false ? (
         <section
@@ -509,24 +500,34 @@ export default async function Home() {
               <div className="landing-contact-orb" aria-hidden />
               <div className="relative z-10 grid gap-12 lg:grid-cols-[1fr_auto] lg:items-end">
                 <div>
-                  <p className="eyebrow">08 / Contact</p>
+                  <div className="flex items-center gap-3">
+                    <Sparkles
+                      className="text-[var(--accent)]"
+                      aria-hidden
+                      size={18}
+                    />
+                    <p className="eyebrow">08 / Start a conversation</p>
+                  </div>
                   <h2 className="mt-5 max-w-4xl text-4xl font-semibold tracking-[-0.05em] text-balance sm:text-6xl">
-                    Have a system worth building?
+                    Have a complex system to simplify?
                     <span className="block text-[var(--accent)]">
-                      Let&apos;s make it reliable.
+                      Let&apos;s build it well.
                     </span>
                   </h2>
                   <p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--muted)]">
-                    Start a conversation about enterprise software,
-                    architecture, backend systems, full-stack delivery, or
+                    Available for conversations about enterprise software,
+                    architecture, backend systems, full-stack delivery, and
                     applied AI.
                   </p>
                   <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-sm text-[var(--muted)]">
                     {profile?.email ? (
-                      <span className="inline-flex items-center gap-2">
+                      <a
+                        className="inline-flex items-center gap-2 hover:text-[var(--accent)]"
+                        href={`mailto:${profile.email}`}
+                      >
                         <Mail aria-hidden size={15} />
                         {profile.email}
-                      </span>
+                      </a>
                     ) : null}
                     {profile?.location ? (
                       <span className="inline-flex items-center gap-2">
@@ -556,7 +557,6 @@ export default async function Home() {
                   {socialLinks.map((link) => (
                     <a
                       className="text-sm text-[var(--muted)] transition-colors hover:text-[var(--accent)]"
-                      data-cursor={`Open ${link.label}`}
                       href={link.url}
                       key={link.id}
                       rel="noreferrer"

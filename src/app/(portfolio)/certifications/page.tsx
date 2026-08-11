@@ -17,7 +17,7 @@ import { getVisibleCertifications } from "@/server/queries/public-content";
 
 export const metadata: Metadata = {
   title: "Certifications",
-  description: "Verified professional certifications and credentials.",
+  description: "Professional certifications and credentials.",
 };
 
 export default async function CertificationsPage() {
@@ -26,7 +26,7 @@ export default async function CertificationsPage() {
   return (
     <main id="main-content">
       <PageHero
-        description="Credentials are displayed with their real issuer, date, identifier, and verification destination when present."
+        description="Focused professional learning across software development, Java, and the Spring ecosystem."
         eyebrow="Credentials / Verification"
         status={`${certifications.length} records`}
         title="Evidence of continued learning."
@@ -47,8 +47,10 @@ export default async function CertificationsPage() {
                   </div>
                   <CardTitle>{certification.name}</CardTitle>
                   <CardDescription>
-                    {certification.issuer} ·{" "}
-                    {formatDate(certification.issueDate)}
+                    {certification.issuer}
+                    {certification.issueDate
+                      ? ` · ${formatDate(certification.issueDate)}`
+                      : ""}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="mt-auto">

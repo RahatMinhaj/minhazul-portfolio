@@ -8,8 +8,8 @@ import {
 } from "@/components/ui/card";
 
 export function EmptyState({
-  title = "Verified content has not been added yet.",
-  description = "This section will populate from the database after the owner’s CV is reviewed. No temporary professional records are shown.",
+  title = "Nothing published here yet.",
+  description = "This section is being prepared. Please explore the rest of the portfolio in the meantime.",
 }: {
   title?: string;
   description?: string;

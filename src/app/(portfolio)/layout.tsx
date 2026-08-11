@@ -5,6 +5,7 @@ import { PublicShell } from "@/components/navigation/public-shell";
 import { StructuredData } from "@/components/seo/structured-data";
 import { CustomCursor } from "@/components/widgets/custom-cursor";
 import { siteConfig } from "@/config/site";
+import { getPublicNavigation } from "@/config/navigation";
 import { defaultTheme, themeIds, type ThemeId } from "@/config/themes";
 import {
   getActiveThemeSlugs,
@@ -33,6 +34,8 @@ export default async function PortfolioLayout({
   const availableThemes = configuredThemes.length
     ? configuredThemes
     : [defaultTheme];
+  const navigation = getPublicNavigation(settings);
+  const siteName = profile?.fullName ?? settings?.siteName ?? siteConfig.name;
 
   if (settings?.maintenanceMode) {
     return (
@@ -56,6 +59,7 @@ export default async function PortfolioLayout({
   return (
     <PublicShell
       availableThemes={availableThemes}
+      navigation={navigation}
       projectCommands={projects.map((project) => ({
         label: project.title,
         href: `/projects/${project.slug}`,
@@ -64,9 +68,14 @@ export default async function PortfolioLayout({
         label: link.label,
         href: link.url,
       }))}
+      siteName={siteName}
     >
       <PageTransition>{children}</PageTransition>
-      <SiteFooter footerText={settings?.footerText} />
+      <SiteFooter
+        footerText={settings?.footerText}
+        navigation={navigation}
+        siteName={siteName}
+      />
       <CustomCursor />
       {settings?.analyticsEnabled ? <VisitorTracker /> : null}
       <StructuredData

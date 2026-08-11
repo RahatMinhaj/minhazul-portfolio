@@ -5,12 +5,12 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
+import { ProjectVisual } from "@/components/projects/project-visual";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
@@ -83,20 +83,22 @@ export function ProjectExplorer({ projects }: { projects: ProjectSummary[] }) {
         </label>
       </div>
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-        {visibleProjects.map((project) => (
+        {visibleProjects.map((project, index) => (
           <Card
-            className="group flex flex-col transition-transform hover:-translate-y-1"
+            className="group relative flex flex-col overflow-hidden transition-[border-color,transform,box-shadow] hover:-translate-y-1 hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-glow)]"
             key={project.id}
           >
+            <ProjectVisual index={index} projectType={project.projectType} />
             <CardHeader>
               <div className="mb-4 flex items-center justify-between gap-3">
                 <Badge variant={project.featured ? "default" : "neutral"}>
                   {project.featured ? "Featured" : project.status}
                 </Badge>
-                <div className="flex gap-2">
+                <div className="relative z-20 flex gap-1">
                   {project.githubUrl ? (
                     <a
                       aria-label={`${project.title} source code`}
+                      className="grid size-10 place-items-center rounded-full border border-[var(--border)] text-[var(--muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
                       href={project.githubUrl}
                       rel="noreferrer"
                       target="_blank"
@@ -107,6 +109,7 @@ export function ProjectExplorer({ projects }: { projects: ProjectSummary[] }) {
                   {project.liveUrl ? (
                     <a
                       aria-label={`${project.title} live website`}
+                      className="grid size-10 place-items-center rounded-full border border-[var(--border)] text-[var(--muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
                       href={project.liveUrl}
                       rel="noreferrer"
                       target="_blank"
@@ -116,9 +119,14 @@ export function ProjectExplorer({ projects }: { projects: ProjectSummary[] }) {
                   ) : null}
                 </div>
               </div>
-              <CardTitle>
-                <Link href={`/projects/${project.slug}`}>{project.title}</Link>
-              </CardTitle>
+              <h2 className="text-xl font-semibold tracking-tight">
+                <Link
+                  className="after:absolute after:inset-0"
+                  href={`/projects/${project.slug}`}
+                >
+                  {project.title}
+                </Link>
+              </h2>
               <CardDescription>{project.shortDescription}</CardDescription>
             </CardHeader>
             <CardContent className="mt-auto flex flex-wrap gap-2">
@@ -131,6 +139,9 @@ export function ProjectExplorer({ projects }: { projects: ProjectSummary[] }) {
           </Card>
         ))}
       </div>
+      <p className="sr-only" aria-live="polite">
+        {visibleProjects.length} projects shown
+      </p>
       {visibleProjects.length === 0 ? (
         <p className="py-16 text-center text-sm text-[var(--muted)]">
           No projects match the current filters.

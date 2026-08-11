@@ -5,12 +5,7 @@ import { notFound } from "next/navigation";
 import { ContactForm } from "@/components/forms/contact-form";
 import { PageHero } from "@/components/shared/page-hero";
 import { Container } from "@/components/shared/container";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardDescription, CardHeader } from "@/components/ui/card";
 import {
   getPublicProfile,
   getPublicSiteSettings,
@@ -35,33 +30,42 @@ export default async function ContactPage() {
       <PageHero
         description="Send a direct message for relevant engineering work, architecture discussions, or technical collaboration."
         eyebrow="Contact / Secure channel"
-        status={profile?.availabilityStatus ?? "Needs confirmation"}
+        status={profile?.availabilityStatus ?? "Open to conversations"}
         title="Start a useful conversation."
       />
       <Container className="grid gap-10 py-16 sm:py-24 lg:grid-cols-[0.72fr_1.28fr]">
         <aside className="space-y-4">
-          <Card>
-            <CardHeader>
-              <Mail className="text-[var(--accent)]" aria-hidden size={19} />
-              <CardDescription className="pt-5">Email</CardDescription>
-              <CardTitle className="text-base">
-                {profile?.email ?? "Needs confirmation"}
-              </CardTitle>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader>
-              <MapPin className="text-[var(--accent)]" aria-hidden size={19} />
-              <CardDescription className="pt-5">Location</CardDescription>
-              <CardTitle className="text-base">
-                {profile?.location ?? "Needs confirmation"}
-              </CardTitle>
-            </CardHeader>
-          </Card>
+          {profile?.email ? (
+            <Card>
+              <CardHeader>
+                <Mail className="text-[var(--accent)]" aria-hidden size={19} />
+                <CardDescription className="pt-5">Email</CardDescription>
+                <a
+                  className="text-base font-semibold hover:text-[var(--accent)]"
+                  href={`mailto:${profile.email}`}
+                >
+                  {profile.email}
+                </a>
+              </CardHeader>
+            </Card>
+          ) : null}
+          {profile?.location ? (
+            <Card>
+              <CardHeader>
+                <MapPin
+                  className="text-[var(--accent)]"
+                  aria-hidden
+                  size={19}
+                />
+                <CardDescription className="pt-5">Location</CardDescription>
+                <p className="text-base font-semibold">{profile.location}</p>
+              </CardHeader>
+            </Card>
+          ) : null}
           {socialLinks.length ? (
             <Card>
               <CardHeader>
-                <CardDescription>Verified profiles</CardDescription>
+                <CardDescription>Professional profiles</CardDescription>
                 <div className="flex flex-wrap gap-3 pt-3">
                   {socialLinks.map((link) => (
                     <a
@@ -81,10 +85,12 @@ export default async function ContactPage() {
         </aside>
         <Card>
           <CardHeader>
-            <CardTitle>Send a message</CardTitle>
+            <h2 className="text-xl font-semibold tracking-tight">
+              Send a message
+            </h2>
             <CardDescription>
-              Messages are validated, rate-limited, and stored for the
-              administrator.
+              Share the context, goal, and where thoughtful engineering support
+              would be most useful.
             </CardDescription>
           </CardHeader>
           <div className="p-6 pt-4">

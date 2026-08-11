@@ -82,6 +82,48 @@ export default async function AdminProfilePage() {
               label="Current focus"
               name="currentFocus"
             />
+            <div className="mt-3 border-t border-[var(--border)] pt-7 md:col-span-2">
+              <h2 className="text-xl font-semibold">
+                Hero developer code block
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">
+                Customize the editable text in the animated code panel. The name
+                and project count continue to update automatically.
+              </p>
+            </div>
+            <AdminField
+              defaultValue={
+                profile?.heroContent.developerCode.fileLabel ??
+                "minhazul.profile.ts"
+              }
+              label="Code file label"
+              name="heroCodeFileLabel"
+              required
+            />
+            <AdminField
+              defaultValue={
+                profile?.heroContent.developerCode.variableName ?? "developer"
+              }
+              label="Variable name"
+              name="heroCodeVariableName"
+              required
+            />
+            <AdminField
+              defaultValue={
+                profile?.heroContent.developerCode.focus ?? "enterprise + AI"
+              }
+              label="Focus value"
+              name="heroCodeFocus"
+              required
+            />
+            <AdminField
+              defaultValue={
+                profile?.heroContent.developerCode.status ?? "building"
+              }
+              label="Status value"
+              name="heroCodeStatus"
+              required
+            />
           </AdminMutationForm>
         </CardContent>
       </Card>
