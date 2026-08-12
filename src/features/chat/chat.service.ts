@@ -45,6 +45,9 @@ export async function answerPortfolioQuestion({
     throw new ChatUnavailableError("Portfolio chat is not configured.");
   }
 
+  const safeResponse = getSafeResponse(question);
+  if (safeResponse) return safeResponse;
+
   const quota = await consumeChatQuota(clientIdentifier);
   if (!quota.allowed) throw new ChatRateLimitError(quota.retryAfterSeconds);
 
@@ -80,8 +83,6 @@ function buildSources(
         profile.professionalTitle,
         profile.shortBio,
         richTextToPlainText(profile.longBio),
-        profile.email ? `Public email: ${profile.email}` : "",
-        profile.location ? `Location: ${profile.location}` : "",
         profile.availabilityStatus
           ? `Availability: ${profile.availabilityStatus}`
           : "",
@@ -189,18 +190,65 @@ function buildSources(
     });
   }
 
-  if (content.socialLinks.length) {
-    sources.push({
-      id: "social-links",
-      title: "Professional profiles",
-      href: "/contact",
-      text: content.socialLinks
-        .map((link) => `${link.label}: ${link.url}`)
-        .join("\n"),
-    });
+  return sources;
+}
+
+function getSafeResponse(question: string): ChatAnswer | null {
+  const normalized = question.trim().toLowerCase();
+  const personalDataPattern =
+    /\b(e-?mail|phone|mobile|telephone|whats-?app|address|location|contact details?|contact information|private account|password|credential|secret|api key|where (?:does|is) (?:he|minhazul) live)\b|\b[^\s@]+@[^\s@]+\.[^\s@]+\b|(?:\+?\d[\d\s().-]{7,}\d)/i;
+
+  if (personalDataPattern.test(normalized)) {
+    return {
+      answer:
+        "I protect Minhazul's personal information, so I cannot provide email addresses, phone numbers, messaging handles, addresses, credentials, or other private details. For a professional inquiry, please use the portfolio contact page.",
+      sources: [{ title: "Professional contact page", href: "/contact" }],
+    };
   }
 
-  return sources;
+  if (
+    /\b(how (?:can|do|should) i (?:contact|reach|get in touch with)|contact|minhazul for (?:work|a project|a role|business)|hire)\b/i.test(
+      normalized,
+    )
+  ) {
+    return {
+      answer:
+        "For a professional conversation with Minhazul, please use the portfolio contact page. It is the appropriate channel for project, role, and collaboration inquiries.",
+      sources: [{ title: "Professional contact page", href: "/contact" }],
+    };
+  }
+
+  if (
+    /^(hi|hello|hey|hiya|greetings|good (morning|afternoon|evening))[!. ]*$/i.test(
+      normalized,
+    )
+  ) {
+    return {
+      answer:
+        "Hello and welcome. You are connected to Minhaz's Personal Chatbot Assistant, your guide to Minhazul's professional portfolio.",
+      sources: [],
+    };
+  }
+
+  if (
+    /^(thanks|thank you|thankyou|much appreciated)[!. ]*$/i.test(normalized)
+  ) {
+    return {
+      answer:
+        "You are welcome. I am here whenever you want to continue exploring Minhazul's professional work.",
+      sources: [],
+    };
+  }
+
+  if (/^(bye|goodbye|see you|take care)[!. ]*$/i.test(normalized)) {
+    return {
+      answer:
+        "Goodbye, and thank you for visiting Minhazul's portfolio. Have a great day.",
+      sources: [],
+    };
+  }
+
+  return null;
 }
 
 function selectSources(sources: PortfolioSource[], question: string) {

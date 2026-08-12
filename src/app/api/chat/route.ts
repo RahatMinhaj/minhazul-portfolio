@@ -84,6 +84,7 @@ export async function POST(request: Request) {
       );
     }
 
+    console.error("Portfolio chat request failed", error);
     return response(
       {
         message: "The AI service could not answer right now. Please try again.",
