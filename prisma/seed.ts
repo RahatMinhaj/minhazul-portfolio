@@ -4,7 +4,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { hash } from "bcryptjs";
 import { z } from "zod";
 
-import { themeDefinitions } from "../src/config/themes";
+import { defaultTheme, themeDefinitions } from "../src/config/themes";
 import {
   certificationSeedData,
   educationSeedData,
@@ -69,7 +69,7 @@ async function main() {
             surface: theme.surface,
             personality: theme.personality,
           },
-          isDefault: theme.id === "obsidian",
+          isDefault: theme.id === defaultTheme,
           active: true,
           sortOrder,
         },
@@ -82,7 +82,7 @@ async function main() {
             surface: theme.surface,
             personality: theme.personality,
           },
-          isDefault: theme.id === "obsidian",
+          isDefault: theme.id === defaultTheme,
           active: true,
           sortOrder,
         },
@@ -320,7 +320,7 @@ async function main() {
         id: "site-settings",
         siteName: `${profileSeedData.fullName} · Developer Portfolio`,
         siteDescription: profileSeedData.shortBio,
-        defaultTheme: "obsidian",
+        defaultTheme,
         contactEnabled: true,
         blogEnabled: true,
         playgroundEnabled: true,

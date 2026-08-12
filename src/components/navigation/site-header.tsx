@@ -43,18 +43,18 @@ export function SiteHeader({
         >
           {navigation
             .filter((item) => item.primary)
-            .map((item) => (
-              <NavLink
-                active={
-                  item.href === "/"
-                    ? pathname === "/"
-                    : pathname.startsWith(item.href)
-                }
-                href={item.href}
-                key={item.href}
-                label={item.label}
-              />
-            ))}
+            .map((item) => {
+              const headerHref = item.landingHref ?? item.href;
+
+              return (
+                <NavLink
+                  active={item.href === "/" && pathname === "/"}
+                  href={headerHref}
+                  key={item.href}
+                  label={item.label}
+                />
+              );
+            })}
         </nav>
 
         <Button
@@ -125,7 +125,7 @@ export function SiteHeader({
                           ? "bg-[var(--surface-raised)] text-[var(--accent)]"
                           : "text-[var(--muted)] hover:text-[var(--foreground)]",
                     )}
-                    href={item.href}
+                    href={item.landingHref ?? item.href}
                     onClick={() => setMenuOpen(false)}
                   >
                     <span className="mr-3 font-mono text-xs opacity-55">

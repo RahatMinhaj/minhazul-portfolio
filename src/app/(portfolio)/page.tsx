@@ -135,7 +135,6 @@ export default async function Home() {
   return (
     <main id="main-content" className="relative isolate overflow-hidden">
       <div className="theme-environment absolute inset-0 -z-20" aria-hidden />
-      <div className="pointer-aura fixed inset-0 -z-10" aria-hidden />
 
       <HeroExperience
         availability={profile?.availabilityStatus ?? "Currently employed"}

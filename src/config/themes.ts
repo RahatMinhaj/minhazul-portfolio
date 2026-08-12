@@ -1,5 +1,6 @@
 export const themeIds = [
   "obsidian",
+  "turquoise-tide",
   "cyber-neon",
   "aurora-glass",
   "minimal-studio",
@@ -35,6 +36,16 @@ export const themeDefinitions: readonly ThemeDefinition[] = [
     accent: "#58e6b0",
     surface: "#0d1211",
     personality: "Measured",
+  },
+  {
+    id: "turquoise-tide",
+    name: "Turquoise Tide",
+    description:
+      "Deep lagoon surfaces, crystalline turquoise light, and calm flowing depth.",
+    mode: "dark",
+    accent: "#2dd4bf",
+    surface: "#08201e",
+    personality: "Refreshing",
   },
   {
     id: "cyber-neon",
@@ -155,4 +166,4 @@ export const themeDefinitions: readonly ThemeDefinition[] = [
   },
 ] as const;
 
-export const defaultTheme: ThemeId = "obsidian";
+export const defaultTheme: ThemeId = "turquoise-tide";

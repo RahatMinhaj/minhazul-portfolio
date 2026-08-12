@@ -5,7 +5,6 @@ import { PortfolioChatbot } from "@/components/chat/portfolio-chatbot";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { PublicShell } from "@/components/navigation/public-shell";
 import { StructuredData } from "@/components/seo/structured-data";
-import { CustomCursor } from "@/components/widgets/custom-cursor";
 import { siteConfig } from "@/config/site";
 import { getPublicNavigation } from "@/config/navigation";
 import { defaultTheme, themeIds, type ThemeId } from "@/config/themes";
@@ -81,7 +80,6 @@ export default async function PortfolioLayout({
         navigation={navigation}
         siteName={siteName}
       />
-      <CustomCursor />
       {portfolioChatIsAvailable() ? <PortfolioChatbot /> : null}
       {settings?.analyticsEnabled ? <VisitorTracker /> : null}
       <StructuredData

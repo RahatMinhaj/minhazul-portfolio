@@ -2,6 +2,26 @@
 @import "tw-animate-css";
 
 :root,
+[data-theme="turquoise-tide"] {
+  --background: #031412;
+  --foreground: #effffc;
+  --surface: rgb(8 32 30 / 0.88);
+  --surface-raised: #0d3a35;
+  --muted: #9bc8c1;
+  --border: #164842;
+  --border-strong: #287a70;
+  --accent: #2dd4bf;
+  --accent-foreground: #02201c;
+  --ring: #5eead4;
+  --radius-control: 0.8rem;
+  --radius-card: 1.25rem;
+  --shadow-card: 0 24px 70px rgb(0 10 9 / 0.42);
+  --shadow-control: 0 10px 28px rgb(45 212 191 / 0.2);
+  --shadow-glow: 0 0 48px rgb(45 212 191 / 0.24);
+  --theme-font-tracking: -0.022em;
+  color-scheme: dark;
+}
+
 [data-theme="obsidian"] {
   --background: #080b0b;
   --foreground: #edf5f1;
@@ -278,15 +298,6 @@ html {
   scroll-padding-top: 5rem;
 }
 
-.pointer-aura {
-  background: radial-gradient(
-    620px circle at var(--pointer-x, 72%) var(--pointer-y, 28%),
-    color-mix(in srgb, var(--accent) 12%, transparent),
-    transparent 48%
-  );
-  transition: opacity 300ms ease;
-}
-
 .console-panel::before {
   position: absolute;
   inset: 0;
@@ -366,152 +377,133 @@ html {
   font-size: 0.9em;
 }
 
-.custom-cursor {
-  display: none;
-  pointer-events: none;
-}
-
 @media (hover: hover) and (pointer: fine) {
-  .custom-cursor-enabled a,
-  .custom-cursor-enabled button,
-  .custom-cursor-enabled summary,
-  .custom-cursor-enabled [data-cursor] {
-    cursor: none;
+  html,
+  body {
+    cursor:
+      url("/icons/turquoise-cursor.svg") 4 3,
+      auto;
   }
 
-  .custom-cursor {
-    position: fixed;
-    inset: 0;
-    z-index: 120;
-    display: block;
-    mix-blend-mode: normal;
+  a,
+  button,
+  summary,
+  select,
+  label[for],
+  input[type="button"],
+  input[type="checkbox"],
+  input[type="file"],
+  input[type="radio"],
+  input[type="reset"],
+  input[type="submit"],
+  [role="button"] {
+    cursor:
+      url("/icons/turquoise-pointer.svg") 14 7,
+      pointer;
   }
 
-  .custom-cursor-dot,
-  .custom-cursor-ring,
-  .custom-cursor-trail,
-  .custom-cursor-label {
-    position: absolute;
-    top: 0;
-    left: 0;
-    display: block;
-    pointer-events: none;
-    translate: -50% -50%;
+  a:active,
+  button:active,
+  summary:active,
+  label[for]:active,
+  input[type="button"]:active,
+  input[type="checkbox"]:active,
+  input[type="radio"]:active,
+  input[type="reset"]:active,
+  input[type="submit"]:active,
+  [role="button"]:active {
+    cursor:
+      url("/icons/turquoise-pressed.svg") 14 9,
+      pointer;
   }
 
-  .custom-cursor-dot {
-    z-index: 3;
-    width: 0.42rem;
-    height: 0.42rem;
-    border-radius: 999px;
-    background: var(--accent);
-    box-shadow:
-      0 0 12px color-mix(in srgb, var(--accent) 90%, transparent),
-      0 0 28px color-mix(in srgb, var(--accent) 40%, transparent);
+  input:not([type]),
+  input[type="date"],
+  input[type="email"],
+  input[type="month"],
+  input[type="number"],
+  input[type="password"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="text"],
+  input[type="time"],
+  input[type="url"],
+  textarea,
+  [contenteditable="true"] {
+    cursor:
+      url("/icons/turquoise-text.svg") 16 16,
+      text;
   }
 
-  .custom-cursor-ring {
-    z-index: 2;
-    width: 2.125rem;
-    height: 2.125rem;
-    border: 1px solid color-mix(in srgb, var(--accent) 72%, transparent);
-    border-radius: 42% 58% 55% 45%;
-    background: color-mix(in srgb, var(--accent) 4%, transparent);
-    box-shadow:
-      inset 0 0 16px color-mix(in srgb, var(--accent) 8%, transparent),
-      0 0 28px color-mix(in srgb, var(--accent) 9%, transparent);
-  }
-
-  .custom-cursor-ring::before,
-  .custom-cursor-ring::after {
-    position: absolute;
-    background: color-mix(in srgb, var(--accent) 45%, transparent);
-    content: "";
-  }
-
-  .custom-cursor-ring::before {
-    top: 50%;
-    right: -0.35rem;
-    left: -0.35rem;
-    height: 1px;
-  }
-
-  .custom-cursor-ring::after {
-    top: -0.35rem;
-    bottom: -0.35rem;
-    left: 50%;
-    width: 1px;
-  }
-
-  .custom-cursor-orbit {
-    position: absolute;
-    top: -0.15rem;
-    left: 50%;
-    width: 0.28rem;
-    height: 0.28rem;
-    translate: -50% -50%;
-    border-radius: 999px;
-    background: var(--accent);
-    box-shadow: 0 0 10px var(--accent);
-    animation: cursor-orbit 2.4s linear infinite;
-    transform-origin: 0 calc(1.2rem + 0.15rem);
-  }
-
-  .custom-cursor-trail {
-    border-radius: 999px;
-    background: var(--accent);
-    filter: blur(0.2px);
-  }
-
-  .custom-cursor-trail-one {
-    width: 0.28rem;
-    height: 0.28rem;
-    opacity: 0.32;
-  }
-
-  .custom-cursor-trail-two {
-    width: 0.22rem;
-    height: 0.22rem;
-    opacity: 0.2;
-  }
-
-  .custom-cursor-trail-three {
-    width: 0.16rem;
-    height: 0.16rem;
-    opacity: 0.12;
-  }
-
-  .custom-cursor-label {
-    z-index: 4;
-    margin: 2.25rem 0 0 2.25rem;
-    border: 1px solid var(--border-strong);
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--surface) 94%, transparent);
-    padding: 0.35rem 0.55rem;
-    color: var(--foreground);
-    font-family: var(--font-geist-mono), monospace;
-    font-size: 0.55rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    white-space: nowrap;
-    box-shadow: var(--shadow-card);
-  }
-
-  .custom-cursor-click {
-    position: fixed;
-    z-index: 1;
-    width: 3rem;
-    height: 3rem;
-    translate: -50% -50%;
-    border: 1px solid var(--accent);
-    border-radius: 999px;
-    pointer-events: none;
+  :disabled,
+  [aria-disabled="true"] {
+    cursor:
+      url("/icons/turquoise-disabled.svg") 16 16,
+      not-allowed;
   }
 }
 
-@keyframes cursor-orbit {
+.project-loader {
+  background:
+    radial-gradient(circle at 50% 46%, rgb(45 212 191 / 0.13), transparent 25%),
+    var(--background);
+}
+
+.project-loader-mark {
+  position: relative;
+  display: grid;
+  width: 4.25rem;
+  height: 4.25rem;
+  place-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 1.25rem;
+  background: var(--surface);
+  color: var(--accent);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 1.2rem;
+  font-weight: 700;
+  box-shadow: var(--shadow-glow);
+}
+
+.project-loader-mark::before {
+  position: absolute;
+  inset: -0.45rem;
+  border: 1px solid transparent;
+  border-top-color: var(--accent);
+  border-right-color: color-mix(in srgb, var(--accent) 28%, transparent);
+  border-radius: 1.55rem;
+  content: "";
+  animation: project-loader-spin 1.1s linear infinite;
+}
+
+.project-loader-track {
+  width: min(13rem, 62vw);
+  height: 2px;
+  overflow: hidden;
+  background: var(--border);
+}
+
+.project-loader-track::after {
+  display: block;
+  width: 42%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  content: "";
+  animation: project-loader-scan 1.2s ease-in-out infinite;
+}
+
+@keyframes project-loader-spin {
   to {
     rotate: 360deg;
+  }
+}
+
+@keyframes project-loader-scan {
+  from {
+    translate: -110% 0;
+  }
+  to {
+    translate: 340% 0;
   }
 }
 
@@ -941,6 +933,44 @@ body {
     100% 100%;
 }
 
+[data-theme="turquoise-tide"] .theme-environment {
+  background:
+    radial-gradient(circle at 82% 12%, rgb(45 212 191 / 0.2), transparent 28%),
+    radial-gradient(circle at 14% 62%, rgb(20 184 166 / 0.11), transparent 34%),
+    repeating-radial-gradient(
+      ellipse at 78% 8%,
+      transparent 0 4.5rem,
+      rgb(94 234 212 / 0.055) 4.55rem 4.65rem
+    ),
+    linear-gradient(rgb(45 212 191 / 0.035) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 7rem;
+}
+
+[data-theme="turquoise-tide"] [class*="bg-\\[var\\(--surface\\)\\]"] {
+  backdrop-filter: blur(18px);
+}
+
+[data-theme="turquoise-tide"] .landing-section-alt {
+  background:
+    linear-gradient(
+      120deg,
+      color-mix(in srgb, var(--accent) 5%, transparent),
+      transparent 42%
+    ),
+    color-mix(in srgb, var(--surface) 42%, transparent);
+}
+
+[data-theme="turquoise-tide"] .hero-console-shell > div:last-child,
+[data-theme="turquoise-tide"] .landing-contact > div > div {
+  box-shadow:
+    var(--shadow-card),
+    inset 0 1px rgb(153 246 228 / 0.08);
+}
+
 [data-theme="aurora-glass"] .theme-environment {
   background:
     radial-gradient(circle at 15% 25%, rgb(45 212 191 / 0.2), transparent 34%),
@@ -1170,6 +1200,17 @@ body {
   --preview-muted: #53645e;
   --preview-radius: 0.6rem;
   --preview-shadow: 0 10px 24px rgb(0 0 0 / 0.3);
+}
+
+[data-preview-theme="turquoise-tide"] {
+  --preview-background: linear-gradient(145deg, #031412, #0b3d38);
+  --preview-grid: rgb(94 234 212 / 0.12);
+  --preview-surface: rgb(8 32 30 / 0.88);
+  --preview-border: #287a70;
+  --preview-accent: #2dd4bf;
+  --preview-muted: #4b7e77;
+  --preview-radius: 0.85rem;
+  --preview-shadow: 0 12px 28px rgb(0 10 9 / 0.48);
 }
 
 [data-preview-theme="cyber-neon"] {

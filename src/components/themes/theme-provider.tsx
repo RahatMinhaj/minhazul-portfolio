@@ -12,7 +12,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       disableTransitionOnChange={false}
       enableColorScheme
       enableSystem={false}
-      storageKey="portfolio-theme"
+      storageKey="portfolio-theme-v2"
       themes={[...themeIds]}
     >
       {children}
