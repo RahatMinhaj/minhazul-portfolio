@@ -21,6 +21,10 @@ const profileSchema = z.object({
   currentCompany: z.string().trim().max(160),
   currentRole: z.string().trim().max(160),
   currentFocus: z.string().trim().max(500),
+  yearsOfExperience: z.preprocess(
+    (value) => (value === "" ? null : value),
+    z.coerce.number().min(0).max(99).nullable(),
+  ),
   heroCodeFileLabel: heroDeveloperCodeSchema.shape.fileLabel,
   heroCodeVariableName: heroDeveloperCodeSchema.shape.variableName,
   heroCodeFocus: heroDeveloperCodeSchema.shape.focus,
@@ -44,6 +48,7 @@ export async function saveProfileAction(
     currentCompany: formData.get("currentCompany"),
     currentRole: formData.get("currentRole"),
     currentFocus: formData.get("currentFocus"),
+    yearsOfExperience: formData.get("yearsOfExperience") ?? "",
     heroCodeFileLabel: formData.get("heroCodeFileLabel"),
     heroCodeVariableName: formData.get("heroCodeVariableName"),
     heroCodeFocus: formData.get("heroCodeFocus"),
@@ -71,6 +76,7 @@ export async function saveProfileAction(
     currentCompany: parsed.data.currentCompany || null,
     currentRole: parsed.data.currentRole || null,
     currentFocus: parsed.data.currentFocus || null,
+    yearsOfExperience: parsed.data.yearsOfExperience,
     heroContent: {
       developerCode: {
         fileLabel: heroCodeFileLabel,

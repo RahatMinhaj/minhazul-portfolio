@@ -29,7 +29,7 @@ export const publicNavigation: readonly PublicNavigationItem[] = [
   {
     label: "About",
     href: "/about",
-    landingHref: "/#architecture",
+    landingHref: "/#about-overview",
     primary: true,
   },
   {

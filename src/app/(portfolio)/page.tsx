@@ -28,11 +28,12 @@ import {
   EducationRecords,
   type EducationRecord,
 } from "@/components/education/education-records";
+import { EngineeringSignature } from "@/components/home/engineering-signature";
 import { HeroExperience } from "@/components/home/hero-experience";
 import { InteractiveLinkCard } from "@/components/home/interactive-link-card";
 import { SectionHeading } from "@/components/home/section-heading";
-import { SystemArchitecture } from "@/components/home/system-architecture";
 import { ProjectVisual } from "@/components/projects/project-visual";
+import { ProjectJourney } from "@/components/home/project-journey";
 import {
   Chronology,
   type ChronologyItem,
@@ -159,6 +160,20 @@ export default async function Home() {
         codeStatus={heroCode.status}
       />
 
+      <div className="mx-auto w-full max-w-[88rem] px-5 sm:px-8 lg:px-12">
+        <EngineeringSignature
+          categories={skillCategories}
+          fullName={profile?.fullName ?? "Minhazul Islam"}
+          professionalTitle={
+            profile?.professionalTitle ?? "Full Stack Java Developer"
+          }
+          projectCount={projects.length}
+          yearsOfExperience={
+            profile?.yearsOfExperience?.toString() ?? experiences.length
+          }
+        />
+      </div>
+
       <section
         className="landing-section border-t border-[var(--border)]"
         id="work-overview"
@@ -166,7 +181,7 @@ export default async function Home() {
         <Container>
           <SectionHeading
             description="Enterprise platforms designed around operational complexity, secure data, distributed workflows, and long-term maintainability."
-            eyebrow="01 / Selected work"
+            eyebrow="02 / Selected work"
             href="/projects"
             linkLabel="View all systems"
             title="Software built for real-world operations."
@@ -210,36 +225,16 @@ export default async function Home() {
         </Container>
       </section>
 
-      <section
-        className="landing-section landing-section-alt"
-        id="architecture"
-      >
-        <Container>
-          <SectionHeading
-            description="This portfolio follows the same boundary-driven thinking used in production systems: server-first delivery, explicit application layers, and isolated persistence."
-            eyebrow="02 / Architecture"
-            href={
-              settings?.playgroundEnabled !== false
-                ? "/playground"
-                : "/projects"
-            }
-            linkLabel={
-              settings?.playgroundEnabled !== false
-                ? "Explore interactively"
-                : "View architecture work"
-            }
-            title="The architecture behind this portfolio."
-          />
-          <SystemArchitecture />
-        </Container>
-      </section>
+      <div className="mx-auto w-full max-w-[88rem] px-5 sm:px-8 lg:px-12">
+        <ProjectJourney projects={projects} />
+      </div>
 
       {experienceItems.length ? (
         <section className="landing-section" id="experience-overview">
           <Container>
             <SectionHeading
               description="A compact view of increasing responsibility across backend delivery, full-stack systems, architecture, production support, and technical mentorship."
-              eyebrow="03 / Career"
+              eyebrow="04 / Career"
               href="/experience"
               linkLabel="Open full timeline"
               title="Progress measured through responsibility."
@@ -284,7 +279,7 @@ export default async function Home() {
         <Container>
           <SectionHeading
             description="A connected capability map rather than arbitrary proficiency percentages, organized around the layers used to ship complete systems."
-            eyebrow="04 / Capabilities"
+            eyebrow="05 / Capabilities"
             href="/skills"
             linkLabel="Browse all skills"
             title="Depth across the delivery stack."
@@ -339,7 +334,7 @@ export default async function Home() {
           <Container>
             <SectionHeading
               description="Formal programs in information technology and enterprise systems provide the academic structure behind the engineering practice."
-              eyebrow="05 / Education"
+              eyebrow="06 / Education"
               href="/education"
               linkLabel="View academic path"
               title="Knowledge built for practical delivery."
@@ -363,7 +358,7 @@ export default async function Home() {
           <Container>
             <SectionHeading
               description="Focused courses and independently verifiable credentials that extend the formal academic foundation."
-              eyebrow="06 / Certifications"
+              eyebrow="07 / Certifications"
               href="/certifications"
               linkLabel="View all credentials"
               title="Professional learning, documented separately."
@@ -420,7 +415,7 @@ export default async function Home() {
           <Container>
             <SectionHeading
               description="Technical notes, tooling choices, and interactive experiments reveal the thinking that sits around the finished software."
-              eyebrow="07 / Engineering lab"
+              eyebrow="08 / Engineering lab"
               href={
                 settings?.playgroundEnabled !== false ? "/playground" : "/uses"
               }
@@ -505,7 +500,7 @@ export default async function Home() {
                       aria-hidden
                       size={18}
                     />
-                    <p className="eyebrow">08 / Start a conversation</p>
+                    <p className="eyebrow">09 / Start a conversation</p>
                   </div>
                   <h2 className="mt-5 max-w-4xl text-4xl font-semibold tracking-[-0.05em] text-balance sm:text-6xl">
                     Have a complex system to simplify?

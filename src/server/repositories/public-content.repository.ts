@@ -126,6 +126,7 @@ export async function getVisibleProjects() {
       slug: true,
       shortDescription: true,
       projectType: true,
+      clientName: true,
       status: true,
       thumbnail: true,
       technologies: true,

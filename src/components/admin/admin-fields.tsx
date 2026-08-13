@@ -5,12 +5,14 @@ export function AdminField({
   label,
   name,
   required = false,
+  step,
   type = "text",
 }: {
   defaultValue?: string | number | undefined;
   label: string;
   name: string;
   required?: boolean;
+  step?: number | string;
   type?: React.HTMLInputTypeAttribute;
 }) {
   return (
@@ -20,6 +22,7 @@ export function AdminField({
         defaultValue={defaultValue}
         name={name}
         required={required}
+        step={step}
         type={type}
       />
     </label>

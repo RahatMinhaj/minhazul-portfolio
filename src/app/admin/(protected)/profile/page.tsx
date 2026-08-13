@@ -72,6 +72,13 @@ export default async function AdminProfilePage() {
               name="currentRole"
             />
             <AdminField
+              defaultValue={profile?.yearsOfExperience?.toString()}
+              label="Years of experience"
+              name="yearsOfExperience"
+              step="0.1"
+              type="number"
+            />
+            <AdminField
               defaultValue={profile?.resumeUrl ?? undefined}
               label="Résumé URL"
               name="resumeUrl"

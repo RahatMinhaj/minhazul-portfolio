@@ -50,6 +50,7 @@ export async function saveSkillCategoryAction(
     visible: formData.get("visible") === "on",
   };
   await saveSkillCategory(id, data);
+  revalidatePath("/");
   revalidatePath("/skills");
   revalidatePath("/admin/skills");
   return success("Skill category saved.");
@@ -89,6 +90,7 @@ export async function saveSkillAction(
     visible: formData.get("visible") === "on",
   };
   await saveSkill(id, data);
+  revalidatePath("/");
   revalidatePath("/skills");
   revalidatePath("/admin/skills");
   return success("Skill saved.");
@@ -102,6 +104,7 @@ export async function deleteSkillAction(
   const id = idSchema.safeParse(formData.get("id"));
   if (!id.success) return failure("Invalid skill.");
   await deleteSkill(id.data);
+  revalidatePath("/");
   revalidatePath("/skills");
   revalidatePath("/admin/skills");
   return success("Skill deleted.");

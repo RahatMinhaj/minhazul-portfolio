@@ -66,6 +66,7 @@ export function HeroExperience({
     <section
       aria-labelledby="hero-name"
       className="hero-stage relative mx-auto grid min-h-[calc(100dvh-4rem)] w-full max-w-[96rem] grid-cols-[minmax(0,1fr)] items-center gap-14 px-5 py-20 sm:px-8 lg:grid-cols-[minmax(0,1.12fr)_minmax(0,0.88fr)] lg:px-10"
+      id="about-overview"
       onPointerLeave={() => {
         pointerX.set(0);
         pointerY.set(0);

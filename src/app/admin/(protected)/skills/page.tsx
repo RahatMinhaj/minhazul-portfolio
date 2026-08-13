@@ -108,27 +108,129 @@ export default async function AdminSkillsPage() {
             <CardHeader>
               <CardTitle>{category.name}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-5">
+              <details className="rounded-lg border border-[var(--border)] p-4">
+                <summary className="text-sm font-medium text-[var(--accent)]">
+                  Edit category
+                </summary>
+                <AdminMutationForm
+                  action={saveSkillCategoryAction}
+                  className="mt-4 grid gap-4"
+                  submitLabel="Update category"
+                >
+                  <input name="id" type="hidden" value={category.id} />
+                  <AdminField
+                    defaultValue={category.name}
+                    label="Name"
+                    name="name"
+                    required
+                  />
+                  <AdminField
+                    defaultValue={category.slug}
+                    label="Slug"
+                    name="slug"
+                    required
+                  />
+                  <AdminTextarea
+                    defaultValue={category.description ?? undefined}
+                    label="Description"
+                    name="description"
+                    rows={3}
+                  />
+                  <AdminField
+                    defaultValue={category.sortOrder}
+                    label="Sort order"
+                    name="sortOrder"
+                    type="number"
+                  />
+                  <AdminCheckbox
+                    defaultChecked={category.visible}
+                    label="Visible"
+                    name="visible"
+                  />
+                </AdminMutationForm>
+              </details>
               {category.skills.map((skill) => (
-                <div
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[var(--border)] p-4"
+                <details
+                  className="rounded-lg border border-[var(--border)] p-4"
                   key={skill.id}
                 >
-                  <div>
-                    <p className="font-medium">{skill.name}</p>
-                    <p className="text-xs text-[var(--muted)]">
-                      {skill.visible ? "Visible" : "Hidden"}
-                      {skill.highlighted ? " · Core" : ""}
-                    </p>
-                  </div>
+                  <summary className="flex items-center justify-between gap-3">
+                    <span>
+                      <span className="block font-medium">{skill.name}</span>
+                      <span className="mt-1 block text-xs text-[var(--muted)]">
+                        {skill.visible ? "Visible" : "Hidden"}
+                        {skill.highlighted ? " · Core" : ""}
+                      </span>
+                    </span>
+                    <span className="text-xs text-[var(--accent)]">Edit</span>
+                  </summary>
+                  <AdminMutationForm
+                    action={saveSkillAction}
+                    className="mt-4 grid gap-4"
+                    submitLabel="Update skill"
+                  >
+                    <input name="id" type="hidden" value={skill.id} />
+                    <label className="space-y-2 text-sm">
+                      <span className="font-medium">Category</span>
+                      <select
+                        className="h-11 w-full rounded-[var(--radius-control)] border border-[var(--border-strong)] bg-[var(--surface)] px-3.5"
+                        defaultValue={skill.categoryId}
+                        name="categoryId"
+                      >
+                        {categories.map((option) => (
+                          <option key={option.id} value={option.id}>
+                            {option.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <AdminField
+                      defaultValue={skill.name}
+                      label="Name"
+                      name="name"
+                      required
+                    />
+                    <AdminField
+                      defaultValue={skill.slug}
+                      label="Slug"
+                      name="slug"
+                      required
+                    />
+                    <AdminField
+                      defaultValue={skill.proficiency ?? undefined}
+                      label="Proficiency · optional 0–100"
+                      name="proficiency"
+                      type="number"
+                    />
+                    <AdminField
+                      defaultValue={skill.sortOrder}
+                      label="Sort order"
+                      name="sortOrder"
+                      type="number"
+                    />
+                    <div className="flex gap-5">
+                      <AdminCheckbox
+                        defaultChecked={skill.highlighted}
+                        label="Highlighted"
+                        name="highlighted"
+                      />
+                      <AdminCheckbox
+                        defaultChecked={skill.visible}
+                        label="Visible"
+                        name="visible"
+                      />
+                    </div>
+                  </AdminMutationForm>
                   <AdminMutationForm
                     action={deleteSkillAction}
+                    className="mt-3"
                     confirmMessage="Delete this skill?"
-                    submitLabel="Delete"
+                    submitLabel="Delete skill"
                   >
                     <input name="id" type="hidden" value={skill.id} />
                   </AdminMutationForm>
-                </div>
+                </details>
               ))}
             </CardContent>
           </Card>
