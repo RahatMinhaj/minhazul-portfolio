@@ -121,7 +121,7 @@ export function PortfolioChatbot() {
   }
 
   return (
-    <Dialog>
+    <Dialog modal={false}>
       <DialogTrigger asChild>
         <button
           className="group fixed right-4 bottom-4 z-40 flex items-center gap-3 rounded-2xl border border-[var(--border-strong)] bg-[color-mix(in_srgb,var(--surface)_94%,transparent)] p-2.5 pr-4 text-left shadow-[var(--shadow-card)] backdrop-blur-xl transition-[border-color,transform,box-shadow] hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[var(--shadow-glow)] sm:right-7 sm:bottom-7"
@@ -142,19 +142,22 @@ export function PortfolioChatbot() {
         </button>
       </DialogTrigger>
 
-      <DialogContent className="top-auto bottom-0 left-0 flex h-[min(46rem,92dvh)] max-h-none w-full max-w-none translate-x-0 translate-y-0 flex-col overflow-hidden rounded-b-none p-0 sm:top-1/2 sm:bottom-auto sm:left-1/2 sm:h-[min(46rem,88dvh)] sm:w-[calc(100%-2rem)] sm:max-w-2xl sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-[var(--radius-card)]">
-        <DialogHeader className="relative mb-0 overflow-hidden border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--surface-raised)_56%,transparent)] p-5 pr-28 sm:p-6 sm:pr-32">
+      <DialogContent
+        className="top-auto right-4 bottom-20 left-auto flex h-[min(38rem,calc(100dvh-6.5rem))] max-h-none w-[calc(100%-2rem)] max-w-[27rem] translate-x-0 translate-y-0 flex-col overflow-hidden rounded-[var(--radius-card)] p-0 shadow-[0_24px_80px_rgb(0_0_0/0.4)] sm:right-7 sm:bottom-24"
+        showOverlay={false}
+      >
+        <DialogHeader className="relative mb-0 overflow-hidden border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--surface-raised)_56%,transparent)] p-4 pr-24">
           <div
             className="absolute top-0 right-10 h-24 w-40 bg-[radial-gradient(circle,var(--accent),transparent_68%)] opacity-10"
             aria-hidden
           />
-          <div className="relative flex items-center gap-4">
-            <span className="grid size-12 shrink-0 place-items-center rounded-2xl border border-[var(--border-strong)] bg-[var(--surface)] text-[var(--accent)] shadow-[var(--shadow-control)]">
-              <Bot aria-hidden size={22} />
+          <div className="relative flex items-center gap-3">
+            <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-[var(--border-strong)] bg-[var(--surface)] text-[var(--accent)] shadow-[var(--shadow-control)]">
+              <Bot aria-hidden size={18} />
             </span>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <DialogTitle className="text-lg sm:text-xl">
+                <DialogTitle className="text-sm leading-5 sm:text-base">
                   Minhaz&apos;s Personal Chatbot Assistant
                 </DialogTitle>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/20 bg-emerald-400/8 px-2 py-1 font-mono text-[9px] tracking-wider text-emerald-300 uppercase">
@@ -162,14 +165,14 @@ export function PortfolioChatbot() {
                   Online
                 </span>
               </div>
-              <DialogDescription className="mt-1 line-clamp-1">
+              <DialogDescription className="mt-0.5 line-clamp-1 text-xs">
                 Grounded in published portfolio content
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="absolute top-5 right-5 z-10 flex items-center gap-1 sm:top-6 sm:right-6">
+        <div className="absolute top-4 right-4 z-10 flex items-center gap-1">
           {messages.length > 1 ? (
             <button
               aria-label="Clear conversation"
@@ -191,10 +194,10 @@ export function PortfolioChatbot() {
         <div
           aria-live="polite"
           aria-relevant="additions text"
-          className="min-h-0 flex-1 overflow-y-auto bg-[color-mix(in_srgb,var(--background)_72%,var(--surface))] px-4 py-6 sm:px-6"
+          className="min-h-0 flex-1 overflow-y-auto bg-[color-mix(in_srgb,var(--background)_72%,var(--surface))] px-4 py-5"
           role="log"
         >
-          <div className="mx-auto flex max-w-xl flex-col gap-6">
+          <div className="mx-auto flex max-w-xl flex-col gap-5">
             {messages.map((message) => (
               <ChatMessageItem key={message.id} message={message} />
             ))}

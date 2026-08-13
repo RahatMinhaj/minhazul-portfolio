@@ -87,8 +87,12 @@ export function EngineeringSignature({
 
           <FlowConnector />
 
-          <div className="grid min-h-36 min-w-0 place-items-center overflow-hidden rounded-[var(--radius-control)] border border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_8%,var(--surface))] p-4 text-center shadow-[var(--shadow-control)]">
-            <div className="max-w-full min-w-0">
+          <div className="group/hub relative grid min-h-36 min-w-0 place-items-center overflow-hidden rounded-[var(--radius-control)] border border-[color-mix(in_srgb,var(--accent)_42%,var(--border-strong))] bg-[linear-gradient(145deg,color-mix(in_srgb,var(--accent)_10%,var(--surface)),var(--surface))] p-4 text-center shadow-[var(--shadow-control)] transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[var(--shadow-glow)]">
+            <span
+              className="absolute -top-12 -right-12 size-28 rounded-full bg-[var(--accent)] opacity-0 blur-2xl transition-opacity duration-300 group-hover/hub:opacity-20"
+              aria-hidden
+            />
+            <div className="relative max-w-full min-w-0">
               <p className="font-mono text-[8px] tracking-[0.14em] text-[var(--accent)] uppercase">
                 Engineering hub
               </p>
@@ -96,7 +100,7 @@ export function EngineeringSignature({
                 {professionalTitle}
               </h2>
               <div className="mt-4 flex items-center justify-center gap-2">
-                <span className="size-1.5 shrink-0 rounded-full bg-[var(--accent)]" />
+                <span className="size-1.5 shrink-0 rounded-full bg-[var(--accent)] transition-shadow group-hover/hub:shadow-[0_0_12px_var(--accent)]" />
                 <span className="max-w-full font-mono text-[8px] leading-3 tracking-[0.1em] [overflow-wrap:anywhere] text-[var(--muted)] uppercase">
                   Multi-domain delivery
                 </span>
@@ -187,9 +191,13 @@ function FlowIdentity({
   yearsOfExperience: number | string;
 }) {
   return (
-    <div className="grid min-h-36 min-w-0 place-items-center overflow-hidden rounded-[var(--radius-control)] border border-[var(--border-strong)] bg-[var(--surface-raised)] p-4 text-center">
-      <div className="flex max-w-full min-w-0 flex-col items-center">
-        <span className="grid size-10 place-items-center rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)]">
+    <div className="group/source relative grid min-h-36 min-w-0 place-items-center overflow-hidden rounded-[var(--radius-control)] border border-[var(--border-strong)] bg-[linear-gradient(145deg,var(--surface-raised),var(--surface))] p-4 text-center shadow-[var(--shadow-card)] transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[var(--shadow-glow)]">
+      <span
+        className="absolute -bottom-14 -left-12 size-32 rounded-full bg-[var(--accent)] opacity-0 blur-3xl transition-opacity duration-300 group-hover/source:opacity-20"
+        aria-hidden
+      />
+      <div className="relative flex max-w-full min-w-0 flex-col items-center">
+        <span className="grid size-10 place-items-center rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)] shadow-[var(--shadow-control)] transition-[transform,box-shadow] duration-300 group-hover/source:-translate-y-1 group-hover/source:scale-105 group-hover/source:shadow-[var(--shadow-glow)]">
           <UserRound aria-hidden size={17} />
         </span>
         <span className="mt-2 font-mono text-[8px] tracking-[0.14em] text-[var(--muted)] uppercase">
