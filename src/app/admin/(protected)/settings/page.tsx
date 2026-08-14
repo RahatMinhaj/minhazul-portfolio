@@ -66,6 +66,46 @@ export default async function AdminSettingsPage() {
               label="SEO title"
               name="seoTitle"
             />
+            <div className="border-t border-[var(--border)] pt-5 md:col-span-2">
+              <h2 className="text-base font-semibold">Engineering signature</h2>
+            </div>
+            <AdminField
+              defaultValue={
+                settings?.engineeringSectionLabel ??
+                "01 / Engineering signature"
+              }
+              label="Section label"
+              name="engineeringSectionLabel"
+              required
+            />
+            <AdminField
+              defaultValue={settings?.engineeringLinkLabel ?? "Full skill map"}
+              label="Skill-map link label"
+              name="engineeringLinkLabel"
+              required
+            />
+            <AdminField
+              defaultValue={settings?.engineeringCoreLabel ?? "Core strengths"}
+              label="Core skills label"
+              name="engineeringCoreLabel"
+              required
+            />
+            <AdminField
+              defaultValue={
+                settings?.engineeringInventoryLabel ?? "Technology inventory"
+              }
+              label="Inventory label"
+              name="engineeringInventoryLabel"
+              required
+            />
+            <AdminField
+              defaultValue={
+                settings?.engineeringScrollLabel ?? "Scroll to explore"
+              }
+              label="Scroll prompt"
+              name="engineeringScrollLabel"
+              required
+            />
             <div className="md:col-span-2">
               <AdminTextarea
                 defaultValue={settings?.seoDescription ?? undefined}

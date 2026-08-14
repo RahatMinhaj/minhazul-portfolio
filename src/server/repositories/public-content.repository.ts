@@ -49,6 +49,11 @@ export async function getPublicSiteSettings() {
       resumeUrl: true,
       seoTitle: true,
       seoDescription: true,
+      engineeringSectionLabel: true,
+      engineeringLinkLabel: true,
+      engineeringCoreLabel: true,
+      engineeringInventoryLabel: true,
+      engineeringScrollLabel: true,
     },
   });
 }

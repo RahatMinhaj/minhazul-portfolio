@@ -37,6 +37,7 @@ export default async function AdminSkillsPage() {
               <AdminField label="Name" name="name" required />
               <AdminField label="Slug" name="slug" required />
               <AdminTextarea label="Description" name="description" />
+              <AdminField label="Icon key · optional" name="icon" />
               <AdminField
                 defaultValue={0}
                 label="Sort order"
@@ -74,6 +75,11 @@ export default async function AdminSkillsPage() {
                 </label>
                 <AdminField label="Name" name="name" required />
                 <AdminField label="Slug" name="slug" required />
+                <AdminField
+                  label="Logo URL · optional"
+                  name="icon"
+                  type="url"
+                />
                 <AdminField
                   label="Proficiency · optional 0–100"
                   name="proficiency"
@@ -138,6 +144,11 @@ export default async function AdminSkillsPage() {
                     rows={3}
                   />
                   <AdminField
+                    defaultValue={category.icon ?? undefined}
+                    label="Icon key · optional"
+                    name="icon"
+                  />
+                  <AdminField
                     defaultValue={category.sortOrder}
                     label="Sort order"
                     name="sortOrder"
@@ -196,6 +207,12 @@ export default async function AdminSkillsPage() {
                       label="Slug"
                       name="slug"
                       required
+                    />
+                    <AdminField
+                      defaultValue={skill.icon ?? undefined}
+                      label="Logo URL · optional"
+                      name="icon"
+                      type="url"
                     />
                     <AdminField
                       defaultValue={skill.proficiency ?? undefined}

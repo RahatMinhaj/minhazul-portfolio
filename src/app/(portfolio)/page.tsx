@@ -29,7 +29,7 @@ import {
   type EducationRecord,
 } from "@/components/education/education-records";
 import { CompactSectionHeader } from "@/components/home/compact-section-header";
-import { EngineeringSignature } from "@/components/home/engineering-signature";
+import { EngineeringSignature } from "@/components/home/engineering-ledger";
 import { HeroExperience } from "@/components/home/hero-experience";
 import { InteractiveLinkCard } from "@/components/home/interactive-link-card";
 import { ProjectVisual } from "@/components/projects/project-visual";
@@ -165,6 +165,15 @@ export default async function Home() {
         <EngineeringSignature
           categories={skillCategories}
           fullName={profile?.fullName ?? "Minhazul Islam"}
+          labels={{
+            section:
+              settings?.engineeringSectionLabel ?? "01 / Engineering signature",
+            link: settings?.engineeringLinkLabel ?? "Full skill map",
+            core: settings?.engineeringCoreLabel ?? "Core strengths",
+            inventory:
+              settings?.engineeringInventoryLabel ?? "Technology inventory",
+            scroll: settings?.engineeringScrollLabel ?? "Scroll to explore",
+          }}
           professionalTitle={
             profile?.professionalTitle ?? "Full Stack Java Developer"
           }

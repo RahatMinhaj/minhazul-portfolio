@@ -12,6 +12,7 @@ import {
   saveSocialLink,
   saveUseItem,
 } from "@/features/taxonomy/taxonomy.service";
+import { Prisma } from "@/generated/prisma/client";
 import { requireAdmin } from "@/lib/auth/session";
 import {
   failure,
@@ -27,6 +28,7 @@ const categorySchema = z.object({
   name: z.string().trim().min(2).max(100),
   slug: slugSchema,
   description: z.string().trim().max(500),
+  icon: z.string().trim().max(80),
   sortOrder: z.coerce.number().int().min(0).max(10000),
 });
 
@@ -40,6 +42,7 @@ export async function saveSkillCategoryAction(
     name: formData.get("name"),
     slug: formData.get("slug"),
     description: formData.get("description"),
+    icon: formData.get("icon"),
     sortOrder: formData.get("sortOrder") ?? 0,
   });
   if (!parsed.success) return failure("Skill category validation failed.");
@@ -47,6 +50,7 @@ export async function saveSkillCategoryAction(
   const data = {
     ...values,
     description: values.description || null,
+    icon: values.icon || null,
     visible: formData.get("visible") === "on",
   };
   await saveSkillCategory(id, data);
@@ -61,6 +65,7 @@ const skillSchema = z.object({
   categoryId: idSchema,
   name: z.string().trim().min(1).max(100),
   slug: slugSchema,
+  icon: z.union([optionalUrlSchema, z.literal("")]),
   proficiency: z.union([
     z.coerce.number().int().min(0).max(100),
     z.literal(""),
@@ -78,18 +83,30 @@ export async function saveSkillAction(
     categoryId: formData.get("categoryId"),
     name: formData.get("name"),
     slug: formData.get("slug"),
+    icon: formData.get("icon"),
     proficiency: formData.get("proficiency") ?? "",
     sortOrder: formData.get("sortOrder") ?? 0,
   });
   if (!parsed.success) return failure("Skill validation failed.");
-  const { id, proficiency, ...values } = parsed.data;
+  const { id, proficiency, icon, ...values } = parsed.data;
   const data = {
     ...values,
     proficiency: proficiency === "" ? null : proficiency,
+    icon: icon || null,
     highlighted: formData.get("highlighted") === "on",
     visible: formData.get("visible") === "on",
   };
-  await saveSkill(id, data);
+  try {
+    await saveSkill(id, data);
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return failure("A skill with this slug already exists.");
+    }
+    throw error;
+  }
   revalidatePath("/");
   revalidatePath("/skills");
   revalidatePath("/admin/skills");

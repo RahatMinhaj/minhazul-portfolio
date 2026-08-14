@@ -161,18 +161,6 @@ export function ProjectJourney({ projects }: { projects: JourneyProject[] }) {
           })}
         </StaggerContainer>
       </div>
-
-      <div className="relative mx-auto mt-8 max-w-xl overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-strong)] bg-[color-mix(in_srgb,var(--accent)_8%,var(--surface))] px-6 py-5 text-center shadow-[var(--shadow-card)]">
-        <div
-          className="absolute inset-x-1/4 top-0 h-px bg-[var(--accent)] shadow-[0_0_18px_var(--accent)]"
-          aria-hidden
-        />
-        <p className="eyebrow">Project outcome</p>
-        <p className="mt-2 text-lg font-semibold">
-          Systems that connect domain workflows, secure data, distributed
-          services, and operational delivery.
-        </p>
-      </div>
     </section>
   );
 }

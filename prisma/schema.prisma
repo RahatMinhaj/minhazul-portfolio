@@ -116,23 +116,23 @@ model SocialLink {
 }
 
 model Experience {
-  id                String         @id @default(cuid())
-  company           String
-  position          String
-  employmentType    EmploymentType?
-  location          String?
-  startDate         DateTime?
-  endDate           DateTime?
-  currentlyWorking  Boolean        @default(false)
-  summary           String?
-  richDescription   Json?
-  achievements      String[]
-  technologies      String[]
-  companyLogo       String?
-  sortOrder         Int            @default(0)
-  featured          Boolean        @default(false)
-  visible           Boolean        @default(true)
-  relatedProjects   Project[]
+  id               String          @id @default(cuid())
+  company          String
+  position         String
+  employmentType   EmploymentType?
+  location         String?
+  startDate        DateTime?
+  endDate          DateTime?
+  currentlyWorking Boolean         @default(false)
+  summary          String?
+  richDescription  Json?
+  achievements     String[]
+  technologies     String[]
+  companyLogo      String?
+  sortOrder        Int             @default(0)
+  featured         Boolean         @default(false)
+  visible          Boolean         @default(true)
+  relatedProjects  Project[]
 
   @@index([visible, sortOrder])
   @@index([featured, visible])
@@ -297,26 +297,31 @@ model ThemeDefinition {
 }
 
 model SiteSettings {
-  id                 String   @id @default(cuid())
-  siteName           String
-  siteDescription    String
-  logo               String?
-  favicon            String?
-  defaultTheme       String
-  primaryCTA         Json?
-  secondaryCTA       Json?
-  contactEnabled     Boolean  @default(true)
-  blogEnabled        Boolean  @default(true)
-  playgroundEnabled  Boolean  @default(true)
-  analyticsEnabled   Boolean  @default(false)
-  maintenanceMode    Boolean  @default(false)
-  footerText         String?
-  resumeUrl          String?
-  seoTitle           String?
-  seoDescription     String?
-  seoImage           String?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id                        String   @id @default(cuid())
+  siteName                  String
+  siteDescription           String
+  logo                      String?
+  favicon                   String?
+  defaultTheme              String
+  primaryCTA                Json?
+  secondaryCTA              Json?
+  contactEnabled            Boolean  @default(true)
+  blogEnabled               Boolean  @default(true)
+  playgroundEnabled         Boolean  @default(true)
+  analyticsEnabled          Boolean  @default(false)
+  maintenanceMode           Boolean  @default(false)
+  footerText                String?
+  resumeUrl                 String?
+  seoTitle                  String?
+  seoDescription            String?
+  seoImage                  String?
+  engineeringSectionLabel   String   @default("01 / Engineering signature")
+  engineeringLinkLabel      String   @default("Full skill map")
+  engineeringCoreLabel      String   @default("Core strengths")
+  engineeringInventoryLabel String   @default("Technology inventory")
+  engineeringScrollLabel    String   @default("Scroll to explore")
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
 }
 
 model VisitorEvent {

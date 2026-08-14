@@ -70,6 +70,11 @@ const settingsSchema = z.object({
   resumeUrl: z.union([z.url(), z.literal("")]),
   seoTitle: z.string().trim().max(160),
   seoDescription: z.string().trim().max(500),
+  engineeringSectionLabel: z.string().trim().min(2).max(80),
+  engineeringLinkLabel: z.string().trim().min(2).max(80),
+  engineeringCoreLabel: z.string().trim().min(2).max(80),
+  engineeringInventoryLabel: z.string().trim().min(2).max(80),
+  engineeringScrollLabel: z.string().trim().min(2).max(80),
 });
 
 export async function saveSettingsAction(
@@ -85,6 +90,11 @@ export async function saveSettingsAction(
     resumeUrl: formData.get("resumeUrl"),
     seoTitle: formData.get("seoTitle"),
     seoDescription: formData.get("seoDescription"),
+    engineeringSectionLabel: formData.get("engineeringSectionLabel"),
+    engineeringLinkLabel: formData.get("engineeringLinkLabel"),
+    engineeringCoreLabel: formData.get("engineeringCoreLabel"),
+    engineeringInventoryLabel: formData.get("engineeringInventoryLabel"),
+    engineeringScrollLabel: formData.get("engineeringScrollLabel"),
   });
   if (!parsed.success) return failure("Site-settings validation failed.");
 
