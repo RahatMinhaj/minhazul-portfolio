@@ -87,6 +87,14 @@ const certificationSchema = z.object({
   issuer: z.string().trim().min(2).max(160),
   credentialId: z.string().trim().max(200),
   credentialUrl: z.union([z.url(), z.literal("")]),
+  certificateImage: z.union([
+    z.url(),
+    z
+      .string()
+      .trim()
+      .regex(/^\/[a-zA-Z0-9/_\-.]+$/),
+    z.literal(""),
+  ]),
   category: z.string().trim().max(100),
   description: z.string().trim().max(2000),
   sortOrder: z.coerce.number().int().min(0).max(10000),
@@ -103,6 +111,7 @@ export async function saveCertificationAction(
     issuer: formData.get("issuer"),
     credentialId: formData.get("credentialId"),
     credentialUrl: formData.get("credentialUrl"),
+    certificateImage: formData.get("certificateImage"),
     category: formData.get("category"),
     description: formData.get("description"),
     sortOrder: formData.get("sortOrder") ?? 0,
@@ -114,6 +123,7 @@ export async function saveCertificationAction(
     ...values,
     credentialId: values.credentialId || null,
     credentialUrl: values.credentialUrl || null,
+    certificateImage: values.certificateImage || null,
     category: values.category || null,
     description: values.description || null,
     issueDate: parseOptionalDate(formData.get("issueDate")),
@@ -123,6 +133,7 @@ export async function saveCertificationAction(
   };
 
   await saveCertification(id, data);
+  revalidatePath("/");
   revalidatePath("/certifications");
   revalidatePath("/admin/certifications");
   return success("Certification saved.");
@@ -136,6 +147,7 @@ export async function deleteCertificationAction(
   const id = idSchema.safeParse(formData.get("id"));
   if (!id.success) return failure("Invalid certification record.");
   await deleteCertification(id.data);
+  revalidatePath("/");
   revalidatePath("/certifications");
   revalidatePath("/admin/certifications");
   return success("Certification deleted.");
@@ -147,6 +159,14 @@ const educationSchema = z.object({
   degree: z.string().trim().min(2).max(200),
   field: z.string().trim().max(200),
   grade: z.string().trim().max(100),
+  logo: z.union([
+    z.url(),
+    z
+      .string()
+      .trim()
+      .regex(/^\/[a-zA-Z0-9/_\-.]+$/),
+    z.literal(""),
+  ]),
   sortOrder: z.coerce.number().int().min(0).max(10000),
 });
 
@@ -161,6 +181,7 @@ export async function saveEducationAction(
     degree: formData.get("degree"),
     field: formData.get("field"),
     grade: formData.get("grade"),
+    logo: formData.get("logo"),
     sortOrder: formData.get("sortOrder") ?? 0,
   });
   if (!parsed.success) return failure("Education validation failed.");
@@ -169,12 +190,14 @@ export async function saveEducationAction(
     ...values,
     field: values.field || null,
     grade: values.grade || null,
+    logo: values.logo || null,
     startDate: parseOptionalDate(formData.get("startDate")),
     endDate: parseOptionalDate(formData.get("endDate")),
     visible: formData.get("visible") === "on",
   };
 
   await saveEducation(id, data);
+  revalidatePath("/");
   revalidatePath("/education");
   revalidatePath("/admin/education");
   return success("Education record saved.");
@@ -188,6 +211,7 @@ export async function deleteEducationAction(
   const id = idSchema.safeParse(formData.get("id"));
   if (!id.success) return failure("Invalid education record.");
   await deleteEducation(id.data);
+  revalidatePath("/");
   revalidatePath("/education");
   revalidatePath("/admin/education");
   return success("Education record deleted.");

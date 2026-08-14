@@ -752,7 +752,7 @@ html {
 }
 
 .landing-section {
-  padding-block: clamp(5rem, 10vw, 9rem);
+  padding-block: clamp(3.5rem, 7vw, 6rem);
 }
 
 .landing-section-alt {
@@ -761,8 +761,8 @@ html {
 }
 
 .landing-contact {
-  padding-top: 3rem;
-  padding-bottom: clamp(6rem, 12vw, 11rem);
+  padding-top: 2rem;
+  padding-bottom: clamp(4rem, 8vw, 7rem);
 }
 
 .landing-contact-orb {

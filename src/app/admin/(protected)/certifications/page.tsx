@@ -38,6 +38,20 @@ export default async function AdminCertificationsPage() {
               <CardTitle>{certification.name}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
+              {certification.certificateImage ? (
+                <div className="flex items-center gap-3 rounded-lg border border-[var(--border)] p-3">
+                  {/* Admin-provided root-relative or HTTPS image URL. */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    alt={`${certification.issuer} logo preview`}
+                    className="size-12 rounded-lg border border-[var(--border)] bg-white object-contain p-1.5"
+                    src={certification.certificateImage}
+                  />
+                  <p className="min-w-0 truncate text-xs text-[var(--muted)]">
+                    {certification.certificateImage}
+                  </p>
+                </div>
+              ) : null}
               <CertificationForm certification={certification} />
               <AdminMutationForm
                 action={deleteCertificationAction}
@@ -96,6 +110,17 @@ function CertificationForm({
         label="Category"
         name="category"
       />
+      <div>
+        <AdminField
+          defaultValue={certification?.certificateImage ?? undefined}
+          label="Logo or certificate image URL"
+          name="certificateImage"
+        />
+        <p className="mt-2 text-xs leading-5 text-[var(--muted)]">
+          Use an HTTPS URL or a public path such as
+          /images/certificates/spring.png.
+        </p>
+      </div>
       <AdminField
         defaultValue={certification?.sortOrder ?? 0}
         label="Sort order"

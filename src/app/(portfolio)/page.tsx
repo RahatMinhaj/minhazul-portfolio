@@ -28,10 +28,10 @@ import {
   EducationRecords,
   type EducationRecord,
 } from "@/components/education/education-records";
+import { CompactSectionHeader } from "@/components/home/compact-section-header";
 import { EngineeringSignature } from "@/components/home/engineering-signature";
 import { HeroExperience } from "@/components/home/hero-experience";
 import { InteractiveLinkCard } from "@/components/home/interactive-link-card";
-import { SectionHeading } from "@/components/home/section-heading";
 import { ProjectVisual } from "@/components/projects/project-visual";
 import { ProjectJourney } from "@/components/home/project-journey";
 import {
@@ -119,6 +119,7 @@ export default async function Home() {
     .map((item) => ({
       id: item.id,
       institution: item.institution,
+      logo: item.logo,
       degree: item.degree,
       field: item.field,
       period: item.startDate
@@ -174,56 +175,57 @@ export default async function Home() {
         />
       </div>
 
-      <section
-        className="landing-section border-t border-[var(--border)]"
-        id="work-overview"
-      >
-        <Container>
-          <SectionHeading
-            description="Enterprise platforms designed around operational complexity, secure data, distributed workflows, and long-term maintainability."
-            eyebrow="02 / Selected work"
-            href="/projects"
-            linkLabel="View all systems"
-            title="Software built for real-world operations."
-          />
-          <StaggerContainer className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {projects.slice(0, 3).map((project, index) => (
-              <StaggerItem key={project.id}>
-                <InteractiveLinkCard
-                  className="min-h-full"
-                  cursorLabel="Open case study"
-                  href={`/projects/${project.slug}`}
-                >
-                  <ProjectVisual
-                    className="-mx-6 -mt-6 mb-6"
-                    index={index}
-                    projectType={project.projectType}
-                  />
-                  <div className="flex flex-wrap items-center gap-2 pr-8">
-                    {project.featured ? <Badge>Featured</Badge> : null}
-                    {project.projectType ? (
-                      <Badge variant="neutral">{project.projectType}</Badge>
-                    ) : null}
-                  </div>
-                  <h3 className="mt-5 text-2xl font-semibold tracking-tight">
-                    {project.title}
-                  </h3>
-                  <p className="mt-4 line-clamp-3 leading-7 text-[var(--muted)]">
-                    {project.shortDescription}
-                  </p>
-                  <div className="mt-auto flex flex-wrap gap-2 pt-7">
-                    {project.technologies.slice(0, 5).map((technology) => (
-                      <Badge key={technology} variant="neutral">
-                        {technology}
-                      </Badge>
-                    ))}
-                  </div>
-                </InteractiveLinkCard>
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
-        </Container>
-      </section>
+      {/* Selected Work is intentionally hidden; set this condition to true to restore it. */}
+      {false && (
+        <section
+          className="landing-section border-t border-[var(--border)]"
+          id="work-overview"
+        >
+          <Container>
+            <CompactSectionHeader
+              eyebrow="02 / Selected work"
+              href="/projects"
+              linkLabel="View all systems"
+            />
+            <StaggerContainer className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {projects.slice(0, 3).map((project, index) => (
+                <StaggerItem key={project.id}>
+                  <InteractiveLinkCard
+                    className="min-h-full"
+                    cursorLabel="Open case study"
+                    href={`/projects/${project.slug}`}
+                  >
+                    <ProjectVisual
+                      className="-mx-6 -mt-6 mb-6"
+                      index={index}
+                      projectType={project.projectType}
+                    />
+                    <div className="flex flex-wrap items-center gap-2 pr-8">
+                      {project.featured ? <Badge>Featured</Badge> : null}
+                      {project.projectType ? (
+                        <Badge variant="neutral">{project.projectType}</Badge>
+                      ) : null}
+                    </div>
+                    <h3 className="mt-5 text-2xl font-semibold tracking-tight">
+                      {project.title}
+                    </h3>
+                    <p className="mt-4 line-clamp-3 leading-7 text-[var(--muted)]">
+                      {project.shortDescription}
+                    </p>
+                    <div className="mt-auto flex flex-wrap gap-2 pt-7">
+                      {project.technologies.slice(0, 5).map((technology) => (
+                        <Badge key={technology} variant="neutral">
+                          {technology}
+                        </Badge>
+                      ))}
+                    </div>
+                  </InteractiveLinkCard>
+                </StaggerItem>
+              ))}
+            </StaggerContainer>
+          </Container>
+        </section>
+      )}
 
       <div className="mx-auto w-full max-w-[88rem] px-5 sm:px-8 lg:px-12">
         <ProjectJourney projects={projects} />
@@ -232,12 +234,10 @@ export default async function Home() {
       {experienceItems.length ? (
         <section className="landing-section" id="experience-overview">
           <Container>
-            <SectionHeading
-              description="A compact view of increasing responsibility across backend delivery, full-stack systems, architecture, production support, and technical mentorship."
+            <CompactSectionHeader
               eyebrow="04 / Career"
               href="/experience"
               linkLabel="Open full timeline"
-              title="Progress measured through responsibility."
             />
             <div className="grid gap-10 xl:grid-cols-[minmax(0,0.35fr)_minmax(0,0.65fr)] xl:gap-16">
               <ScrollReveal>
@@ -272,72 +272,71 @@ export default async function Home() {
         </section>
       ) : null}
 
-      <section
-        className="landing-section landing-section-alt"
-        id="capabilities"
-      >
-        <Container>
-          <SectionHeading
-            description="A connected capability map rather than arbitrary proficiency percentages, organized around the layers used to ship complete systems."
-            eyebrow="05 / Capabilities"
-            href="/skills"
-            linkLabel="Browse all skills"
-            title="Depth across the delivery stack."
-          />
-          <StaggerContainer className="capability-tree grid gap-px overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--border)] md:grid-cols-2 xl:grid-cols-3">
-            {skillCategories.slice(0, 6).map((category, index) => {
-              const Icon =
-                capabilityIcons[index % capabilityIcons.length] ?? Server;
-              return (
-                <StaggerItem
-                  className="group relative bg-[var(--surface)] p-6 sm:p-7"
-                  key={category.id}
-                >
-                  <div className="flex items-start justify-between gap-5">
-                    <span className="grid size-11 place-items-center rounded-[var(--radius-control)] border border-[var(--border-strong)] bg-[var(--surface-raised)] text-[var(--accent)] transition-transform group-hover:-translate-y-1">
-                      <Icon aria-hidden size={20} />
-                    </span>
-                    <span className="font-mono text-[10px] tracking-widest text-[var(--muted)] uppercase">
-                      {String(category.skills.length).padStart(2, "0")} skills
-                    </span>
-                  </div>
-                  <h3 className="mt-8 text-xl font-semibold">
-                    {category.name}
-                  </h3>
-                  {category.description ? (
-                    <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
-                      {category.description}
-                    </p>
-                  ) : null}
-                  <div className="mt-6 flex flex-wrap gap-x-4 gap-y-2 border-t border-[var(--border)] pt-5">
-                    {category.skills.slice(0, 6).map((skill) => (
-                      <span
-                        className="text-xs text-[var(--muted)]"
-                        key={skill.id}
-                      >
-                        {skill.name}
+      {/* Capabilities is intentionally hidden; set this condition to true to restore it. */}
+      {false && (
+        <section
+          className="landing-section landing-section-alt"
+          id="capabilities"
+        >
+          <Container>
+            <CompactSectionHeader
+              eyebrow="05 / Capabilities"
+              href="/skills"
+              linkLabel="Browse all skills"
+            />
+            <StaggerContainer className="capability-tree grid gap-px overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--border)] md:grid-cols-2 xl:grid-cols-3">
+              {skillCategories.slice(0, 6).map((category, index) => {
+                const Icon =
+                  capabilityIcons[index % capabilityIcons.length] ?? Server;
+                return (
+                  <StaggerItem
+                    className="group relative bg-[var(--surface)] p-6 sm:p-7"
+                    key={category.id}
+                  >
+                    <div className="flex items-start justify-between gap-5">
+                      <span className="grid size-11 place-items-center rounded-[var(--radius-control)] border border-[var(--border-strong)] bg-[var(--surface-raised)] text-[var(--accent)] transition-transform group-hover:-translate-y-1">
+                        <Icon aria-hidden size={20} />
                       </span>
-                    ))}
-                  </div>
-                </StaggerItem>
-              );
-            })}
-          </StaggerContainer>
-          <p className="mt-5 text-right font-mono text-[10px] tracking-widest text-[var(--muted)] uppercase">
-            {skillCount} technologies across {skillCategories.length} domains
-          </p>
-        </Container>
-      </section>
+                      <span className="font-mono text-[10px] tracking-widest text-[var(--muted)] uppercase">
+                        {String(category.skills.length).padStart(2, "0")} skills
+                      </span>
+                    </div>
+                    <h3 className="mt-8 text-xl font-semibold">
+                      {category.name}
+                    </h3>
+                    {category.description ? (
+                      <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
+                        {category.description}
+                      </p>
+                    ) : null}
+                    <div className="mt-6 flex flex-wrap gap-x-4 gap-y-2 border-t border-[var(--border)] pt-5">
+                      {category.skills.slice(0, 6).map((skill) => (
+                        <span
+                          className="text-xs text-[var(--muted)]"
+                          key={skill.id}
+                        >
+                          {skill.name}
+                        </span>
+                      ))}
+                    </div>
+                  </StaggerItem>
+                );
+              })}
+            </StaggerContainer>
+            <p className="mt-5 text-right font-mono text-[10px] tracking-widest text-[var(--muted)] uppercase">
+              {skillCount} technologies across {skillCategories.length} domains
+            </p>
+          </Container>
+        </section>
+      )}
 
       {publicEducation.length ? (
         <section className="landing-section" id="credentials-overview">
           <Container>
-            <SectionHeading
-              description="Formal programs in information technology and enterprise systems provide the academic structure behind the engineering practice."
+            <CompactSectionHeader
               eyebrow="06 / Education"
               href="/education"
               linkLabel="View academic path"
-              title="Knowledge built for practical delivery."
             />
             <ScrollReveal>
               <EducationRecords
@@ -356,51 +355,85 @@ export default async function Home() {
           id="certifications-overview"
         >
           <Container>
-            <SectionHeading
-              description="Focused courses and independently verifiable credentials that extend the formal academic foundation."
+            <CompactSectionHeader
               eyebrow="07 / Certifications"
               href="/certifications"
               linkLabel="View all credentials"
-              title="Professional learning, documented separately."
             />
-            <StaggerContainer className="grid gap-5 md:grid-cols-2">
+            <StaggerContainer className="grid gap-4 lg:grid-cols-2">
               {certifications.slice(0, 4).map((item, index) => (
                 <StaggerItem key={item.id}>
-                  <article className="relative flex h-full min-h-64 flex-col overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)] transition-colors hover:border-[var(--border-strong)] sm:p-8">
-                    <div className="flex items-start justify-between gap-5">
-                      <span className="grid size-11 place-items-center rounded-[var(--radius-control)] border border-[var(--border-strong)] bg-[var(--surface-raised)] text-[var(--accent)]">
-                        <Award aria-hidden size={20} />
+                  <article className="group grid h-full min-h-56 overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)] transition-colors hover:border-[var(--border-strong)] sm:grid-cols-[7.5rem_minmax(0,1fr)]">
+                    <div className="relative flex min-h-32 flex-col items-center justify-center overflow-hidden border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--accent)_7%,var(--surface-raised))] p-5 sm:min-h-full sm:border-r sm:border-b-0">
+                      <div
+                        className="absolute inset-0 bg-[radial-gradient(circle_at_center,color-mix(in_srgb,var(--accent)_14%,transparent),transparent_64%)]"
+                        aria-hidden
+                      />
+                      <span className="absolute top-3 left-3 font-mono text-[8px] tracking-[0.14em] text-[var(--muted)] uppercase">
+                        {String(index + 1).padStart(2, "0")}
                       </span>
-                      <span className="font-mono text-[10px] tracking-[0.16em] text-[var(--muted)] uppercase">
-                        Credential {String(index + 1).padStart(2, "0")}
-                      </span>
-                    </div>
-                    <p className="eyebrow mt-8">{item.issuer}</p>
-                    <h3 className="mt-3 text-2xl font-semibold tracking-tight">
-                      {item.name}
-                    </h3>
-                    {item.description ? (
-                      <p className="mt-4 text-sm leading-7 text-[var(--muted)]">
-                        {item.description}
-                      </p>
-                    ) : null}
-                    <div className="mt-auto flex items-end justify-between gap-4 pt-7">
-                      {item.category ? (
-                        <Badge variant="neutral">{item.category}</Badge>
+                      {item.certificateImage ? (
+                        <span className="relative grid size-20 place-items-center overflow-hidden rounded-2xl border border-[var(--border-strong)] bg-white p-2 shadow-[var(--shadow-control)]">
+                          {/* Admin-provided root-relative or HTTPS image URL. */}
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            alt={`${item.issuer} certification mark`}
+                            className="max-h-full max-w-full object-contain"
+                            src={item.certificateImage}
+                          />
+                        </span>
                       ) : (
-                        <span />
+                        <span className="relative grid size-20 place-items-center rounded-2xl border border-[var(--border-strong)] bg-[var(--surface)] text-xl font-semibold tracking-[-0.04em] text-[var(--accent)] shadow-[var(--shadow-control)]">
+                          {issuerInitials(item.issuer)}
+                        </span>
                       )}
-                      {item.credentialUrl ? (
-                        <a
-                          className="inline-flex min-h-10 items-center gap-2 text-sm font-medium text-[var(--accent)]"
-                          href={item.credentialUrl}
-                          rel="noreferrer"
-                          target="_blank"
-                        >
-                          Verify
-                          <ExternalLink aria-hidden size={14} />
-                        </a>
+                      <Award
+                        className="absolute right-3 bottom-3 text-[var(--accent)] opacity-55"
+                        aria-hidden
+                        size={15}
+                      />
+                    </div>
+
+                    <div className="flex min-w-0 flex-col p-5 sm:p-6">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="eyebrow">{item.issuer}</p>
+                        {item.featured ? <Badge>Featured</Badge> : null}
+                      </div>
+                      <h3 className="mt-3 text-xl leading-7 font-semibold tracking-tight [overflow-wrap:anywhere]">
+                        {item.name}
+                      </h3>
+                      {item.description ? (
+                        <p className="mt-3 line-clamp-2 text-xs leading-5 text-[var(--muted)]">
+                          {item.description}
+                        </p>
                       ) : null}
+                      <div className="mt-auto flex flex-wrap items-end justify-between gap-4 border-t border-[var(--border)] pt-5">
+                        <div className="space-y-1">
+                          {item.category ? (
+                            <p className="font-mono text-[9px] tracking-[0.1em] text-[var(--muted)] uppercase">
+                              {item.category}
+                            </p>
+                          ) : null}
+                          <p className="font-mono text-[9px] text-[var(--muted)]">
+                            {item.issueDate
+                              ? formatMonthYear(item.issueDate)
+                              : item.credentialId
+                                ? `ID ${item.credentialId}`
+                                : "Verified credential"}
+                          </p>
+                        </div>
+                        {item.credentialUrl ? (
+                          <a
+                            className="inline-flex min-h-9 items-center gap-2 rounded-[var(--radius-control)] border border-[var(--border-strong)] px-3 text-xs font-semibold text-[var(--accent)] transition-colors hover:border-[var(--accent)] hover:bg-[var(--surface-raised)]"
+                            href={item.credentialUrl}
+                            rel="noreferrer"
+                            target="_blank"
+                          >
+                            Verify
+                            <ExternalLink aria-hidden size={12} />
+                          </a>
+                        ) : null}
+                      </div>
                     </div>
                   </article>
                 </StaggerItem>
@@ -413,14 +446,12 @@ export default async function Home() {
       {exploreEnabled ? (
         <section className="landing-section" id="explore-overview">
           <Container>
-            <SectionHeading
-              description="Technical notes, tooling choices, and interactive experiments reveal the thinking that sits around the finished software."
+            <CompactSectionHeader
               eyebrow="08 / Engineering lab"
               href={
                 settings?.playgroundEnabled !== false ? "/playground" : "/uses"
               }
               linkLabel="Open the lab"
-              title="Explore beyond the final commit."
             />
             <div className="grid gap-5 lg:grid-cols-3">
               {settings?.blogEnabled !== false && latestPost ? (
@@ -490,9 +521,9 @@ export default async function Home() {
           id="contact-overview"
         >
           <Container>
-            <ScrollReveal className="relative overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-strong)] bg-[var(--surface)] p-7 shadow-[var(--shadow-card)] sm:p-12 lg:p-16">
+            <ScrollReveal className="relative overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-strong)] bg-[var(--surface)] p-7 shadow-[var(--shadow-card)] sm:p-9">
               <div className="landing-contact-orb" aria-hidden />
-              <div className="relative z-10 grid gap-12 lg:grid-cols-[1fr_auto] lg:items-end">
+              <div className="relative z-10 grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
                 <div>
                   <div className="flex items-center gap-3">
                     <Sparkles
@@ -502,18 +533,7 @@ export default async function Home() {
                     />
                     <p className="eyebrow">09 / Start a conversation</p>
                   </div>
-                  <h2 className="mt-5 max-w-4xl text-4xl font-semibold tracking-[-0.05em] text-balance sm:text-6xl">
-                    Have a complex system to simplify?
-                    <span className="block text-[var(--accent)]">
-                      Let&apos;s build it well.
-                    </span>
-                  </h2>
-                  <p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--muted)]">
-                    Available for conversations about enterprise software,
-                    architecture, backend systems, full-stack delivery, and
-                    applied AI.
-                  </p>
-                  <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-sm text-[var(--muted)]">
+                  <div className="mt-5 flex flex-wrap gap-x-6 gap-y-3 text-sm text-[var(--muted)]">
                     {profile?.email ? (
                       <a
                         className="inline-flex items-center gap-2 hover:text-[var(--accent)]"
@@ -547,7 +567,7 @@ export default async function Home() {
                 </div>
               </div>
               {socialLinks.length ? (
-                <div className="relative z-10 mt-10 flex flex-wrap gap-4 border-t border-[var(--border)] pt-7">
+                <div className="relative z-10 mt-7 flex flex-wrap gap-4 border-t border-[var(--border)] pt-5">
                   {socialLinks.map((link) => (
                     <a
                       className="text-sm text-[var(--muted)] transition-colors hover:text-[var(--accent)]"
@@ -567,4 +587,13 @@ export default async function Home() {
       ) : null}
     </main>
   );
+}
+
+function issuerInitials(issuer: string) {
+  return issuer
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0]?.toUpperCase())
+    .join("");
 }

@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils/cn";
 export type EducationRecord = {
   id: string;
   institution: string;
+  logo?: string | null | undefined;
   degree: string;
   field?: string | null | undefined;
   period?: string | undefined;
@@ -51,8 +52,20 @@ export function EducationRecords({
               aria-hidden
             />
             <div className="relative flex items-start gap-4 sm:gap-5">
-              <span className="grid size-11 shrink-0 place-items-center rounded-[var(--radius-control)] border border-[var(--border-strong)] bg-[var(--surface-raised)] text-[var(--accent)] sm:size-12">
-                <GraduationCap aria-hidden size={22} />
+              <span className="grid size-11 shrink-0 place-items-center overflow-hidden rounded-[var(--radius-control)] border border-[var(--border-strong)] bg-[var(--surface-raised)] text-[var(--accent)] sm:size-12">
+                {record.logo ? (
+                  <span className="grid size-full place-items-center bg-white p-1.5">
+                    {/* Admin-provided root-relative or HTTPS image URL. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      alt={`${record.institution} logo`}
+                      className="max-h-full max-w-full object-contain"
+                      src={record.logo}
+                    />
+                  </span>
+                ) : (
+                  <GraduationCap aria-hidden size={22} />
+                )}
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">

@@ -34,6 +34,20 @@ export default async function AdminEducationPage() {
               <CardTitle>{record.degree}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
+              {record.logo ? (
+                <div className="flex items-center gap-3 rounded-lg border border-[var(--border)] p-3">
+                  {/* Admin-provided root-relative or HTTPS image URL. */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    alt={`${record.institution} logo preview`}
+                    className="size-12 rounded-lg border border-[var(--border)] bg-white object-contain p-1.5"
+                    src={record.logo}
+                  />
+                  <p className="min-w-0 truncate text-xs text-[var(--muted)]">
+                    {record.logo}
+                  </p>
+                </div>
+              ) : null}
               <EducationForm education={record} />
               <AdminMutationForm
                 action={deleteEducationAction}
@@ -80,6 +94,17 @@ function EducationForm({ education }: { education?: Education }) {
         label="Grade"
         name="grade"
       />
+      <div>
+        <AdminField
+          defaultValue={education?.logo ?? undefined}
+          label="Institution logo URL"
+          name="logo"
+        />
+        <p className="mt-2 text-xs leading-5 text-[var(--muted)]">
+          Use an HTTPS URL or a public path such as
+          /images/education/university.png.
+        </p>
+      </div>
       <AdminField
         defaultValue={dateInput(education?.startDate)}
         label="Start date"

@@ -23,6 +23,7 @@ export default async function EducationPage() {
   const records: EducationRecord[] = education.map((item) => ({
     id: item.id,
     institution: item.institution,
+    logo: item.logo,
     degree: item.degree,
     field: item.field,
     period: item.startDate

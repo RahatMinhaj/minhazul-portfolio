@@ -8,10 +8,10 @@ import {
 import Link from "next/link";
 
 import {
-  ScrollReveal,
   StaggerContainer,
   StaggerItem,
 } from "@/components/animations/primitives";
+import { CompactSectionHeader } from "@/components/home/compact-section-header";
 import { Badge } from "@/components/ui/badge";
 
 type JourneyProject = {
@@ -31,12 +31,16 @@ export function ProjectJourney({ projects }: { projects: JourneyProject[] }) {
 
   return (
     <section
-      className="border-y border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_34%,transparent)] py-16 sm:py-20"
+      className="border-y border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_34%,transparent)] py-12 sm:py-16"
       id="project-journey"
     >
-      <ScrollReveal className="mx-auto max-w-3xl text-center">
-        <p className="eyebrow">03 / Project flow</p>
-        <div className="relative mx-auto mt-6 grid w-fit place-items-center">
+      <CompactSectionHeader
+        eyebrow="03 / Project flow"
+        href="/projects"
+        linkLabel="Explore all projects"
+      />
+      <div className="mx-auto max-w-3xl text-center">
+        <div className="relative mx-auto grid w-fit place-items-center">
           <div
             className="absolute size-28 rounded-full border border-[var(--border-strong)] opacity-45"
             aria-hidden
@@ -49,22 +53,15 @@ export function ProjectJourney({ projects }: { projects: JourneyProject[] }) {
             <FolderKanban aria-hidden size={23} />
           </span>
         </div>
-        <h2 className="mt-8 text-3xl font-semibold tracking-[-0.045em] sm:text-5xl">
-          Enterprise project portfolio
-        </h2>
-        <p className="mt-3 font-mono text-xs tracking-[0.14em] text-[var(--accent)] uppercase">
+        <p className="mt-7 font-mono text-xs tracking-[0.14em] text-[var(--accent)] uppercase">
           Healthcare · Government · Defence · Procurement
         </p>
-        <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-[var(--muted)] sm:text-base">
-          A connected view of systems built around secure operations,
-          distributed workflows, enterprise data, and long-term reliability.
-        </p>
         <ArrowDown
-          className="mx-auto mt-7 text-[var(--accent)]"
+          className="mx-auto mt-5 text-[var(--accent)]"
           aria-hidden
           size={18}
         />
-      </ScrollReveal>
+      </div>
 
       <div className="relative mt-8">
         <div
@@ -165,7 +162,7 @@ export function ProjectJourney({ projects }: { projects: JourneyProject[] }) {
         </StaggerContainer>
       </div>
 
-      <ScrollReveal className="relative mx-auto mt-8 max-w-xl overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-strong)] bg-[color-mix(in_srgb,var(--accent)_8%,var(--surface))] px-6 py-5 text-center shadow-[var(--shadow-card)]">
+      <div className="relative mx-auto mt-8 max-w-xl overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-strong)] bg-[color-mix(in_srgb,var(--accent)_8%,var(--surface))] px-6 py-5 text-center shadow-[var(--shadow-card)]">
         <div
           className="absolute inset-x-1/4 top-0 h-px bg-[var(--accent)] shadow-[0_0_18px_var(--accent)]"
           aria-hidden
@@ -175,18 +172,7 @@ export function ProjectJourney({ projects }: { projects: JourneyProject[] }) {
           Systems that connect domain workflows, secure data, distributed
           services, and operational delivery.
         </p>
-        <Link
-          className="group mt-4 inline-flex items-center gap-2 text-xs font-semibold text-[var(--accent)]"
-          href="/projects"
-        >
-          Explore all projects
-          <ArrowRight
-            className="transition-transform group-hover:translate-x-1"
-            aria-hidden
-            size={14}
-          />
-        </Link>
-      </ScrollReveal>
+      </div>
     </section>
   );
 }

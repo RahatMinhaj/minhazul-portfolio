@@ -46,7 +46,9 @@ services:
       AUTH_SECRET: ${AUTH_SECRET}
       DATABASE_URL: ${DATABASE_URL}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
-      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.1-flash-lite}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPENROUTER_MODEL: ${OPENROUTER_MODEL:-openrouter/free}
       NEXT_PUBLIC_SITE_URL: https://${DOMAIN}
       NODE_ENV: production
     depends_on:

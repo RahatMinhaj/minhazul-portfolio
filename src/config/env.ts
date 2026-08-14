@@ -14,7 +14,12 @@ const serverEnvironmentSchema = z.object({
     (value) => (value === "" ? undefined : value),
     z.string().trim().min(20).optional(),
   ),
-  GEMINI_MODEL: z.string().trim().min(1).default("gemini-2.5-flash"),
+  GEMINI_MODEL: z.string().trim().min(1).default("gemini-3.1-flash-lite"),
+  OPENROUTER_API_KEY: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().trim().min(20).optional(),
+  ),
+  OPENROUTER_MODEL: z.string().trim().min(1).default("openrouter/free"),
 });
 
 const parsedEnvironment = serverEnvironmentSchema.safeParse({
@@ -22,6 +27,8 @@ const parsedEnvironment = serverEnvironmentSchema.safeParse({
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
   GEMINI_API_KEY: process.env.GEMINI_API_KEY,
   GEMINI_MODEL: process.env.GEMINI_MODEL,
+  OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
+  OPENROUTER_MODEL: process.env.OPENROUTER_MODEL,
 });
 
 if (!parsedEnvironment.success) {

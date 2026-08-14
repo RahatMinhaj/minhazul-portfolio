@@ -32,7 +32,9 @@ ADMIN_EMAIL=your-admin-email@example.com
 ADMIN_PASSWORD=choose-a-strong-password
 AUTH_SECRET=replace-with-a-random-secret-of-at-least-32-characters
 GEMINI_API_KEY=your-google-ai-studio-api-key
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-3.1-flash-lite
+OPENROUTER_API_KEY=your-openrouter-api-key
+OPENROUTER_MODEL=openrouter/free
 ```
 
 Generate a suitable authentication secret with:
@@ -80,6 +82,12 @@ Answers are grounded in public profile, experience, project, skill, education,
 certification, article, tool, and social-link records. Requests are limited to
 12 per client per hour, and chat transcripts are not persisted by this
 application.
+
+OpenRouter is optional. When configured, Gemini remains the primary provider.
+Quota, rate-limit, timeout, and temporary Gemini failures fall back to
+`openrouter/free`, which routes the request across currently available free
+models. Create a server-side OpenRouter key and never expose it with a
+`NEXT_PUBLIC_` prefix.
 
 ## Résumé file
 
