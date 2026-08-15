@@ -27,8 +27,14 @@ const profileSchema = z.object({
   ),
   heroCodeFileLabel: heroDeveloperCodeSchema.shape.fileLabel,
   heroCodeVariableName: heroDeveloperCodeSchema.shape.variableName,
-  heroCodeFocus: heroDeveloperCodeSchema.shape.focus,
-  heroCodeStatus: heroDeveloperCodeSchema.shape.status,
+  heroCodeProperties: z.preprocess((value) => {
+    if (typeof value !== "string") return value;
+    try {
+      return JSON.parse(value);
+    } catch {
+      return value;
+    }
+  }, heroDeveloperCodeSchema.shape.properties),
 });
 
 export async function saveProfileAction(
@@ -51,8 +57,7 @@ export async function saveProfileAction(
     yearsOfExperience: formData.get("yearsOfExperience") ?? "",
     heroCodeFileLabel: formData.get("heroCodeFileLabel"),
     heroCodeVariableName: formData.get("heroCodeVariableName"),
-    heroCodeFocus: formData.get("heroCodeFocus"),
-    heroCodeStatus: formData.get("heroCodeStatus"),
+    heroCodeProperties: formData.get("heroCodeProperties"),
   });
 
   if (!parsed.success) {
@@ -61,8 +66,7 @@ export async function saveProfileAction(
 
   const {
     heroCodeFileLabel,
-    heroCodeFocus,
-    heroCodeStatus,
+    heroCodeProperties,
     heroCodeVariableName,
     ...profileData
   } = parsed.data;
@@ -81,8 +85,7 @@ export async function saveProfileAction(
       developerCode: {
         fileLabel: heroCodeFileLabel,
         variableName: heroCodeVariableName,
-        focus: heroCodeFocus,
-        status: heroCodeStatus,
+        properties: heroCodeProperties,
       },
     },
   };

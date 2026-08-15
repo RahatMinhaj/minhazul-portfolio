@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import { ThemeProvider } from "@/components/themes/theme-provider";
+
 export const metadata: Metadata = {
   title: {
     default: "Administration",
@@ -16,5 +18,9 @@ export default function AdminRootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <div className="min-h-dvh bg-[var(--background)]">{children}</div>;
+  return (
+    <ThemeProvider>
+      <div className="min-h-dvh bg-[var(--background)]">{children}</div>
+    </ThemeProvider>
+  );
 }

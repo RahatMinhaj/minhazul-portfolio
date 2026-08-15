@@ -5,12 +5,13 @@ import { PortfolioChatbot } from "@/components/chat/portfolio-chatbot";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { PublicShell } from "@/components/navigation/public-shell";
 import { StructuredData } from "@/components/seo/structured-data";
+import { ThemeProvider } from "@/components/themes/theme-provider";
 import { siteConfig } from "@/config/site";
 import { getPublicNavigation } from "@/config/navigation";
 import { defaultTheme, themeIds, type ThemeId } from "@/config/themes";
 import { portfolioChatIsAvailable } from "@/features/chat/chat.service";
 import {
-  getActiveThemeSlugs,
+  getActiveThemes,
   getPublicProfile,
   getPublicSiteSettings,
   getVisibleProjects,
@@ -26,7 +27,7 @@ export default async function PortfolioLayout({
 
   const [activeThemes, profile, projects, settings, socialLinks] =
     await Promise.all([
-      getActiveThemeSlugs(),
+      getActiveThemes(),
       getPublicProfile(),
       getVisibleProjects(),
       getPublicSiteSettings(),
@@ -38,75 +39,84 @@ export default async function PortfolioLayout({
   const availableThemes = configuredThemes.length
     ? configuredThemes
     : [defaultTheme];
+  const configuredDefaultTheme = activeThemes.find(
+    (theme) =>
+      theme.isDefault && availableThemes.includes(theme.slug as ThemeId),
+  )?.slug as ThemeId | undefined;
+  const siteDefaultTheme = configuredDefaultTheme ?? defaultTheme;
   const navigation = getPublicNavigation(settings);
   const siteName = profile?.fullName ?? settings?.siteName ?? siteConfig.name;
 
   if (settings?.maintenanceMode) {
     return (
-      <main
-        id="main-content"
-        className="grid min-h-[80dvh] place-items-center px-5 text-center"
-      >
-        <div className="max-w-2xl">
-          <p className="eyebrow">Maintenance mode</p>
-          <h1 className="mt-4 text-5xl font-semibold tracking-tight">
-            The portfolio is receiving an update.
-          </h1>
-          <p className="mt-5 text-[var(--muted)]">
-            Please check back after the current maintenance window.
-          </p>
-        </div>
-      </main>
+      <ThemeProvider defaultTheme={siteDefaultTheme}>
+        <main
+          id="main-content"
+          className="grid min-h-[80dvh] place-items-center px-5 text-center"
+        >
+          <div className="max-w-2xl">
+            <p className="eyebrow">Maintenance mode</p>
+            <h1 className="mt-4 text-5xl font-semibold tracking-tight">
+              The portfolio is receiving an update.
+            </h1>
+            <p className="mt-5 text-[var(--muted)]">
+              Please check back after the current maintenance window.
+            </p>
+          </div>
+        </main>
+      </ThemeProvider>
     );
   }
 
   return (
-    <PublicShell
-      availableThemes={availableThemes}
-      navigation={navigation}
-      projectCommands={projects.map((project) => ({
-        label: project.title,
-        href: `/projects/${project.slug}`,
-      }))}
-      socialCommands={socialLinks.map((link) => ({
-        label: link.label,
-        href: link.url,
-      }))}
-      siteName={siteName}
-    >
-      <PageTransition>{children}</PageTransition>
-      <SiteFooter
-        footerText={settings?.footerText}
+    <ThemeProvider defaultTheme={siteDefaultTheme}>
+      <PublicShell
+        availableThemes={availableThemes}
         navigation={navigation}
+        projectCommands={projects.map((project) => ({
+          label: project.title,
+          href: `/projects/${project.slug}`,
+        }))}
+        socialCommands={socialLinks.map((link) => ({
+          label: link.label,
+          href: link.url,
+        }))}
         siteName={siteName}
-      />
-      {portfolioChatIsAvailable() ? <PortfolioChatbot /> : null}
-      {settings?.analyticsEnabled ? <VisitorTracker /> : null}
-      <StructuredData
-        data={[
-          {
-            "@context": "https://schema.org",
-            "@type": "WebSite",
-            name: siteConfig.name,
-            description: siteConfig.description,
-            url: siteConfig.url,
-          },
-          ...(profile
-            ? [
-                {
-                  "@context": "https://schema.org",
-                  "@type": "Person",
-                  name: profile.fullName,
-                  jobTitle: profile.professionalTitle,
-                  description: profile.shortBio,
-                  email: profile.email ?? undefined,
-                  url: siteConfig.url,
-                  sameAs: socialLinks.map((link) => link.url),
-                },
-              ]
-            : []),
-        ]}
-      />
-    </PublicShell>
+      >
+        <PageTransition>{children}</PageTransition>
+        <SiteFooter
+          footerText={settings?.footerText}
+          navigation={navigation}
+          siteName={siteName}
+        />
+        {portfolioChatIsAvailable() ? <PortfolioChatbot /> : null}
+        {settings?.analyticsEnabled ? <VisitorTracker /> : null}
+        <StructuredData
+          data={[
+            {
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: siteConfig.name,
+              description: siteConfig.description,
+              url: siteConfig.url,
+            },
+            ...(profile
+              ? [
+                  {
+                    "@context": "https://schema.org",
+                    "@type": "Person",
+                    name: profile.fullName,
+                    jobTitle: profile.professionalTitle,
+                    description: profile.shortBio,
+                    email: profile.email ?? undefined,
+                    url: siteConfig.url,
+                    sameAs: socialLinks.map((link) => link.url),
+                  },
+                ]
+              : []),
+          ]}
+        />
+      </PublicShell>
+    </ThemeProvider>
   );
 }

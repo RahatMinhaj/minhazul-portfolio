@@ -58,13 +58,13 @@ export async function getPublicSiteSettings() {
   });
 }
 
-export async function getActiveThemeSlugs() {
+export async function getActiveThemes() {
   if (!isDatabaseConfigured()) return [];
 
   return getDatabase().themeDefinition.findMany({
     where: { active: true },
     orderBy: { sortOrder: "asc" },
-    select: { slug: true },
+    select: { slug: true, isDefault: true },
   });
 }
 

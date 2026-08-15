@@ -2,9 +2,19 @@
 
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 
-import { defaultTheme, themeIds } from "@/config/themes";
+import {
+  defaultTheme as fallbackTheme,
+  themeIds,
+  type ThemeId,
+} from "@/config/themes";
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
+export function ThemeProvider({
+  children,
+  defaultTheme = fallbackTheme,
+}: {
+  children: React.ReactNode;
+  defaultTheme?: ThemeId;
+}) {
   return (
     <NextThemesProvider
       attribute="data-theme"

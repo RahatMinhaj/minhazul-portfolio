@@ -1,4 +1,5 @@
 import { AdminField, AdminTextarea } from "@/components/admin/admin-fields";
+import { DeveloperCodePropertiesField } from "@/components/admin/developer-code-properties-field";
 import { AdminMutationForm } from "@/components/admin/admin-mutation-form";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { Card, CardContent } from "@/components/ui/card";
@@ -94,8 +95,8 @@ export default async function AdminProfilePage() {
                 Hero developer code block
               </h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">
-                Customize the editable text in the animated code panel. The name
-                and project count continue to update automatically.
+                Customize the variable and every property shown in the animated
+                code panel.
               </p>
             </div>
             <AdminField
@@ -115,21 +116,10 @@ export default async function AdminProfilePage() {
               name="heroCodeVariableName"
               required
             />
-            <AdminField
-              defaultValue={
-                profile?.heroContent.developerCode.focus ?? "enterprise + AI"
+            <DeveloperCodePropertiesField
+              initialProperties={
+                profile?.heroContent.developerCode.properties ?? []
               }
-              label="Focus value"
-              name="heroCodeFocus"
-              required
-            />
-            <AdminField
-              defaultValue={
-                profile?.heroContent.developerCode.status ?? "building"
-              }
-              label="Status value"
-              name="heroCodeStatus"
-              required
             />
           </AdminMutationForm>
         </CardContent>

@@ -148,7 +148,6 @@ export default async function Home() {
         professionalTitle={
           profile?.professionalTitle ?? "Full Stack Java Developer"
         }
-        projectCount={projects.length}
         resumeUrl={profile?.resumeUrl ?? settings?.resumeUrl ?? null}
         shortBio={
           profile?.shortBio ??
@@ -157,8 +156,7 @@ export default async function Home() {
         technologies={highlightedTechnologies}
         codeFileLabel={heroCode.fileLabel}
         codeVariableName={heroCode.variableName}
-        codeFocus={heroCode.focus}
-        codeStatus={heroCode.status}
+        codeProperties={heroCode.properties}
       />
 
       <div className="mx-auto w-full max-w-[88rem] px-5 sm:px-8 lg:px-12">

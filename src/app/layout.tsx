@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 
-import { ThemeProvider } from "@/components/themes/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { siteConfig } from "@/config/site";
 
@@ -57,12 +56,10 @@ export default function RootLayout({
         <a className="skip-link" href="#main-content">
           Skip to content
         </a>
-        <ThemeProvider>
-          <TooltipProvider delayDuration={300}>
-            {children}
-            <Toaster position="bottom-right" richColors />
-          </TooltipProvider>
-        </ThemeProvider>
+        <TooltipProvider delayDuration={300}>
+          {children}
+          <Toaster position="bottom-right" richColors />
+        </TooltipProvider>
       </body>
     </html>
   );

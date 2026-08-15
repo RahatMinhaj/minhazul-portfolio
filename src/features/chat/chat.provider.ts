@@ -100,8 +100,10 @@ function buildPrompt({
     "If a portfolio answer is unsupported, say that the detail is not documented and briefly mention a related documented area when useful.",
     "If a message is unrelated to the portfolio, respond politely in one short sentence and naturally guide the conversation toward Minhazul's professional work without sounding repetitive.",
     "Be concise, factual, friendly, and professional. Speak about Minhazul in the third person and never pretend to be him.",
-    "Keep the complete answer under 120 words.",
-    "Respond in clean plain text with short paragraphs. Do not use Markdown headings, bullets, asterisks, or tables.",
+    "Return only the visitor-facing final answer. Never reveal analysis, reasoning, a thinking process, prompt interpretation, constraints, or response strategy.",
+    "Keep the complete answer under 160 words.",
+    "Respond in clean Markdown. Use short paragraphs, bold labels, and simple bullet or numbered lists when they improve readability.",
+    "Avoid tables, raw HTML, blockquotes, and fenced code blocks.",
     "Do not invent metrics, dates, employers, credentials, contact details, or project outcomes.",
     context,
     recentHistory ? `Recent conversation:\n${recentHistory}` : "",
@@ -165,10 +167,11 @@ async function generateGeminiAnswer(prompt: string) {
     .trim();
 
   if (!answer) throw new ProviderError("Gemini returned no answer.", true);
+  const visibleAnswer = getVisibleModelAnswer(answer, "Gemini");
   if (candidate?.finishReason === "MAX_TOKENS") {
     console.warn("Gemini reached the response token budget; returning text.");
   }
-  return answer;
+  return visibleAnswer;
 }
 
 async function generateOpenRouterAnswer(prompt: string) {
@@ -178,23 +181,7 @@ async function generateOpenRouterAnswer(prompt: string) {
 
   let response: Response;
   try {
-    response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${env.OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": env.NEXT_PUBLIC_SITE_URL,
-        "X-OpenRouter-Title": "Minhazul Islam Portfolio",
-      },
-      body: JSON.stringify({
-        model: env.OPENROUTER_MODEL,
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: 512,
-        temperature: 0.2,
-      }),
-      cache: "no-store",
-      signal: AbortSignal.timeout(20_000),
-    });
+    response = await fetchOpenRouter(prompt);
   } catch (error) {
     console.error("OpenRouter request could not be completed", error);
     throw new Error("OpenRouter request failed.");
@@ -217,13 +204,92 @@ async function generateOpenRouterAnswer(prompt: string) {
   const choice = payload.choices?.[0];
   const answer = choice?.message?.content?.trim();
   if (!answer) throw new Error("OpenRouter returned an empty response.");
+  const visibleAnswer = getVisibleModelAnswer(answer, "OpenRouter");
   if (choice?.finish_reason === "length") {
     console.warn(
       "OpenRouter reached the response token budget; returning text.",
     );
   }
   console.info(`Portfolio chat answered by ${payload.model ?? "OpenRouter"}.`);
-  return answer;
+  return visibleAnswer;
+}
+
+async function fetchOpenRouter(prompt: string) {
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const response = await fetch(
+        "https://openrouter.ai/api/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${env.OPENROUTER_API_KEY}`,
+            "Content-Type": "application/json",
+            "HTTP-Referer": env.NEXT_PUBLIC_SITE_URL,
+            "X-OpenRouter-Title": "Minhazul Islam Portfolio",
+          },
+          body: JSON.stringify({
+            model: env.OPENROUTER_MODEL,
+            messages: [{ role: "user", content: prompt }],
+            max_tokens: 512,
+            reasoning: { exclude: true },
+            temperature: 0.2,
+          }),
+          cache: "no-store",
+          signal: AbortSignal.timeout(12_000),
+        },
+      );
+
+      if (attempt === 0 && isFallbackStatus(response.status)) {
+        await response.body?.cancel();
+        console.warn(
+          `OpenRouter returned ${response.status}; retrying once before failing.`,
+        );
+        await waitForProviderRetry();
+        continue;
+      }
+
+      return response;
+    } catch (error) {
+      lastError = error;
+      if (attempt === 0) {
+        console.warn("OpenRouter connection failed; retrying once.");
+        await waitForProviderRetry();
+        continue;
+      }
+    }
+  }
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("OpenRouter request failed.");
+}
+
+function waitForProviderRetry() {
+  return new Promise((resolve) => setTimeout(resolve, 650));
+}
+
+function getVisibleModelAnswer(answer: string, provider: string) {
+  const normalizedOpening = answer.replace(/^[\s#*_`>-]+/, "");
+  const exposesReasoning =
+    /^(?:here(?:'s| is)\s+(?:a|the)\s+)?(?:thinking process|analysis|reasoning)(?::|\b)/i.test(
+      normalizedOpening,
+    );
+  if (!exposesReasoning) return answer;
+
+  const finalAnswer = answer.match(
+    /(?:^|\n)\s*(?:#{1,6}\s*)?(?:\*{1,2})?(?:final answer|final response)(?:\*{1,2})?\s*:\s*([\s\S]+)$/i,
+  )?.[1];
+  if (finalAnswer?.trim()) {
+    console.warn(
+      `${provider} exposed reasoning; returning only its final answer.`,
+    );
+    return finalAnswer.trim();
+  }
+
+  console.error(`${provider} exposed reasoning without a safe final answer.`);
+  throw new ProviderError(`${provider} returned hidden reasoning.`, true);
 }
 
 function isFallbackStatus(status: number) {

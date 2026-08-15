@@ -20,6 +20,7 @@ import Link from "next/link";
 import { MagneticElement } from "@/components/animations/primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import type { HeroCodeProperty } from "@/features/profile/hero-content";
 
 type HeroExperienceProps = {
   availability: string;
@@ -28,12 +29,10 @@ type HeroExperienceProps = {
   shortBio: string;
   currentFocus: string;
   resumeUrl: string | null;
-  projectCount: number;
   technologies: string[];
   codeFileLabel: string;
   codeVariableName: string;
-  codeFocus: string;
-  codeStatus: string;
+  codeProperties: readonly HeroCodeProperty[];
 };
 
 export function HeroExperience({
@@ -43,12 +42,10 @@ export function HeroExperience({
   shortBio,
   currentFocus,
   resumeUrl,
-  projectCount,
   technologies,
   codeFileLabel,
   codeVariableName,
-  codeFocus,
-  codeStatus,
+  codeProperties,
 }: HeroExperienceProps) {
   const reduceMotion = useReducedMotion();
   const pointerX = useMotionValue(0);
@@ -290,18 +287,14 @@ export function HeroExperience({
                   <span className="text-violet-300">const</span>{" "}
                   <span className="text-cyan-300">{codeVariableName}</span> ={" "}
                   {"{"}
-                  {"\n  "}name:{" "}
-                  <span className="text-amber-200">&quot;{fullName}&quot;</span>
-                  ,{"\n  "}focus:{" "}
-                  <span className="text-amber-200">
-                    &quot;{codeFocus}&quot;
-                  </span>
-                  ,{"\n  "}projects:
-                  <span className="text-emerald-300"> {projectCount}</span>,
-                  {"\n  "}status:{" "}
-                  <span className="text-emerald-300">
-                    &quot;{codeStatus}&quot;
-                  </span>
+                  {codeProperties.map((property, index) => (
+                    <span key={property.key}>
+                      {"\n  "}
+                      {property.key}:{" "}
+                      <CodePropertyValue value={property.value} />
+                      {index < codeProperties.length - 1 ? "," : null}
+                    </span>
+                  ))}
                   {"\n"}
                   {"}"};
                 </code>
@@ -332,5 +325,17 @@ export function HeroExperience({
         </div>
       </motion.div>
     </section>
+  );
+}
+
+function CodePropertyValue({ value }: { value: HeroCodeProperty["value"] }) {
+  if (typeof value === "string") {
+    return <span className="text-amber-200">{JSON.stringify(value)}</span>;
+  }
+
+  return (
+    <span className="text-emerald-300">
+      {value === null ? "null" : String(value)}
+    </span>
   );
 }

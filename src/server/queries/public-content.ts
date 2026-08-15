@@ -1,7 +1,7 @@
 import "server-only";
 
 export {
-  getActiveThemeSlugs,
+  getActiveThemes,
   getPublishedPostBySlug,
   getPublishedPosts,
   getPublicChatContent,
