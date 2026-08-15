@@ -6,6 +6,8 @@ import {
   ChatRateLimitError,
   ChatUnavailableError,
 } from "@/features/chat/chat.service";
+import { env } from "@/config/env";
+import { isSameOriginRequest } from "@/lib/http/same-origin";
 
 const chatRequestSchema = z.object({
   question: z.string().trim().min(1).max(500),
@@ -30,8 +32,7 @@ export async function POST(request: Request) {
     return response({ message: "Request is too large." }, 413);
   }
 
-  const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin) {
+  if (!isSameOriginRequest(request, env.NEXT_PUBLIC_SITE_URL)) {
     return response({ message: "Cross-origin requests are not allowed." }, 403);
   }
 
