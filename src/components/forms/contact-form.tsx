@@ -5,6 +5,7 @@ import { useActionState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { usePreserveFormOnError } from "@/hooks/use-preserve-form-on-error";
 import type { ContactState } from "@/lib/validation/contact";
 import { submitContactMessage } from "@/server/actions/contact";
 
@@ -14,6 +15,10 @@ export function ContactForm() {
   const [state, formAction, pending] = useActionState(
     submitContactMessage,
     initialState,
+  );
+  const preserveFormValues = usePreserveFormOnError(
+    state.status === "error",
+    state,
   );
 
   if (state.status === "success") {
@@ -30,7 +35,11 @@ export function ContactForm() {
   }
 
   return (
-    <form action={formAction} className="space-y-5">
+    <form
+      action={formAction}
+      className="space-y-5"
+      onSubmit={(event) => preserveFormValues(event.currentTarget)}
+    >
       <div className="grid gap-5 sm:grid-cols-2">
         <FormField
           autoComplete="name"

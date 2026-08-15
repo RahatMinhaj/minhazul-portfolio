@@ -116,10 +116,7 @@ export async function getVisibleProjects() {
   if (!isDatabaseConfigured()) return [];
 
   return getDatabase().project.findMany({
-    where: {
-      visible: true,
-      status: { not: "DRAFT" },
-    },
+    where: { visible: true },
     orderBy: [
       { featured: "desc" },
       { sortOrder: "asc" },
@@ -150,7 +147,6 @@ export async function getVisibleProjectBySlug(slug: string) {
     where: {
       slug,
       visible: true,
-      status: { not: "DRAFT" },
     },
     select: {
       id: true,

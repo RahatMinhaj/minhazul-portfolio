@@ -6,6 +6,7 @@ import { useFormStatus } from "react-dom";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { usePreserveFormOnError } from "@/hooks/use-preserve-form-on-error";
 import { initialActionState, type ActionState } from "@/types/action-state";
 
 export function AdminMutationForm({
@@ -22,6 +23,10 @@ export function AdminMutationForm({
   submitLabel?: string;
 }) {
   const [state, formAction] = useActionState(action, initialActionState);
+  const preserveFormValues = usePreserveFormOnError(
+    state.status === "error",
+    state,
+  );
 
   useEffect(() => {
     if (!state.message) return;
@@ -36,7 +41,10 @@ export function AdminMutationForm({
       onSubmit={(event) => {
         if (confirmMessage && !window.confirm(confirmMessage)) {
           event.preventDefault();
+          return;
         }
+
+        preserveFormValues(event.currentTarget);
       }}
     >
       {children}

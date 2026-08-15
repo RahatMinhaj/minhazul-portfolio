@@ -5,8 +5,9 @@ import { useActionState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { loginAction } from "@/server/actions/auth";
+import { usePreserveFormOnError } from "@/hooks/use-preserve-form-on-error";
 import type { LoginState } from "@/lib/validation/auth";
+import { loginAction } from "@/server/actions/auth";
 
 const initialState: LoginState = {};
 
@@ -15,9 +16,17 @@ export function LoginForm() {
     loginAction,
     initialState,
   );
+  const preserveFormValues = usePreserveFormOnError(
+    Boolean(state.message || state.errors),
+    state,
+  );
 
   return (
-    <form action={formAction} className="mt-8 space-y-5">
+    <form
+      action={formAction}
+      className="mt-8 space-y-5"
+      onSubmit={(event) => preserveFormValues(event.currentTarget)}
+    >
       <div className="space-y-2">
         <label className="text-sm font-medium" htmlFor="username">
           Username

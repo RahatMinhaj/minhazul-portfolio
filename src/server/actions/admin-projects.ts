@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import {
   deleteProject,
@@ -43,7 +44,7 @@ export async function saveProjectAction(
   revalidatePath("/projects");
   revalidatePath(`/projects/${values.slug}`);
   revalidatePath("/admin/projects");
-  return success("Project saved.");
+  redirect("/admin/projects");
 }
 
 export async function deleteProjectAction(

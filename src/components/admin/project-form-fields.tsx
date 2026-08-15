@@ -40,9 +40,21 @@ export function ProjectFormFields({ project }: { project?: Project }) {
       </div>
       <AdminField
         defaultValue={project?.projectType ?? undefined}
-        label="Project type"
+        label="Project type / tag"
         maxLength={120}
         name="projectType"
+      />
+      <AdminField
+        defaultValue={project?.clientName ?? undefined}
+        label="Client / sector"
+        maxLength={200}
+        name="clientName"
+      />
+      <AdminField
+        defaultValue={project?.companyName ?? undefined}
+        label="Company"
+        maxLength={200}
+        name="companyName"
       />
       <AdminField
         defaultValue={project?.role ?? undefined}
@@ -111,7 +123,7 @@ export function ProjectFormFields({ project }: { project?: Project }) {
       <div className="flex flex-wrap gap-5 md:col-span-2">
         <AdminCheckbox
           defaultChecked={project?.featured}
-          label="Featured"
+          label="Featured (shown first)"
           name="featured"
         />
         <AdminCheckbox

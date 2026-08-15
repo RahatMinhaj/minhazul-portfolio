@@ -22,12 +22,11 @@ type JourneyProject = {
   projectType: string | null;
   clientName: string | null;
   technologies: string[];
+  featured: boolean;
 };
 
 export function ProjectJourney({ projects }: { projects: JourneyProject[] }) {
   if (!projects.length) return null;
-
-  const visibleProjects = projects.slice(0, 4);
 
   return (
     <section
@@ -69,7 +68,7 @@ export function ProjectJourney({ projects }: { projects: JourneyProject[] }) {
           aria-hidden
         />
         <StaggerContainer className="relative grid gap-3 md:grid-cols-2 md:gap-x-16 md:gap-y-5">
-          {visibleProjects.map((project, index) => {
+          {projects.map((project, index) => {
             const alignRight = index % 2 === 1;
 
             return (
@@ -122,6 +121,7 @@ export function ProjectJourney({ projects }: { projects: JourneyProject[] }) {
                     {project.projectType ? (
                       <Badge>{project.projectType}</Badge>
                     ) : null}
+                    {project.featured ? <Badge>Featured</Badge> : null}
                     {project.clientName ? (
                       <Badge variant="neutral">
                         <Building2 className="mr-1" aria-hidden size={10} />
