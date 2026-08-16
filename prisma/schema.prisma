@@ -90,7 +90,6 @@ model Profile {
   location           String?
   availabilityStatus String?
   profileImage       String?
-  resumeUrl          String?
   yearsOfExperience  Decimal? @db.Decimal(4, 1)
   currentCompany     String?
   currentRole        String?
@@ -311,7 +310,6 @@ model SiteSettings {
   analyticsEnabled          Boolean  @default(false)
   maintenanceMode           Boolean  @default(false)
   footerText                String?
-  resumeUrl                 String?
   seoTitle                  String?
   seoDescription            String?
   seoImage                  String?

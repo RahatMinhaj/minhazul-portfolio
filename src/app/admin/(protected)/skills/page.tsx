@@ -5,6 +5,9 @@ import {
 } from "@/components/admin/admin-fields";
 import { AdminMutationForm } from "@/components/admin/admin-mutation-form";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { SkillIconPicker } from "@/components/admin/skill-icon-picker";
+import { AdminIconField } from "@/components/admin/admin-icon-field";
+import { SkillIcon } from "@/components/skills/skill-icon";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   deleteSkillAction,
@@ -19,7 +22,7 @@ export default async function AdminSkillsPage() {
   return (
     <main id="main-content" className="mx-auto max-w-6xl px-5 py-10 sm:px-8">
       <AdminPageHeader
-        description="Manage skill categories, editorial proficiency, highlighted capabilities, order, and visibility."
+        description="Manage skill categories, searchable brand logos, editorial proficiency, highlighted capabilities, order, and visibility."
         title="Skills"
       />
       <div className="grid gap-5 lg:grid-cols-2">
@@ -37,7 +40,7 @@ export default async function AdminSkillsPage() {
               <AdminField label="Name" name="name" required />
               <AdminField label="Slug" name="slug" required />
               <AdminTextarea label="Description" name="description" />
-              <AdminField label="Icon key · optional" name="icon" />
+              <AdminIconField label="Category icon" />
               <AdminField
                 defaultValue={0}
                 label="Sort order"
@@ -74,20 +77,22 @@ export default async function AdminSkillsPage() {
                   </select>
                 </label>
                 <AdminField label="Name" name="name" required />
-                <AdminField label="Slug" name="slug" required />
                 <AdminField
-                  label="Logo URL · optional"
-                  name="icon"
-                  type="url"
+                  label="Slug · generated from name when empty"
+                  name="slug"
                 />
+                <SkillIconPicker />
                 <AdminField
                   label="Proficiency · optional 0–100"
+                  max={100}
+                  min={0}
                   name="proficiency"
                   type="number"
                 />
                 <AdminField
                   defaultValue={0}
                   label="Sort order"
+                  min={0}
                   name="sortOrder"
                   type="number"
                 />
@@ -143,10 +148,9 @@ export default async function AdminSkillsPage() {
                     name="description"
                     rows={3}
                   />
-                  <AdminField
-                    defaultValue={category.icon ?? undefined}
-                    label="Icon key · optional"
-                    name="icon"
+                  <AdminIconField
+                    defaultValue={category.icon}
+                    label="Category icon"
                   />
                   <AdminField
                     defaultValue={category.sortOrder}
@@ -167,11 +171,14 @@ export default async function AdminSkillsPage() {
                   key={skill.id}
                 >
                   <summary className="flex items-center justify-between gap-3">
-                    <span>
-                      <span className="block font-medium">{skill.name}</span>
-                      <span className="mt-1 block text-xs text-[var(--muted)]">
-                        {skill.visible ? "Visible" : "Hidden"}
-                        {skill.highlighted ? " · Core" : ""}
+                    <span className="flex min-w-0 items-center gap-3">
+                      <SkillIcon name={skill.name} value={skill.icon} />
+                      <span>
+                        <span className="block font-medium">{skill.name}</span>
+                        <span className="mt-1 block text-xs text-[var(--muted)]">
+                          {skill.visible ? "Visible" : "Hidden"}
+                          {skill.highlighted ? " · Core" : ""}
+                        </span>
                       </span>
                     </span>
                     <span className="text-xs text-[var(--accent)]">Edit</span>
@@ -204,25 +211,22 @@ export default async function AdminSkillsPage() {
                     />
                     <AdminField
                       defaultValue={skill.slug}
-                      label="Slug"
+                      label="Slug · normalized automatically"
                       name="slug"
-                      required
                     />
-                    <AdminField
-                      defaultValue={skill.icon ?? undefined}
-                      label="Logo URL · optional"
-                      name="icon"
-                      type="url"
-                    />
+                    <SkillIconPicker defaultValue={skill.icon} />
                     <AdminField
                       defaultValue={skill.proficiency ?? undefined}
                       label="Proficiency · optional 0–100"
+                      max={100}
+                      min={0}
                       name="proficiency"
                       type="number"
                     />
                     <AdminField
                       defaultValue={skill.sortOrder}
                       label="Sort order"
+                      min={0}
                       name="sortOrder"
                       type="number"
                     />

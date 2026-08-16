@@ -7,6 +7,11 @@ const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
   reactStrictMode: true,
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "11mb",
+    },
+  },
   turbopack: {
     root: dirname(fileURLToPath(import.meta.url)),
   },

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
+import { SkillIcon } from "@/components/skills/skill-icon";
 import {
   Card,
   CardContent,
@@ -21,6 +22,7 @@ export type SkillCategoryView = {
     id: string;
     name: string;
     slug: string;
+    icon: string | null;
     proficiency: number | null;
     yearsOfExperience: string | null;
     highlighted: boolean;
@@ -87,6 +89,7 @@ export function SkillMap({ categories }: { categories: SkillCategoryView[] }) {
                       : "Experience duration needs confirmation"
                   }
                 >
+                  <SkillIcon name={skill.name} value={skill.icon} />
                   {skill.name}
                   {skill.highlighted ? <Badge>Core</Badge> : null}
                 </span>

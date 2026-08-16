@@ -15,7 +15,10 @@ Internet
 ```
 
 Caddy obtains and renews the TLS certificate automatically. PostgreSQL and the
-Next.js application port are not published directly to the internet.
+Next.js application port are not published directly to the internet. The
+`cv_data` Docker volume stores the uploaded CV and administrator-managed images
+independently of the application image, so routine deployments do not remove
+them.
 
 ## Server requirements
 

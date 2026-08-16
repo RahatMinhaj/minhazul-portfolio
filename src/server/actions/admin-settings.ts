@@ -67,7 +67,6 @@ const settingsSchema = z.object({
   siteDescription: z.string().trim().min(20).max(500),
   defaultTheme: z.string().trim().min(2).max(80),
   footerText: z.string().trim().max(500),
-  resumeUrl: z.union([z.url(), z.literal("")]),
   seoTitle: z.string().trim().max(160),
   seoDescription: z.string().trim().max(500),
   engineeringSectionLabel: z.string().trim().min(2).max(80),
@@ -87,7 +86,6 @@ export async function saveSettingsAction(
     siteDescription: formData.get("siteDescription"),
     defaultTheme: formData.get("defaultTheme"),
     footerText: formData.get("footerText"),
-    resumeUrl: formData.get("resumeUrl"),
     seoTitle: formData.get("seoTitle"),
     seoDescription: formData.get("seoDescription"),
     engineeringSectionLabel: formData.get("engineeringSectionLabel"),
@@ -101,7 +99,6 @@ export async function saveSettingsAction(
   const data = {
     ...parsed.data,
     footerText: parsed.data.footerText || null,
-    resumeUrl: parsed.data.resumeUrl || null,
     seoTitle: parsed.data.seoTitle || null,
     seoDescription: parsed.data.seoDescription || null,
     contactEnabled: formData.get("contactEnabled") === "on",

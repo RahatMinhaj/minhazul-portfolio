@@ -12,7 +12,7 @@ export default async function AdminProfilePage() {
   return (
     <main id="main-content" className="mx-auto max-w-5xl px-5 py-10 sm:px-8">
       <AdminPageHeader
-        description="Manage the verified identity, biography, contact, availability, and résumé shown publicly."
+        description="Manage the verified identity, biography, contact, and availability shown publicly."
         title="Profile"
       />
       <Card>
@@ -78,12 +78,6 @@ export default async function AdminProfilePage() {
               name="yearsOfExperience"
               step="0.1"
               type="number"
-            />
-            <AdminField
-              defaultValue={profile?.resumeUrl ?? undefined}
-              label="Résumé URL"
-              name="resumeUrl"
-              type="url"
             />
             <AdminField
               defaultValue={profile?.currentFocus ?? undefined}

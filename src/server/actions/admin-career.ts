@@ -12,6 +12,8 @@ import {
   saveExperience,
 } from "@/features/career/career.service";
 import { requireAdmin } from "@/lib/auth/session";
+import { resolveImageField } from "@/features/media/image-storage";
+import { optionalImageReferenceSchema } from "@/lib/validation/media";
 import {
   failure,
   idSchema,
@@ -87,14 +89,7 @@ const certificationSchema = z.object({
   issuer: z.string().trim().min(2).max(160),
   credentialId: z.string().trim().max(200),
   credentialUrl: z.union([z.url(), z.literal("")]),
-  certificateImage: z.union([
-    z.url(),
-    z
-      .string()
-      .trim()
-      .regex(/^\/[a-zA-Z0-9/_\-.]+$/),
-    z.literal(""),
-  ]),
+  certificateImage: optionalImageReferenceSchema,
   category: z.string().trim().max(100),
   description: z.string().trim().max(2000),
   sortOrder: z.coerce.number().int().min(0).max(10000),
@@ -119,11 +114,26 @@ export async function saveCertificationAction(
   if (!parsed.success) return failure("Certification validation failed.");
 
   const { id, ...values } = parsed.data;
+  let certificateImage: string | null;
+  try {
+    certificateImage = await resolveImageField(
+      formData,
+      "certificateImage",
+      `${values.name} certificate image`,
+      values.certificateImage || null,
+    );
+  } catch (error) {
+    return failure(
+      error instanceof Error
+        ? error.message
+        : "The image could not be uploaded.",
+    );
+  }
   const data = {
     ...values,
     credentialId: values.credentialId || null,
     credentialUrl: values.credentialUrl || null,
-    certificateImage: values.certificateImage || null,
+    certificateImage,
     category: values.category || null,
     description: values.description || null,
     issueDate: parseOptionalDate(formData.get("issueDate")),
@@ -159,14 +169,7 @@ const educationSchema = z.object({
   degree: z.string().trim().min(2).max(200),
   field: z.string().trim().max(200),
   grade: z.string().trim().max(100),
-  logo: z.union([
-    z.url(),
-    z
-      .string()
-      .trim()
-      .regex(/^\/[a-zA-Z0-9/_\-.]+$/),
-    z.literal(""),
-  ]),
+  logo: optionalImageReferenceSchema,
   sortOrder: z.coerce.number().int().min(0).max(10000),
 });
 
@@ -186,11 +189,26 @@ export async function saveEducationAction(
   });
   if (!parsed.success) return failure("Education validation failed.");
   const { id, ...values } = parsed.data;
+  let logo: string | null;
+  try {
+    logo = await resolveImageField(
+      formData,
+      "logo",
+      `${values.institution} logo`,
+      values.logo || null,
+    );
+  } catch (error) {
+    return failure(
+      error instanceof Error
+        ? error.message
+        : "The logo could not be uploaded.",
+    );
+  }
   const data = {
     ...values,
     field: values.field || null,
     grade: values.grade || null,
-    logo: values.logo || null,
+    logo,
     startDate: parseOptionalDate(formData.get("startDate")),
     endDate: parseOptionalDate(formData.get("endDate")),
     visible: formData.get("visible") === "on",

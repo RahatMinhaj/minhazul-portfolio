@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Developer Portfolio",
     short_name: "Portfolio",
     description:
-      "A verified developer-focused portfolio and interactive technical résumé.",
+      "A verified developer-focused portfolio and interactive technical resume.",
     start_url: "/",
     display: "standalone",
     background_color: "#080b0b",

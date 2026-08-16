@@ -28,7 +28,6 @@ type HeroExperienceProps = {
   professionalTitle: string;
   shortBio: string;
   currentFocus: string;
-  resumeUrl: string | null;
   technologies: string[];
   codeFileLabel: string;
   codeVariableName: string;
@@ -41,7 +40,6 @@ export function HeroExperience({
   professionalTitle,
   shortBio,
   currentFocus,
-  resumeUrl,
   technologies,
   codeFileLabel,
   codeVariableName,
@@ -217,13 +215,8 @@ export function HeroExperience({
           </MagneticElement>
           <MagneticElement strength={0.1}>
             <Button asChild size="lg" variant="outline">
-              <Link
-                data-cursor="Open résumé"
-                href={resumeUrl ?? "/resume"}
-                rel={resumeUrl ? "noreferrer" : undefined}
-                target={resumeUrl ? "_blank" : undefined}
-              >
-                Résumé
+              <Link data-cursor="Open resume" href="/resume">
+                Resume
               </Link>
             </Button>
           </MagneticElement>

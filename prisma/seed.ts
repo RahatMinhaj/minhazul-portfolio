@@ -102,7 +102,6 @@ async function main() {
       location: profileSeedData.location ?? null,
       availabilityStatus: profileSeedData.availabilityStatus ?? null,
       profileImage: profileSeedData.profileImage ?? null,
-      resumeUrl: profileSeedData.resumeUrl ?? null,
       yearsOfExperience: profileSeedData.yearsOfExperience ?? null,
       currentCompany: profileSeedData.currentCompany ?? null,
       currentRole: profileSeedData.currentRole ?? null,

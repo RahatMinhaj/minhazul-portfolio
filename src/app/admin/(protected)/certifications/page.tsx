@@ -7,15 +7,23 @@ import {
 } from "@/components/admin/admin-fields";
 import { AdminMutationForm } from "@/components/admin/admin-mutation-form";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { AdminImageField } from "@/components/admin/admin-image-field";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   deleteCertificationAction,
   saveCertificationAction,
 } from "@/server/actions/admin-career";
-import { getAdminCertifications } from "@/server/queries/admin-content";
+import {
+  getAdminCertifications,
+  getAdminMedia,
+} from "@/server/queries/admin-content";
 
 export default async function AdminCertificationsPage() {
-  const certifications = await getAdminCertifications();
+  const [certifications, media] = await Promise.all([
+    getAdminCertifications(),
+    getAdminMedia(),
+  ]);
+  const mediaOptions = media.map(({ altText, url }) => ({ altText, url }));
 
   return (
     <main id="main-content" className="mx-auto max-w-6xl px-5 py-10 sm:px-8">
@@ -28,7 +36,7 @@ export default async function AdminCertificationsPage() {
           <CardTitle>Add certification</CardTitle>
         </CardHeader>
         <CardContent>
-          <CertificationForm />
+          <CertificationForm media={mediaOptions} />
         </CardContent>
       </Card>
       <div className="mt-8 space-y-5">
@@ -52,7 +60,10 @@ export default async function AdminCertificationsPage() {
                   </p>
                 </div>
               ) : null}
-              <CertificationForm certification={certification} />
+              <CertificationForm
+                certification={certification}
+                media={mediaOptions}
+              />
               <AdminMutationForm
                 action={deleteCertificationAction}
                 confirmMessage="Delete this certification?"
@@ -70,8 +81,10 @@ export default async function AdminCertificationsPage() {
 
 function CertificationForm({
   certification,
+  media,
 }: {
   certification?: Certification;
+  media: Array<{ altText: string; url: string }>;
 }) {
   return (
     <AdminMutationForm
@@ -110,17 +123,12 @@ function CertificationForm({
         label="Category"
         name="category"
       />
-      <div>
-        <AdminField
-          defaultValue={certification?.certificateImage ?? undefined}
-          label="Logo or certificate image URL"
-          name="certificateImage"
-        />
-        <p className="mt-2 text-xs leading-5 text-[var(--muted)]">
-          Use an HTTPS URL or a public path such as
-          /images/certificates/spring.png.
-        </p>
-      </div>
+      <AdminImageField
+        defaultValue={certification?.certificateImage}
+        label="Logo or certificate image"
+        media={media}
+        name="certificateImage"
+      />
       <AdminField
         defaultValue={certification?.sortOrder ?? 0}
         label="Sort order"

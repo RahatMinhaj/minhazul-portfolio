@@ -1,13 +1,4 @@
-import {
-  ArrowRight,
-  BrainCircuit,
-  Container,
-  Database,
-  Network,
-  PanelsTopLeft,
-  Server,
-  Wrench,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 import {
@@ -16,6 +7,7 @@ import {
   StaggerItem,
 } from "@/components/animations/primitives";
 import { TechnologyMark } from "@/components/home/engineering-signature";
+import { VisualIcon } from "@/components/shared/visual-icon";
 
 type StackCategory = {
   id: string;
@@ -30,22 +22,6 @@ type StackCategory = {
     highlighted: boolean;
   }>;
 };
-
-const categoryIcons = {
-  backend: Server,
-  server: Server,
-  "microservices-architecture": Network,
-  network: Network,
-  frontend: PanelsTopLeft,
-  "panels-top-left": PanelsTopLeft,
-  database: Database,
-  ai: BrainCircuit,
-  "brain-circuit": BrainCircuit,
-  "cloud-devops": Container,
-  container: Container,
-  "tools-delivery": Wrench,
-  wrench: Wrench,
-} as const;
 
 export function EngineeringSignature({
   categories,
@@ -144,11 +120,6 @@ export function EngineeringSignature({
             >
               <StaggerContainer className="divide-y divide-[var(--border)]">
                 {categories.map((category) => {
-                  const Icon =
-                    categoryIcons[
-                      (category.icon ??
-                        category.slug) as keyof typeof categoryIcons
-                    ] ?? Wrench;
                   const skills = category.skills.toSorted(
                     (left, right) =>
                       Number(right.highlighted) - Number(left.highlighted),
@@ -159,7 +130,12 @@ export function EngineeringSignature({
                       <article className="grid gap-3 p-3 sm:grid-cols-[10rem_minmax(0,1fr)] sm:px-4">
                         <header className="flex items-start gap-2.5">
                           <span className="grid size-8 shrink-0 place-items-center rounded-lg border border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_8%,var(--surface))] text-[var(--accent)]">
-                            <Icon aria-hidden size={14} />
+                            <VisualIcon
+                              className="size-4"
+                              fallback={category.slug}
+                              name={category.name}
+                              value={category.icon}
+                            />
                           </span>
                           <div className="min-w-0">
                             <h4 className="text-sm leading-5 font-semibold">

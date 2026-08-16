@@ -3,15 +3,23 @@ import type { Education } from "@/generated/prisma/client";
 import { AdminCheckbox, AdminField } from "@/components/admin/admin-fields";
 import { AdminMutationForm } from "@/components/admin/admin-mutation-form";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { AdminImageField } from "@/components/admin/admin-image-field";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   deleteEducationAction,
   saveEducationAction,
 } from "@/server/actions/admin-career";
-import { getAdminEducation } from "@/server/queries/admin-content";
+import {
+  getAdminEducation,
+  getAdminMedia,
+} from "@/server/queries/admin-content";
 
 export default async function AdminEducationPage() {
-  const records = await getAdminEducation();
+  const [records, media] = await Promise.all([
+    getAdminEducation(),
+    getAdminMedia(),
+  ]);
+  const mediaOptions = media.map(({ altText, url }) => ({ altText, url }));
 
   return (
     <main id="main-content" className="mx-auto max-w-6xl px-5 py-10 sm:px-8">
@@ -24,7 +32,7 @@ export default async function AdminEducationPage() {
           <CardTitle>Add education</CardTitle>
         </CardHeader>
         <CardContent>
-          <EducationForm />
+          <EducationForm media={mediaOptions} />
         </CardContent>
       </Card>
       <div className="mt-8 space-y-5">
@@ -48,7 +56,7 @@ export default async function AdminEducationPage() {
                   </p>
                 </div>
               ) : null}
-              <EducationForm education={record} />
+              <EducationForm education={record} media={mediaOptions} />
               <AdminMutationForm
                 action={deleteEducationAction}
                 confirmMessage="Delete this education record?"
@@ -64,7 +72,13 @@ export default async function AdminEducationPage() {
   );
 }
 
-function EducationForm({ education }: { education?: Education }) {
+function EducationForm({
+  education,
+  media,
+}: {
+  education?: Education;
+  media: Array<{ altText: string; url: string }>;
+}) {
   return (
     <AdminMutationForm
       action={saveEducationAction}
@@ -94,17 +108,12 @@ function EducationForm({ education }: { education?: Education }) {
         label="Grade"
         name="grade"
       />
-      <div>
-        <AdminField
-          defaultValue={education?.logo ?? undefined}
-          label="Institution logo URL"
-          name="logo"
-        />
-        <p className="mt-2 text-xs leading-5 text-[var(--muted)]">
-          Use an HTTPS URL or a public path such as
-          /images/education/university.png.
-        </p>
-      </div>
+      <AdminImageField
+        defaultValue={education?.logo}
+        label="Institution logo"
+        media={media}
+        name="logo"
+      />
       <AdminField
         defaultValue={dateInput(education?.startDate)}
         label="Start date"

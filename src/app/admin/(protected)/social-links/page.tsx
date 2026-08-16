@@ -1,7 +1,9 @@
 import { AdminCheckbox, AdminField } from "@/components/admin/admin-fields";
 import { AdminMutationForm } from "@/components/admin/admin-mutation-form";
+import { AdminIconField } from "@/components/admin/admin-icon-field";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { VisualIcon } from "@/components/shared/visual-icon";
 import {
   deleteSocialLinkAction,
   saveSocialLinkAction,
@@ -31,7 +33,7 @@ export default async function AdminSocialLinksPage() {
             <AdminField label="Platform" name="platform" required />
             <AdminField label="Label" name="label" required />
             <AdminField label="URL" name="url" required type="url" />
-            <AdminField label="Icon key" name="icon" />
+            <AdminIconField label="Social icon" />
             <AdminField
               defaultValue={0}
               label="Sort order"
@@ -46,9 +48,17 @@ export default async function AdminSocialLinksPage() {
         {links.map((link) => (
           <Card key={link.id}>
             <CardContent className="flex flex-wrap items-center justify-between gap-4 p-5">
-              <div>
-                <p className="font-medium">{link.label}</p>
-                <p className="text-sm text-[var(--muted)]">{link.url}</p>
+              <div className="flex items-center gap-3">
+                <VisualIcon
+                  className="size-8"
+                  fallback="link"
+                  name={link.platform}
+                  value={link.icon}
+                />
+                <div>
+                  <p className="font-medium">{link.label}</p>
+                  <p className="text-sm text-[var(--muted)]">{link.url}</p>
+                </div>
               </div>
               <AdminMutationForm
                 action={deleteSocialLinkAction}

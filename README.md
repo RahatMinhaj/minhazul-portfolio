@@ -89,14 +89,18 @@ Quota, rate-limit, timeout, and temporary Gemini failures fall back to
 models. Create a server-side OpenRouter key and never expose it with a
 `NEXT_PUBLIC_` prefix.
 
-## Résumé file
+## CV file
 
-The CV content is seeded into PostgreSQL, but a local `Downloads` path cannot be
-used by a deployed website. To enable the résumé download:
+Upload the approved PDF from `/admin/cv`. The server keeps one CV at a fixed
+private path, and a new upload atomically replaces the existing file. In the
+Docker deployment, the `cv_data` volume preserves it across container rebuilds.
+The same persistent upload volume stores administrator-uploaded images used for
+education, certifications, skills, and the media library.
 
-1. Copy the approved PDF to `public/resume/minhazul-islam-cv.pdf`.
-2. Set the profile résumé URL to `/resume/minhazul-islam-cv.pdf` from the admin
-   profile screen.
+Visitors can preview the resume at `/resume` before downloading it. Explicit downloads
+are limited to 10 per anonymized IP and browser combination per hour to reduce
+automated or unnecessary traffic. This is a deterrent rather than copy
+protection because any publicly previewable document can ultimately be saved.
 
 Only publish the PDF if its phone numbers and email address are intended to be
 publicly downloadable.

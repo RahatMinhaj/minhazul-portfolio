@@ -14,6 +14,9 @@ import {
 } from "@/features/taxonomy/taxonomy.service";
 import { Prisma } from "@/generated/prisma/client";
 import { requireAdmin } from "@/lib/auth/session";
+import { resolveImageField } from "@/features/media/image-storage";
+import { optionalVisualIconSchema } from "@/lib/validation/media";
+import { normalizeSkillSlug, skillIconSchema } from "@/lib/validation/skill";
 import {
   failure,
   idSchema,
@@ -28,7 +31,7 @@ const categorySchema = z.object({
   name: z.string().trim().min(2).max(100),
   slug: slugSchema,
   description: z.string().trim().max(500),
-  icon: z.string().trim().max(80),
+  icon: optionalVisualIconSchema,
   sortOrder: z.coerce.number().int().min(0).max(10000),
 });
 
@@ -47,10 +50,25 @@ export async function saveSkillCategoryAction(
   });
   if (!parsed.success) return failure("Skill category validation failed.");
   const { id, ...values } = parsed.data;
+  let icon: string | null;
+  try {
+    icon = await resolveImageField(
+      formData,
+      "icon",
+      `${values.name} category icon`,
+      values.icon || null,
+    );
+  } catch (error) {
+    return failure(
+      error instanceof Error
+        ? error.message
+        : "The icon could not be uploaded.",
+    );
+  }
   const data = {
     ...values,
     description: values.description || null,
-    icon: values.icon || null,
+    icon,
     visible: formData.get("visible") === "on",
   };
   await saveSkillCategory(id, data);
@@ -64,12 +82,12 @@ const skillSchema = z.object({
   id: z.union([idSchema, z.literal("")]),
   categoryId: idSchema,
   name: z.string().trim().min(1).max(100),
-  slug: slugSchema,
-  icon: z.union([optionalUrlSchema, z.literal("")]),
-  proficiency: z.union([
-    z.coerce.number().int().min(0).max(100),
-    z.literal(""),
-  ]),
+  slug: z.string().trim().max(120),
+  icon: skillIconSchema,
+  proficiency: z.preprocess(
+    (value) => (value === "" ? null : value),
+    z.coerce.number().int().min(0).max(100).nullable(),
+  ),
   sortOrder: z.coerce.number().int().min(0).max(10000),
 });
 
@@ -87,12 +105,38 @@ export async function saveSkillAction(
     proficiency: formData.get("proficiency") ?? "",
     sortOrder: formData.get("sortOrder") ?? 0,
   });
-  if (!parsed.success) return failure("Skill validation failed.");
+  if (!parsed.success) {
+    const invalidFields = Object.keys(parsed.error.flatten().fieldErrors).join(
+      ", ",
+    );
+    return failure(
+      `Skill validation failed${invalidFields ? `: check ${invalidFields}` : ""}.`,
+    );
+  }
   const { id, proficiency, icon, ...values } = parsed.data;
+  const slug = normalizeSkillSlug(values.slug, values.name);
+  if (!slug)
+    return failure("Skill validation failed: enter a valid name or slug.");
+  let resolvedIcon: string | null;
+  try {
+    resolvedIcon = await resolveImageField(
+      formData,
+      "icon",
+      `${values.name} logo`,
+      icon || null,
+    );
+  } catch (error) {
+    return failure(
+      error instanceof Error
+        ? error.message
+        : "The logo could not be uploaded.",
+    );
+  }
   const data = {
     ...values,
-    proficiency: proficiency === "" ? null : proficiency,
-    icon: icon || null,
+    slug,
+    proficiency,
+    icon: resolvedIcon,
     highlighted: formData.get("highlighted") === "on",
     visible: formData.get("visible") === "on",
   };
@@ -132,7 +176,7 @@ const socialSchema = z.object({
   platform: z.string().trim().min(2).max(80),
   label: z.string().trim().min(2).max(100),
   url: z.url(),
-  icon: z.string().trim().max(80),
+  icon: optionalVisualIconSchema,
   sortOrder: z.coerce.number().int().min(0).max(10000),
 });
 
@@ -151,9 +195,24 @@ export async function saveSocialLinkAction(
   });
   if (!parsed.success) return failure("Social-link validation failed.");
   const { id, ...values } = parsed.data;
+  let icon: string | null;
+  try {
+    icon = await resolveImageField(
+      formData,
+      "icon",
+      `${values.platform} social icon`,
+      values.icon || null,
+    );
+  } catch (error) {
+    return failure(
+      error instanceof Error
+        ? error.message
+        : "The icon could not be uploaded.",
+    );
+  }
   const data = {
     ...values,
-    icon: values.icon || null,
+    icon,
     visible: formData.get("visible") === "on",
   };
   await saveSocialLink(id, data);

@@ -6,6 +6,7 @@ import {
   BriefcaseBusiness,
   ChevronRight,
   FolderKanban,
+  FileText,
   GraduationCap,
   LayoutDashboard,
   Link2,
@@ -29,6 +30,7 @@ import { cn } from "@/lib/utils/cn";
 const adminNavigation = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Profile", href: "/admin/profile", icon: UserRound },
+  { label: "CV", href: "/admin/cv", icon: FileText },
   { label: "Experience", href: "/admin/experiences", icon: BriefcaseBusiness },
   { label: "Projects", href: "/admin/projects", icon: FolderKanban },
   { label: "Skills", href: "/admin/skills", icon: Sparkles },

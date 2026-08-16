@@ -148,7 +148,6 @@ export default async function Home() {
         professionalTitle={
           profile?.professionalTitle ?? "Full Stack Java Developer"
         }
-        resumeUrl={profile?.resumeUrl ?? settings?.resumeUrl ?? null}
         shortBio={
           profile?.shortBio ??
           "Building robust and scalable software with Java, Spring Boot, Angular, microservices, distributed systems, and AI integrations."
@@ -566,8 +565,8 @@ export default async function Home() {
                     </Link>
                   </Button>
                   <Button asChild size="lg" variant="outline">
-                    <Link data-cursor="Open résumé" href="/resume">
-                      View résumé
+                    <Link data-cursor="Open resume" href="/resume">
+                      View resume
                       <ArrowRight aria-hidden size={16} />
                     </Link>
                   </Button>

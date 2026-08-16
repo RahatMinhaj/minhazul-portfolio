@@ -48,19 +48,13 @@ export default async function AdminSettingsPage() {
               <AdminTextarea
                 defaultValue={
                   settings?.siteDescription ??
-                  "A verified developer-focused portfolio and technical résumé."
+                  "A verified developer-focused portfolio and technical resume."
                 }
                 label="Site description"
                 name="siteDescription"
                 required
               />
             </div>
-            <AdminField
-              defaultValue={settings?.resumeUrl ?? undefined}
-              label="Résumé URL"
-              name="resumeUrl"
-              type="url"
-            />
             <AdminField
               defaultValue={settings?.seoTitle ?? undefined}
               label="SEO title"

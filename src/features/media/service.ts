@@ -1,6 +1,9 @@
 import "server-only";
 
-import { upsertMediaAsset } from "@/features/media/media.repository";
+import {
+  getMediaAsset,
+  upsertMediaAsset,
+} from "@/features/media/media.repository";
 import {
   LocalPreviewMediaProvider,
   UrlMediaProvider,
@@ -25,4 +28,8 @@ export async function registerMediaAsset(
     provider: provider.name,
     ...normalized,
   });
+}
+
+export function getMediaAssetById(id: string) {
+  return getMediaAsset(id);
 }

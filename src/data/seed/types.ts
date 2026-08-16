@@ -8,7 +8,6 @@ export type ProfileSeedData = {
   location?: string;
   availabilityStatus?: string;
   profileImage?: string;
-  resumeUrl?: string;
   yearsOfExperience?: number;
   currentCompany?: string;
   currentRole?: string;

@@ -55,6 +55,7 @@ import {
   StaggerContainer,
   StaggerItem,
 } from "@/components/animations/primitives";
+import { SkillIcon } from "@/components/skills/skill-icon";
 
 type StackCategory = {
   id: string;
@@ -382,15 +383,7 @@ export function TechnologyMark({
   const sizeClass = "size-5 rounded-sm";
 
   if (iconUrl) {
-    return (
-      <span
-        className={`grid ${sizeClass} shrink-0 place-items-center overflow-hidden border border-black/10 bg-white p-0.5 shadow-sm`}
-      >
-        {/* Admin-managed URLs intentionally support arbitrary logo hosts. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img alt="" className="size-full object-contain" src={iconUrl} />
-      </span>
-    );
+    return <SkillIcon className={sizeClass} name={name} value={iconUrl} />;
   }
 
   if (logo) {
