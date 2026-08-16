@@ -3,6 +3,8 @@ import {
   AdminField,
   AdminTextarea,
 } from "@/components/admin/admin-fields";
+import { Eye, Wrench } from "lucide-react";
+import Link from "next/link";
 import { AdminMutationForm } from "@/components/admin/admin-mutation-form";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,6 +34,39 @@ export default async function AdminSettingsPage() {
             action={saveSettingsAction}
             className="grid gap-5 md:grid-cols-2"
           >
+            <div className="rounded-[var(--radius-card)] border border-[var(--border-strong)] bg-[var(--surface-raised)] p-5 md:col-span-2">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="max-w-2xl">
+                  <div className="flex items-center gap-2">
+                    <Wrench
+                      className="text-[var(--accent)]"
+                      aria-hidden
+                      size={18}
+                    />
+                    <h2 className="font-semibold">Public maintenance mode</h2>
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                    Show a maintenance page to visitors while content is being
+                    prepared. Signed-in administrators can still preview every
+                    public page and feature.
+                  </p>
+                </div>
+                <Link
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent)] hover:underline"
+                  href="/"
+                  target="_blank"
+                >
+                  <Eye aria-hidden size={15} /> Preview site
+                </Link>
+              </div>
+              <div className="mt-4 border-t border-[var(--border)] pt-4">
+                <AdminCheckbox
+                  defaultChecked={settings?.maintenanceMode}
+                  label="Show maintenance page to public visitors"
+                  name="maintenanceMode"
+                />
+              </div>
+            </div>
             <AdminField
               defaultValue={settings?.siteName ?? "Developer Portfolio"}
               label="Site name"
@@ -132,11 +167,6 @@ export default async function AdminSettingsPage() {
                 defaultChecked={settings?.analyticsEnabled}
                 label="Analytics"
                 name="analyticsEnabled"
-              />
-              <AdminCheckbox
-                defaultChecked={settings?.maintenanceMode}
-                label="Maintenance mode"
-                name="maintenanceMode"
               />
             </div>
           </AdminMutationForm>

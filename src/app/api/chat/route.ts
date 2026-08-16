@@ -8,6 +8,7 @@ import {
 } from "@/features/chat/chat.service";
 import { env } from "@/config/env";
 import { isSameOriginRequest } from "@/lib/http/same-origin";
+import { getCurrentAdmin } from "@/lib/auth/session";
 
 const chatRequestSchema = z.object({
   question: z.string().trim().min(1).max(500),
@@ -58,6 +59,7 @@ export async function POST(request: Request) {
 
   try {
     const result = await answerPortfolioQuestion({
+      allowDuringMaintenance: Boolean(await getCurrentAdmin()),
       clientIdentifier,
       history: parsed.data.history,
       question: parsed.data.question,

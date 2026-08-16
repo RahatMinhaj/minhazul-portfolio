@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LogOut, ShieldCheck } from "lucide-react";
+import { Eye, LogOut, ShieldCheck } from "lucide-react";
 
 import { AdminNav } from "@/components/admin/admin-nav";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,12 @@ export default async function ProtectedAdminLayout({
             <span className="hidden text-sm text-[var(--muted)] sm:inline">
               {admin.name}
             </span>
+            <Button asChild size="sm" variant="ghost">
+              <Link href="/" target="_blank">
+                <Eye aria-hidden size={15} />
+                <span className="hidden sm:inline">Preview site</span>
+              </Link>
+            </Button>
             <form action={logoutAction}>
               <Button size="sm" type="submit" variant="ghost">
                 <LogOut aria-hidden size={15} />

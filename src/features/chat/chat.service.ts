@@ -33,10 +33,12 @@ export function portfolioChatIsAvailable() {
 }
 
 export async function answerPortfolioQuestion({
+  allowDuringMaintenance = false,
   clientIdentifier,
   history,
   question,
 }: {
+  allowDuringMaintenance?: boolean;
   clientIdentifier: string;
   history: ChatHistoryMessage[];
   question: string;
@@ -52,7 +54,7 @@ export async function answerPortfolioQuestion({
   if (!quota.allowed) throw new ChatRateLimitError(quota.retryAfterSeconds);
 
   const content = await getPublicChatContent();
-  if (content.settings?.maintenanceMode) {
+  if (content.settings?.maintenanceMode && !allowDuringMaintenance) {
     throw new ChatUnavailableError(
       "Portfolio chat is unavailable during maintenance.",
     );
