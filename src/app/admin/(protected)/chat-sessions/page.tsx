@@ -1,18 +1,24 @@
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
-import { MessagesTable } from "@/components/admin/messages-table";
-import { formatDate } from "@/lib/utils/date";
-import { getAdminMessages } from "@/server/queries/admin-content";
+import { ChatSessionsTable } from "@/components/admin/chat-sessions-table";
+import { getAdminChatSessions } from "@/server/queries/admin-content";
 
-export default async function AdminMessagesPage({
+export default async function AdminChatSessionsPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const params = await searchParams;
+  const page = Math.max(1, Number(params.page) || 1);
+  const pageSize = 20;
   const search = typeof params.search === "string" ? params.search : undefined;
   const status = typeof params.status === "string" ? params.status : undefined;
 
-  const messages = await getAdminMessages();
+  const { sessions, total } = await getAdminChatSessions({
+    search,
+    status,
+    page,
+    pageSize,
+  });
 
   return (
     <main
@@ -20,8 +26,8 @@ export default async function AdminMessagesPage({
       className="mx-auto max-w-[96rem] px-5 py-10 sm:px-8"
     >
       <AdminPageHeader
-        description="Filter-ready structured data with read, replied, archived, and deletion workflows."
-        title="Contact messages"
+        description="Chat sessions and conversation history."
+        title="Chat sessions"
       />
 
       <form className="mb-6 flex flex-wrap gap-3">
@@ -29,7 +35,7 @@ export default async function AdminMessagesPage({
           className="rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
           defaultValue={search}
           name="search"
-          placeholder="Search messages..."
+          placeholder="Search conversations..."
         />
         <select
           className="rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
@@ -37,10 +43,7 @@ export default async function AdminMessagesPage({
           name="status"
         >
           <option value="all">All statuses</option>
-          <option value="NEW">New</option>
-          <option value="READ">Read</option>
-          <option value="REPLIED">Replied</option>
-          <option value="ARCHIVED">Archived</option>
+          <option value="active">Active</option>
         </select>
         <button
           className="rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--surface-raised)] px-4 py-2 text-sm font-medium hover:bg-[var(--surface)]"
@@ -50,20 +53,23 @@ export default async function AdminMessagesPage({
         </button>
       </form>
 
-      {messages.length ? (
-        <MessagesTable
-          messages={messages.map((message) => ({
-            id: message.id,
-            name: message.name,
-            email: message.email,
-            subject: message.subject,
-            message: message.message,
-            status: message.status,
-            createdAt: formatDate(message.createdAt),
+      {sessions.length ? (
+        <ChatSessionsTable
+          sessions={sessions.map((s: { id: string; sessionToken: string; messageCount: number; status: string; createdAt: Date; updatedAt: Date; turns: Array<{ content: string; role: string }> }) => ({
+            id: s.id,
+            sessionToken: s.sessionToken,
+            messageCount: s.messageCount,
+            status: s.status,
+            createdAt: s.createdAt,
+            updatedAt: s.updatedAt,
+            turns: s.turns,
           }))}
+          total={total}
+          page={page}
+          pageSize={pageSize}
         />
       ) : (
-        <p className="text-sm text-[var(--muted)]">No contact messages.</p>
+        <p className="text-sm text-[var(--muted)]">No chat sessions found.</p>
       )}
     </main>
   );

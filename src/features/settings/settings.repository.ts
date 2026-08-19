@@ -30,12 +30,16 @@ export const settingsRepository = {
     return getDatabase().contactMessage.delete({ where: { id } });
   },
 
-  updateMessage(id: string, data: Prisma.ContactMessageUncheckedUpdateInput) {
-    return getDatabase().contactMessage.update({ where: { id }, data });
+  updateMessage(id: string, data: Record<string, unknown>) {
+    return getDatabase().contactMessage.update({ where: { id }, data: data as Prisma.ContactMessageUncheckedUpdateInput });
   },
 
   findSettingsIdentity() {
     return getDatabase().siteSettings.findFirst({ select: { id: true } });
+  },
+
+  findSettingsById(id: string) {
+    return getDatabase().siteSettings.findUnique({ where: { id } });
   },
 
   createSettings(data: Prisma.SiteSettingsUncheckedCreateInput) {

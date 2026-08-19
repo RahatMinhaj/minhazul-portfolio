@@ -38,12 +38,17 @@ export async function updateContactMessage(
     return "Message deleted.";
   }
 
-  await settingsRepository.updateMessage(
-    id,
-    intent === "ARCHIVED"
-      ? { status: intent }
-      : { status: intent, readAt: new Date() },
-  );
+  const updateData: Record<string, unknown> = { status: intent };
+  if (intent === "READ") {
+    updateData.readAt = new Date();
+  } else if (intent === "REPLIED") {
+    updateData.readAt = new Date();
+    updateData.repliedAt = new Date();
+  } else if (intent === "ARCHIVED") {
+    updateData.archivedAt = new Date();
+  }
+
+  await settingsRepository.updateMessage(id, updateData);
   return "Message updated.";
 }
 
@@ -54,4 +59,20 @@ export async function saveSiteSettings(
   return current
     ? settingsRepository.updateSettings(current.id, data)
     : settingsRepository.createSettings(data);
+}
+
+export async function getEmailSignature() {
+  const settings = await settingsRepository.findSettingsIdentity();
+  if (!settings) return null;
+  const full = await settingsRepository.findSettingsById(settings.id);
+  return full?.emailSignature ?? null;
+}
+
+export async function saveEmailSignature(signature: unknown) {
+  const current = await settingsRepository.findSettingsIdentity();
+  if (!current) return { ok: false, message: "Settings not found." };
+  await settingsRepository.updateSettings(current.id, {
+    emailSignature: signature as Prisma.InputJsonValue,
+  });
+  return { ok: true, message: "Email signature saved." };
 }

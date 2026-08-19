@@ -271,10 +271,36 @@ model ContactMessage {
   message   String
   status    ContactMessageStatus @default(NEW)
   readAt    DateTime?
+  repliedAt DateTime?
+  archivedAt DateTime?
   createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
 
   @@index([status, createdAt])
   @@index([email])
+}
+
+enum ChatTurnRole {
+  user
+  assistant
+}
+
+enum JobApplicationStatus {
+  DRAFT
+  GENERATED
+  READY
+  SENDING
+  SENT
+  FAILED
+  ARCHIVED
+}
+
+enum EmailDeliveryStatus {
+  PENDING
+  SENDING
+  SENT
+  FAILED
+  UNKNOWN
 }
 
 model ThemeDefinition {
@@ -317,8 +343,124 @@ model SiteSettings {
   engineeringCoreLabel      String   @default("Core strengths")
   engineeringInventoryLabel String   @default("Technology inventory")
   engineeringScrollLabel    String   @default("Scroll to explore")
-  createdAt                 DateTime @default(now())
-  updatedAt                 DateTime @updatedAt
+  emailSignature           Json?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+}
+
+model ChatSession {
+  id           String     @id @default(cuid())
+  sessionToken String     @unique
+  clientHash   String
+  messageCount Int        @default(0)
+  status       String     @default("active")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  turns        ChatTurn[]
+
+  @@index([clientHash, updatedAt])
+  @@index([updatedAt])
+}
+
+model ChatTurn {
+  id        String      @id @default(cuid())
+  sessionId String
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role      ChatTurnRole
+  content   String
+  sources   Json?
+  provider  String?
+  model     String?
+  status    String      @default("completed")
+  createdAt DateTime    @default(now())
+
+  @@index([sessionId, createdAt])
+}
+
+model JobApplication {
+  id              String                @id @default(cuid())
+  companyName     String
+  roleTitle       String
+  recipientEmail  String?
+  contactName     String?
+  sourceUrl       String?
+  circularContent String                @default("")
+  jobDescription  String
+  status          JobApplicationStatus  @default(DRAFT)
+  tone            String?
+  notes           String?
+  customCvPath    String?
+  customCvName    String?
+  lastGeneratedAt DateTime?
+  sentAt          DateTime?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  artifacts       JobApplicationArtifact[]
+  generations     JobApplicationGeneration[]
+  deliveries      JobApplicationDelivery[]
+
+  @@index([status, updatedAt])
+  @@index([companyName, roleTitle])
+}
+
+model JobApplicationArtifact {
+  id            String   @id @default(cuid())
+  applicationId String
+  application   JobApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  kind          String
+  customKind    String?
+  title         String?
+  content       String
+  format        String   @default("MARKDOWN")
+  sortOrder     Int      @default(0)
+  generated     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([applicationId, kind])
+}
+
+model JobApplicationGeneration {
+  id             String   @id @default(cuid())
+  applicationId  String
+  application    JobApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  provider       String
+  model          String
+  promptVersion  String
+  inputSnapshot  Json
+  outputSnapshot Json?
+  status         String
+  errorCode      String?
+  errorMessage   String?
+  createdAt      DateTime @default(now())
+  completedAt    DateTime?
+
+  @@index([applicationId, createdAt])
+}
+
+model JobApplicationDelivery {
+  id                String              @id @default(cuid())
+  applicationId     String
+  application       JobApplication      @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  status            EmailDeliveryStatus @default(PENDING)
+  idempotencyKey    String              @unique
+  provider          String
+  providerMessageId String?
+  fromAddress       String
+  toAddress         String
+  replyTo           String?
+  subjectSnapshot   String
+  textSnapshot      String
+  htmlSnapshot      String?
+  attachmentName    String?
+  attachmentHash    String?
+  attemptCount      Int                 @default(0)
+  lastError         String?
+  createdAt         DateTime            @default(now())
+  sentAt            DateTime?
+
+  @@index([applicationId, createdAt])
+  @@index([status, createdAt])
 }
 
 model VisitorEvent {

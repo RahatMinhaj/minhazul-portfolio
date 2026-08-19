@@ -27,8 +27,10 @@ export function readStringList(value: FormDataEntryValue | null) {
   ];
 }
 
-export function success(message: string): ActionState {
-  return { status: "success", message, version: Date.now() };
+export function success(message: string, data?: Record<string, unknown> | undefined): ActionState {
+  const state: ActionState = { status: "success", message, version: Date.now() };
+  if (data !== undefined) state.data = data;
+  return state;
 }
 
 export function failure(message: string): ActionState {

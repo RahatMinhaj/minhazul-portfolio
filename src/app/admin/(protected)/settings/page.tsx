@@ -9,15 +9,18 @@ import { AdminMutationForm } from "@/components/admin/admin-mutation-form";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { saveSettingsAction } from "@/server/actions/admin-settings";
+import { getEmailSignature } from "@/features/settings/settings.service";
+import { EmailSignatureEditor } from "@/components/admin/email-signature-editor";
 import {
   getAdminSettings,
   getAdminThemes,
 } from "@/server/queries/admin-content";
 
 export default async function AdminSettingsPage() {
-  const [settings, themes] = await Promise.all([
+  const [settings, themes, emailSignature] = await Promise.all([
     getAdminSettings(),
     getAdminThemes(),
+    getEmailSignature(),
   ]);
   const fallbackTheme =
     themes.find((theme) => theme.isDefault)?.slug ?? "obsidian";
@@ -170,6 +173,13 @@ export default async function AdminSettingsPage() {
               />
             </div>
           </AdminMutationForm>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardContent className="p-6">
+          <h2 className="mb-4 text-base font-semibold">Email Signature</h2>
+          <EmailSignatureEditor emailSignature={emailSignature} />
         </CardContent>
       </Card>
     </main>

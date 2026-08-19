@@ -8,6 +8,7 @@ import {
   createContactMessage,
 } from "@/features/contact/contact.service";
 import { contactSchema, type ContactState } from "@/lib/validation/contact";
+import { getAdminSettings } from "@/server/queries/admin-content";
 
 export async function submitContactMessage(
   _previousState: ContactState,
@@ -41,6 +42,14 @@ export async function submitContactMessage(
       status: "error",
       message:
         "Messaging is not configured yet. Please use a verified social link when one becomes available.",
+    };
+  }
+
+  const settings = await getAdminSettings();
+  if (settings?.contactEnabled === false) {
+    return {
+      status: "error",
+      message: "Contact messaging is currently disabled.",
     };
   }
 

@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -9,6 +10,11 @@ import {
 import { env } from "@/config/env";
 import { isSameOriginRequest } from "@/lib/http/same-origin";
 import { getCurrentAdmin } from "@/lib/auth/session";
+import {
+  CHAT_SESSION_COOKIE,
+  getOrCreateChatSession,
+  addChatTurn,
+} from "@/features/chat/chat.session";
 
 const chatRequestSchema = z.object({
   question: z.string().trim().min(1).max(500),
@@ -64,7 +70,50 @@ export async function POST(request: Request) {
       history: parsed.data.history,
       question: parsed.data.question,
     });
-    return response(result, 200);
+
+    let sessionToken: string | null = null;
+    try {
+      const cookieStore = await cookies();
+      const existingToken = cookieStore.get(CHAT_SESSION_COOKIE)?.value ?? null;
+      const sessionResult = await getOrCreateChatSession({
+        sessionToken: existingToken,
+        clientIdentifier,
+      });
+
+      if ("newToken" in sessionResult) {
+        sessionToken = sessionResult.newToken;
+      }
+
+      await addChatTurn({
+        sessionId: sessionResult.id,
+        role: "user",
+        content: parsed.data.question,
+      });
+
+      await addChatTurn({
+        sessionId: sessionResult.id,
+        role: "assistant",
+        content: result.answer,
+        sources: result.sources,
+        provider: "ai",
+      });
+    } catch (error) {
+      console.error("Failed to persist chat session", error);
+    }
+
+    const httpResponse = response(result, 200);
+
+    if (sessionToken) {
+      httpResponse.cookies.set(CHAT_SESSION_COOKIE, sessionToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 30 * 24 * 60 * 60,
+      });
+    }
+
+    return httpResponse;
   } catch (error) {
     if (error instanceof ChatRateLimitError) {
       return NextResponse.json(

@@ -384,6 +384,12 @@ function normalizeContent(content: unknown) {
   if (isLexicalDocument(content)) return JSON.stringify(content);
 
   if (typeof content === "string" && content.trim()) {
+    try {
+      const parsed = JSON.parse(content);
+      if (isLexicalDocument(parsed)) return JSON.stringify(parsed);
+    } catch {
+      // Not JSON — fall through to plain text handling
+    }
     return JSON.stringify({
       root: {
         ...emptyDocument.root,

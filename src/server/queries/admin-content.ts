@@ -2,6 +2,10 @@ import "server-only";
 
 import { requireAdmin } from "@/lib/auth/session";
 import * as repository from "@/server/repositories/admin-content.repository";
+import {
+  getAdminChatSessions as fetchSessions,
+  getAdminChatSessionById as fetchSessionById,
+} from "@/features/chat/chat.session";
 
 async function authorized<T>(query: () => Promise<T>) {
   await requireAdmin();
@@ -58,4 +62,38 @@ export function getAdminBlogPosts() {
 
 export function getAdminMedia() {
   return authorized(repository.getAdminMedia);
+}
+
+export function getAdminChatSessions(params: {
+  search: string | undefined;
+  status: string | undefined;
+  page: number;
+  pageSize: number;
+}) {
+  return authorized(() => fetchSessions(params));
+}
+
+export function getAdminChatSession(id: string) {
+  return authorized(() => fetchSessionById(id));
+}
+
+export function getAdminJobApplications(params: {
+  search: string | undefined;
+  status: string | undefined;
+  page: number;
+  pageSize: number;
+}) {
+  return authorized(() =>
+    import("@/features/job-applications/job-application.repository").then((m) =>
+      m.getAdminJobApplications(params),
+    ),
+  );
+}
+
+export function getAdminJobApplication(id: string) {
+  return authorized(() =>
+    import("@/features/job-applications/job-application.repository").then((m) =>
+      m.getAdminJobApplicationById(id),
+    ),
+  );
 }
