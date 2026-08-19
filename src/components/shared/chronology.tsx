@@ -98,7 +98,7 @@ export function Chronology({
                     {item.description}
                   </div>
                 ) : null}
-                {!compact && item.highlights?.length ? (
+                {item.highlights?.length ? (
                   <ul className="mt-6 grid gap-3 text-sm leading-6 text-[var(--muted)] md:grid-cols-2">
                     {item.highlights.map((highlight) => (
                       <li

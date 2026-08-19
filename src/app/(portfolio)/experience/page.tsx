@@ -32,8 +32,8 @@ export default async function ExperiencePage() {
     description: experience.richDescription ? (
       <RichTextDocument document={experience.richDescription} />
     ) : null,
-    highlights: experience.achievements.slice(0, 4),
-    technologies: experience.technologies.slice(0, 10),
+    highlights: experience.achievements,
+    technologies: experience.technologies,
     current: experience.currentlyWorking,
   }));
 

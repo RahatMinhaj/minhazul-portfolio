@@ -111,7 +111,8 @@ export default async function Home() {
       description: item.richDescription ? (
         <RichTextDocument document={item.richDescription} />
       ) : null,
-      technologies: item.technologies.slice(0, 6),
+      highlights: item.achievements,
+      technologies: item.technologies,
       current: item.currentlyWorking,
     }));
   const publicEducation = education.filter(
