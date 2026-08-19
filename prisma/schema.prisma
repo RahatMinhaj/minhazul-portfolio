@@ -190,7 +190,7 @@ model Project {
   slug             String        @unique
   shortDescription String
   richDescription  Json?
-  problemStatement String?
+  problemStatement Json?
   solution         Json?
   architecture     Json?
   challenges       Json?

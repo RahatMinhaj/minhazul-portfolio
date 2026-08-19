@@ -9,15 +9,12 @@ import {
 } from "@/features/projects/project.service";
 import { Prisma } from "@/generated/prisma/client";
 import { requireAdmin } from "@/lib/auth/session";
+import { richTextDocumentHasContent } from "@/lib/content/rich-text";
 import {
   getProjectValidationMessage,
   parseProjectFormData,
 } from "@/lib/validation/admin-project";
-import {
-  failure,
-  idSchema,
-  success,
-} from "@/server/actions/action-helpers";
+import { failure, idSchema, success } from "@/server/actions/action-helpers";
 import type { ActionState } from "@/types/action-state";
 
 export async function saveProjectAction(
@@ -26,11 +23,30 @@ export async function saveProjectAction(
 ): Promise<ActionState> {
   await requireAdmin();
   const parsed = parseProjectFormData(formData);
-  if (!parsed.success) return failure(getProjectValidationMessage(parsed.error));
+  if (!parsed.success)
+    return failure(getProjectValidationMessage(parsed.error));
 
-  const { id, ...values } = parsed.data;
+  const {
+    id,
+    architecture,
+    challenges,
+    outcomes,
+    problemStatement,
+    richDescription,
+    solution,
+    ...values
+  } = parsed.data;
+  const data = {
+    ...values,
+    architecture: jsonValue(architecture),
+    challenges: jsonValue(challenges),
+    outcomes: jsonValue(outcomes),
+    problemStatement: jsonValue(problemStatement),
+    richDescription: jsonValue(richDescription),
+    solution: jsonValue(solution),
+  };
   try {
-    await saveProject(id, values);
+    await saveProject(id, data);
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -45,6 +61,12 @@ export async function saveProjectAction(
   revalidatePath(`/projects/${values.slug}`);
   revalidatePath("/admin/projects");
   redirect("/admin/projects");
+}
+
+function jsonValue(document: Parameters<typeof richTextDocumentHasContent>[0]) {
+  return richTextDocumentHasContent(document)
+    ? (document as Prisma.InputJsonValue)
+    : Prisma.DbNull;
 }
 
 export async function deleteProjectAction(

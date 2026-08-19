@@ -4,6 +4,7 @@ import { AdminCheckbox, AdminField } from "@/components/admin/admin-fields";
 import { AdminMutationForm } from "@/components/admin/admin-mutation-form";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { AdminImageField } from "@/components/admin/admin-image-field";
+import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   deleteEducationAction,
@@ -132,6 +133,14 @@ function EducationForm({
         name="sortOrder"
         type="number"
       />
+      <div className="md:col-span-2">
+        <p className="mb-2 text-sm font-medium">Description</p>
+        <RichTextEditor
+          initialContent={education?.description}
+          label="Education description"
+          name="description"
+        />
+      </div>
       <AdminCheckbox
         defaultChecked={education?.visible ?? true}
         label="Visible"

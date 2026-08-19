@@ -2,6 +2,7 @@ import { AdminField, AdminTextarea } from "@/components/admin/admin-fields";
 import { DeveloperCodePropertiesField } from "@/components/admin/developer-code-properties-field";
 import { AdminMutationForm } from "@/components/admin/admin-mutation-form";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { Card, CardContent } from "@/components/ui/card";
 import { saveProfileAction } from "@/server/actions/admin-profile";
 import { getAdminProfile } from "@/server/queries/admin-content";
@@ -39,6 +40,14 @@ export default async function AdminProfilePage() {
                 label="Short biography"
                 name="shortBio"
                 required
+              />
+            </div>
+            <div className="md:col-span-2">
+              <p className="mb-2 text-sm font-medium">Full biography</p>
+              <RichTextEditor
+                initialContent={profile?.longBio}
+                label="Full biography"
+                name="longBio"
               />
             </div>
             <AdminField

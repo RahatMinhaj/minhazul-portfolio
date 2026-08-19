@@ -6,12 +6,26 @@ import {
 } from "@/lib/validation/admin-project";
 
 function validProject(overrides: Record<string, string> = {}) {
+  const richText = JSON.stringify({
+    root: {
+      children: [
+        { type: "paragraph", children: [{ type: "text", text: "Body" }] },
+      ],
+      type: "root",
+    },
+  });
   const values = {
     id: "",
     title: "Portfolio platform",
     slug: "portfolio-platform",
     shortDescription:
       "A production portfolio platform built for automated tests.",
+    richDescription: richText,
+    problemStatement: richText,
+    solution: richText,
+    architecture: richText,
+    challenges: richText,
+    outcomes: richText,
     projectType: "Web application",
     clientName: "Border Guard Bangladesh - Defence Sector",
     companyName: "Example Engineering",

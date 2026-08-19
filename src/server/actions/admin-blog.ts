@@ -6,6 +6,7 @@ import { z } from "zod";
 import type { Prisma } from "@/generated/prisma/client";
 import { deleteBlogPost, saveBlogPost } from "@/features/blog/blog.service";
 import { requireAdmin } from "@/lib/auth/session";
+import { parseRichTextDocument } from "@/lib/content/rich-text";
 import {
   failure,
   idSchema,
@@ -46,17 +47,8 @@ export async function saveBlogPostAction(
   });
   if (!parsed.success) return failure("Blog-post validation failed.");
 
-  const contentValue = formData.get("content");
-  if (typeof contentValue !== "string")
-    return failure("Article content missing.");
-
-  let content: unknown;
-  try {
-    content = JSON.parse(contentValue);
-  } catch {
-    return failure("Article content is not valid rich-text JSON.");
-  }
-  if (!isRichDocument(content)) {
+  const content = parseRichTextDocument(formData.get("content"));
+  if (!content) {
     return failure("Article content has an unsupported structure.");
   }
 
@@ -89,13 +81,4 @@ export async function deleteBlogPostAction(
   revalidatePath("/blog");
   revalidatePath("/admin/blog");
   return success("Article deleted.");
-}
-
-function isRichDocument(value: unknown): value is {
-  type: "doc";
-  content: unknown[];
-} {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
-  const document = value as Record<string, unknown>;
-  return document.type === "doc" && Array.isArray(document.content);
 }

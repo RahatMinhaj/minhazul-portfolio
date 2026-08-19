@@ -7,6 +7,7 @@ import {
 import { Container } from "@/components/shared/container";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHero } from "@/components/shared/page-hero";
+import { RichTextDocument } from "@/components/shared/rich-text-document";
 import { formatMonthYear } from "@/lib/utils/date";
 import { getVisibleExperiences } from "@/server/queries/public-content";
 
@@ -28,7 +29,11 @@ export default async function ExperiencePage() {
     location: experience.location?.toLowerCase().includes("dhaka")
       ? "Dhaka, Bangladesh"
       : experience.location,
-    summary: experience.summary,
+    summary: experience.richDescription ? (
+      <RichTextDocument document={experience.richDescription} />
+    ) : (
+      experience.summary
+    ),
     highlights: experience.achievements.slice(0, 4),
     technologies: experience.technologies.slice(0, 10),
     current: experience.currentlyWorking,

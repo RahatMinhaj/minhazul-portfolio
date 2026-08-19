@@ -3,11 +3,16 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { Prisma } from "@/generated/prisma/client";
 import { saveProfile } from "@/features/profile/profile.service";
 import { heroDeveloperCodeSchema } from "@/features/profile/hero-content";
 import { requireAdmin } from "@/lib/auth/session";
 import { failure, success } from "@/server/actions/action-helpers";
 import type { ActionState } from "@/types/action-state";
+import {
+  parseRichTextDocument,
+  richTextDocumentHasContent,
+} from "@/lib/content/rich-text";
 
 const profileSchema = z.object({
   fullName: z.string().trim().min(2).max(120),
@@ -62,6 +67,9 @@ export async function saveProfileAction(
     return failure("Profile validation failed. Review every field.");
   }
 
+  const longBio = parseRichTextDocument(formData.get("longBio"));
+  if (!longBio) return failure("Full biography contains invalid rich text.");
+
   const {
     heroCodeFileLabel,
     heroCodeProperties,
@@ -78,6 +86,9 @@ export async function saveProfileAction(
     currentRole: parsed.data.currentRole || null,
     currentFocus: parsed.data.currentFocus || null,
     yearsOfExperience: parsed.data.yearsOfExperience,
+    longBio: richTextDocumentHasContent(longBio)
+      ? (longBio as Prisma.InputJsonValue)
+      : Prisma.DbNull,
     heroContent: {
       developerCode: {
         fileLabel: heroCodeFileLabel,

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { Prisma } from "@/generated/prisma/client";
 import {
   deleteCertification,
   deleteEducation,
@@ -22,6 +23,10 @@ import {
   success,
 } from "@/server/actions/action-helpers";
 import type { ActionState } from "@/types/action-state";
+import {
+  parseRichTextDocument,
+  richTextDocumentHasContent,
+} from "@/lib/content/rich-text";
 
 const experienceSchema = z.object({
   id: z.union([idSchema, z.literal("")]),
@@ -48,11 +53,20 @@ export async function saveExperienceAction(
 
   if (!parsed.success) return failure("Experience validation failed.");
 
+  const richDescription = parseRichTextDocument(
+    formData.get("richDescription"),
+  );
+  if (!richDescription)
+    return failure("Experience description contains invalid rich text.");
+
   const data = {
     company: parsed.data.company,
     position: parsed.data.position,
     location: parsed.data.location || null,
     summary: parsed.data.summary || null,
+    richDescription: richTextDocumentHasContent(richDescription)
+      ? (richDescription as Prisma.InputJsonValue)
+      : Prisma.DbNull,
     startDate: parseOptionalDate(formData.get("startDate")),
     endDate: parseOptionalDate(formData.get("endDate")),
     currentlyWorking: formData.get("currentlyWorking") === "on",
@@ -188,6 +202,9 @@ export async function saveEducationAction(
     sortOrder: formData.get("sortOrder") ?? 0,
   });
   if (!parsed.success) return failure("Education validation failed.");
+  const description = parseRichTextDocument(formData.get("description"));
+  if (!description)
+    return failure("Education description contains invalid rich text.");
   const { id, ...values } = parsed.data;
   let logo: string | null;
   try {
@@ -209,6 +226,9 @@ export async function saveEducationAction(
     field: values.field || null,
     grade: values.grade || null,
     logo,
+    description: richTextDocumentHasContent(description)
+      ? (description as Prisma.InputJsonValue)
+      : Prisma.DbNull,
     startDate: parseOptionalDate(formData.get("startDate")),
     endDate: parseOptionalDate(formData.get("endDate")),
     visible: formData.get("visible") === "on",

@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+import {
+  isRichTextDocument,
+  parseRichTextDocument,
+  type RichTextDocument,
+} from "@/lib/content/rich-text";
+
 export const projectStatuses = [
   "DRAFT",
   "IN_PROGRESS",
@@ -12,6 +18,12 @@ export const projectFormFieldNames = [
   "title",
   "slug",
   "shortDescription",
+  "richDescription",
+  "problemStatement",
+  "solution",
+  "architecture",
+  "challenges",
+  "outcomes",
   "projectType",
   "clientName",
   "companyName",
@@ -54,9 +66,15 @@ const optionalDate = z
     (value) => (typeof value === "string" ? value.trim() : ""),
     z.union([z.literal(""), z.iso.date("Enter a valid date.")]),
   )
-  .transform((value) =>
-    value ? new Date(`${value}T00:00:00.000Z`) : null,
-  );
+  .transform((value) => (value ? new Date(`${value}T00:00:00.000Z`) : null));
+
+const richTextDocument = z.preprocess(
+  parseRichTextDocument,
+  z.custom<RichTextDocument>(
+    (value) => isRichTextDocument(value),
+    "Unsupported rich-text content.",
+  ),
+);
 
 export const projectFormSchema = z
   .object({
@@ -79,6 +97,12 @@ export const projectFormSchema = z
       .trim()
       .min(20, "Short description must contain at least 20 characters.")
       .max(500, "Short description must contain no more than 500 characters."),
+    richDescription: richTextDocument,
+    problemStatement: richTextDocument,
+    solution: richTextDocument,
+    architecture: richTextDocument,
+    challenges: richTextDocument,
+    outcomes: richTextDocument,
     projectType: optionalText(120),
     clientName: optionalText(200),
     companyName: optionalText(200),
@@ -118,6 +142,12 @@ export function parseProjectFormData(formData: FormData) {
     title: formData.get("title"),
     slug: formData.get("slug"),
     shortDescription: formData.get("shortDescription"),
+    richDescription: formData.get("richDescription"),
+    problemStatement: formData.get("problemStatement"),
+    solution: formData.get("solution"),
+    architecture: formData.get("architecture"),
+    challenges: formData.get("challenges"),
+    outcomes: formData.get("outcomes"),
     projectType: formData.get("projectType"),
     clientName: formData.get("clientName"),
     companyName: formData.get("companyName"),

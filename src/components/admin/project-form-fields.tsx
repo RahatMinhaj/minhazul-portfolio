@@ -6,6 +6,7 @@ import {
   AdminTextarea,
 } from "@/components/admin/admin-fields";
 import { projectStatuses } from "@/lib/validation/admin-project";
+import { RichTextEditor } from "@/components/admin/rich-text-editor";
 
 export function ProjectFormFields({ project }: { project?: Project }) {
   return (
@@ -38,6 +39,36 @@ export function ProjectFormFields({ project }: { project?: Project }) {
           required
         />
       </div>
+      <ProjectRichTextField
+        initialContent={project?.richDescription}
+        label="Full project description"
+        name="richDescription"
+      />
+      <ProjectRichTextField
+        initialContent={project?.problemStatement}
+        label="Problem statement"
+        name="problemStatement"
+      />
+      <ProjectRichTextField
+        initialContent={project?.solution}
+        label="Solution"
+        name="solution"
+      />
+      <ProjectRichTextField
+        initialContent={project?.architecture}
+        label="Architecture"
+        name="architecture"
+      />
+      <ProjectRichTextField
+        initialContent={project?.challenges}
+        label="Challenges"
+        name="challenges"
+      />
+      <ProjectRichTextField
+        initialContent={project?.outcomes}
+        label="Outcomes"
+        name="outcomes"
+      />
       <AdminField
         defaultValue={project?.projectType ?? undefined}
         label="Project type / tag"
@@ -133,6 +164,27 @@ export function ProjectFormFields({ project }: { project?: Project }) {
         />
       </div>
     </>
+  );
+}
+
+function ProjectRichTextField({
+  initialContent,
+  label,
+  name,
+}: {
+  initialContent?: unknown;
+  label: string;
+  name: string;
+}) {
+  return (
+    <div className="md:col-span-2">
+      <p className="mb-2 text-sm font-medium">{label}</p>
+      <RichTextEditor
+        initialContent={initialContent}
+        label={label}
+        name={name}
+      />
+    </div>
   );
 }
 

@@ -377,6 +377,79 @@ html {
   font-size: 0.9em;
 }
 
+.rich-document a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+.rich-editor-paragraph {
+  margin-bottom: 0.65rem;
+}
+
+.rich-editor-heading {
+  margin-block: 1rem 0.45rem;
+  color: var(--foreground);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.rich-editor-heading-h2 {
+  font-size: 1.35rem;
+}
+
+.rich-editor-heading-h3 {
+  font-size: 1.1rem;
+}
+
+.rich-editor-list {
+  margin-block: 0.6rem;
+  padding-left: 1.6rem;
+}
+
+.rich-editor-list-unordered {
+  list-style: disc;
+}
+
+.rich-editor-list-ordered {
+  list-style: decimal;
+}
+
+.rich-editor-list .rich-editor-list {
+  margin-block: 0.2rem;
+}
+
+.rich-editor-quote {
+  margin-block: 0.75rem;
+  border-left: 2px solid var(--accent);
+  padding-left: 1rem;
+  color: var(--muted);
+}
+
+.rich-editor-code {
+  overflow-x: auto;
+  margin-block: 0.75rem;
+  border-radius: 0.6rem;
+  background: var(--background);
+  padding: 0.9rem;
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.rich-editor-inline-code {
+  border-radius: 0.25rem;
+  background: var(--background);
+  padding: 0.1rem 0.3rem;
+  color: var(--accent);
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.rich-editor-link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
 @media (hover: hover) and (pointer: fine) {
   html,
   body {
