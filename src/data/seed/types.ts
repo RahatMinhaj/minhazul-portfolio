@@ -23,7 +23,7 @@ export type ExperienceSeedData = {
   startDate?: string;
   endDate?: string;
   currentlyWorking: boolean;
-  summary?: string;
+  richDescription?: LexicalRichTextSeedData;
   achievements: string[];
   technologies: string[];
   featured?: boolean;
@@ -89,4 +89,20 @@ export type RichTextSeedData = {
       text: string;
     }>;
   }>;
+};
+
+export type LexicalRichTextSeedData = {
+  root: {
+    type: "root";
+    version: 1;
+    children: Array<{
+      type: "paragraph";
+      version: 1;
+      children: Array<{
+        type: "text";
+        version: 1;
+        text: string;
+      }>;
+    }>;
+  };
 };

@@ -101,13 +101,6 @@ function ExperienceForm({ experience }: { experience?: Experience }) {
         type="date"
       />
       <div className="md:col-span-2">
-        <AdminTextarea
-          defaultValue={experience?.summary ?? undefined}
-          label="Summary"
-          name="summary"
-        />
-      </div>
-      <div className="md:col-span-2">
         <p className="mb-2 text-sm font-medium">Detailed description</p>
         <RichTextEditor
           initialContent={experience?.richDescription}

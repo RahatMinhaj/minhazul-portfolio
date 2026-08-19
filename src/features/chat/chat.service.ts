@@ -104,7 +104,7 @@ function buildSources(
       title: `${experience.position} at ${experience.company}`,
       href: "/experience",
       text: [
-        experience.summary,
+        richTextToPlainText(experience.richDescription),
         ...experience.achievements,
         `Technologies: ${experience.technologies.join(", ")}`,
       ]

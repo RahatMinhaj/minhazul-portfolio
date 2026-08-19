@@ -156,7 +156,9 @@ async function main() {
         startDate: optionalDate(experience.startDate),
         endDate: optionalDate(experience.endDate),
         currentlyWorking: experience.currentlyWorking,
-        summary: experience.summary ?? null,
+        richDescription: experience.richDescription
+          ? (experience.richDescription as Prisma.InputJsonValue)
+          : Prisma.DbNull,
         achievements: [...experience.achievements],
         technologies: [...experience.technologies],
         sortOrder,

@@ -29,11 +29,9 @@ export default async function ExperiencePage() {
     location: experience.location?.toLowerCase().includes("dhaka")
       ? "Dhaka, Bangladesh"
       : experience.location,
-    summary: experience.richDescription ? (
+    description: experience.richDescription ? (
       <RichTextDocument document={experience.richDescription} />
-    ) : (
-      experience.summary
-    ),
+    ) : null,
     highlights: experience.achievements.slice(0, 4),
     technologies: experience.technologies.slice(0, 10),
     current: experience.currentlyWorking,

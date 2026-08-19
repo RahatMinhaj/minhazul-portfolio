@@ -123,7 +123,6 @@ model Experience {
   startDate        DateTime?
   endDate          DateTime?
   currentlyWorking Boolean         @default(false)
-  summary          String?
   richDescription  Json?
   achievements     String[]
   technologies     String[]

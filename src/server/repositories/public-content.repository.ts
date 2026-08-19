@@ -101,7 +101,6 @@ export async function getVisibleExperiences() {
       startDate: true,
       endDate: true,
       currentlyWorking: true,
-      summary: true,
       richDescription: true,
       achievements: true,
       technologies: true,

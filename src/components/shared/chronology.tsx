@@ -9,7 +9,7 @@ export type ChronologyItem = {
   title: string;
   organization: string;
   location?: string | null | undefined;
-  summary?: React.ReactNode | undefined;
+  description?: React.ReactNode | undefined;
   highlights?: readonly string[] | undefined;
   technologies?: readonly string[] | undefined;
   current?: boolean | undefined;
@@ -93,9 +93,9 @@ export function Chronology({
                 ) : null}
               </div>
               <div>
-                {item.summary ? (
+                {item.description ? (
                   <div className="leading-7 text-[var(--muted)]">
-                    {item.summary}
+                    {item.description}
                   </div>
                 ) : null}
                 {!compact && item.highlights?.length ? (

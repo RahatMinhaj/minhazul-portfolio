@@ -39,6 +39,7 @@ import {
   type ChronologyItem,
 } from "@/components/shared/chronology";
 import { Container } from "@/components/shared/container";
+import { RichTextDocument } from "@/components/shared/rich-text-document";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatMonthYear } from "@/lib/utils/date";
@@ -107,7 +108,9 @@ export default async function Home() {
         : undefined,
       title: item.position,
       organization: item.company,
-      summary: item.summary,
+      description: item.richDescription ? (
+        <RichTextDocument document={item.richDescription} />
+      ) : null,
       technologies: item.technologies.slice(0, 6),
       current: item.currentlyWorking,
     }));

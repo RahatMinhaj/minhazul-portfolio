@@ -33,7 +33,6 @@ const experienceSchema = z.object({
   company: z.string().trim().min(2).max(160),
   position: z.string().trim().min(2).max(160),
   location: z.string().trim().max(160),
-  summary: z.string().trim().max(2000),
   sortOrder: z.coerce.number().int().min(0).max(10000),
 });
 
@@ -47,7 +46,6 @@ export async function saveExperienceAction(
     company: formData.get("company"),
     position: formData.get("position"),
     location: formData.get("location"),
-    summary: formData.get("summary"),
     sortOrder: formData.get("sortOrder") ?? 0,
   });
 
@@ -63,7 +61,6 @@ export async function saveExperienceAction(
     company: parsed.data.company,
     position: parsed.data.position,
     location: parsed.data.location || null,
-    summary: parsed.data.summary || null,
     richDescription: richTextDocumentHasContent(richDescription)
       ? (richDescription as Prisma.InputJsonValue)
       : Prisma.DbNull,
@@ -79,6 +76,7 @@ export async function saveExperienceAction(
 
   await saveExperience(parsed.data.id, data);
 
+  revalidatePath("/");
   revalidatePath("/experience");
   revalidatePath("/admin/experiences");
   return success("Experience saved.");
@@ -92,6 +90,7 @@ export async function deleteExperienceAction(
   const id = idSchema.safeParse(formData.get("id"));
   if (!id.success) return failure("Invalid experience record.");
   await deleteExperience(id.data);
+  revalidatePath("/");
   revalidatePath("/experience");
   revalidatePath("/admin/experiences");
   return success("Experience deleted.");
