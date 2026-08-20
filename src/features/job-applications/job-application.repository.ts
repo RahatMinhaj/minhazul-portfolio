@@ -83,17 +83,19 @@ export async function deleteJobApplication(id: string) {
   return db.jobApplication.delete({ where: { id } });
 }
 
+export type ArtifactWrite = {
+  kind: string;
+  customKind?: string | null;
+  title?: string | null;
+  content: string;
+  format?: string;
+  sortOrder?: number;
+  generated?: boolean;
+};
+
 export async function upsertArtifacts(
   applicationId: string,
-  artifacts: Array<{
-    kind: string;
-    customKind?: string | null;
-    title?: string | null;
-    content: string;
-    format?: string;
-    sortOrder?: number;
-    generated?: boolean;
-  }>,
+  artifacts: ArtifactWrite[],
 ) {
   const db = getDatabase();
   await db.$transaction([
@@ -113,6 +115,58 @@ export async function upsertArtifacts(
       }),
     ),
   ]);
+}
+
+export async function upsertArtifactByKind(
+  applicationId: string,
+  artifact: ArtifactWrite,
+) {
+  const db = getDatabase();
+  const existing = await db.jobApplicationArtifact.findFirst({
+    where: { applicationId, kind: artifact.kind },
+  });
+
+  if (existing) {
+    return db.jobApplicationArtifact.update({
+      where: { id: existing.id },
+      data: {
+        content: artifact.content,
+        customKind: artifact.customKind ?? existing.customKind,
+        title: artifact.title ?? existing.title,
+        format: artifact.format ?? existing.format,
+        sortOrder: artifact.sortOrder ?? existing.sortOrder,
+        generated: artifact.generated ?? true,
+      },
+    });
+  }
+
+  return db.jobApplicationArtifact.create({
+    data: {
+      applicationId,
+      kind: artifact.kind,
+      customKind: artifact.customKind || null,
+      title: artifact.title || null,
+      content: artifact.content,
+      format: artifact.format ?? "MARKDOWN",
+      sortOrder: artifact.sortOrder ?? 0,
+      generated: artifact.generated ?? true,
+    },
+  });
+}
+
+export async function updateArtifactById(
+  artifactId: string,
+  data: { content: string; title?: string | null; kind?: string },
+) {
+  const db = getDatabase();
+  return db.jobApplicationArtifact.update({
+    where: { id: artifactId },
+    data: {
+      content: data.content,
+      ...(data.title !== undefined ? { title: data.title } : {}),
+      ...(data.kind !== undefined ? { kind: data.kind } : {}),
+    },
+  });
 }
 
 export async function createGeneration(data: {

@@ -1,5 +1,5 @@
 import { readUploadedImage } from "@/features/media/image-storage";
-import { getMediaAssetById } from "@/features/media/service";
+import { getMediaAssetById } from "@/features/media/media.service";
 
 export async function GET(
   _request: Request,

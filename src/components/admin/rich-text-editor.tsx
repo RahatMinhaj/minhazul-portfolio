@@ -13,7 +13,6 @@ import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
-import { htmlToLexicalJson } from "@/lib/content/rich-text";
 import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
@@ -56,6 +55,9 @@ import {
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { htmlToLexicalJson, lexicalJsonToHtml } from "@/lib/content/rich-text";
+
+export type RichTextEditorVariant = "document" | "email";
 
 const emptyDocument = {
   root: {
@@ -104,25 +106,38 @@ const editorTheme = {
 };
 
 export function RichTextEditor({
+  contentKey,
   initialContent,
   label = "Rich text content",
   name = "content",
   onChange,
+  onHtmlChange,
+  variant = "document",
 }: {
+  contentKey?: string | number;
   initialContent?: unknown;
   label?: string;
   name?: string;
   onChange?: (value: string) => void;
+  onHtmlChange?: (html: string) => void;
+  variant?: RichTextEditorVariant;
 }) {
-  const initialState = normalizeContent(initialContent);
-  const [serialized, setSerialized] = useState(initialState);
+  const normalized = normalizeContent(initialContent);
+  const [editorKey, setEditorKey] = useState(contentKey);
+  const [serialized, setSerialized] = useState(normalized.editorState);
+
+  if (editorKey !== contentKey) {
+    setEditorKey(contentKey);
+    setSerialized(normalized.editorState);
+  }
 
   return (
     <div className="overflow-hidden rounded-[var(--radius-control)] border border-[var(--border-strong)] bg-[var(--surface)] focus-within:border-[var(--accent)] focus-within:ring-2 focus-within:ring-[color-mix(in_srgb,var(--accent)_15%,transparent)]">
       <LexicalComposer
+        key={`${name}-${contentKey ?? "init"}`}
         initialConfig={{
-          editorState: initialState,
-          namespace: `admin-rich-text-${name}`,
+          editorState: normalized.editorState,
+          namespace: `admin-rich-text-${name}-${contentKey ?? "init"}`,
           nodes: [
             CodeNode,
             HeadingNode,
@@ -137,7 +152,7 @@ export function RichTextEditor({
           theme: editorTheme,
         }}
       >
-        <EditorToolbar />
+        <EditorToolbar variant={variant} />
         <div className="relative">
           <RichTextPlugin
             contentEditable={
@@ -154,7 +169,7 @@ export function RichTextEditor({
             }
           />
           <HistoryPlugin />
-          <LinkPlugin validateUrl={isSafeUrl} />
+          <LinkPlugin validateUrl={(url) => isSafeUrl(url, variant)} />
           <ListPlugin />
           <TabIndentationPlugin />
           <OnChangePlugin
@@ -163,6 +178,7 @@ export function RichTextEditor({
               const json = JSON.stringify(editorState.toJSON());
               setSerialized(json);
               onChange?.(json);
+              onHtmlChange?.(lexicalJsonToHtml(json));
             }}
           />
         </div>
@@ -172,7 +188,7 @@ export function RichTextEditor({
   );
 }
 
-function EditorToolbar() {
+function EditorToolbar({ variant }: { variant: RichTextEditorVariant }) {
   const [editor] = useLexicalComposerContext();
   const [active, setActive] = useState({
     block: "paragraph",
@@ -182,6 +198,7 @@ function EditorToolbar() {
     strikethrough: false,
     underline: false,
   });
+  const email = variant === "email";
 
   useEffect(
     () =>
@@ -292,20 +309,24 @@ function EditorToolbar() {
         <Strikethrough aria-hidden size={15} />
       </ToolbarButton>
       <ToolbarDivider />
-      <ToolbarButton
-        active={active.block === "h2"}
-        label="Heading"
-        onClick={() => formatBlock("h2")}
-      >
-        <Heading2 aria-hidden size={15} />
-      </ToolbarButton>
-      <ToolbarButton
-        active={active.block === "h3"}
-        label="Subheading"
-        onClick={() => formatBlock("h3")}
-      >
-        <Heading3 aria-hidden size={15} />
-      </ToolbarButton>
+      {email ? null : (
+        <>
+          <ToolbarButton
+            active={active.block === "h2"}
+            label="Heading"
+            onClick={() => formatBlock("h2")}
+          >
+            <Heading2 aria-hidden size={15} />
+          </ToolbarButton>
+          <ToolbarButton
+            active={active.block === "h3"}
+            label="Subheading"
+            onClick={() => formatBlock("h3")}
+          >
+            <Heading3 aria-hidden size={15} />
+          </ToolbarButton>
+        </>
+      )}
       <ToolbarButton
         active={active.block === "bullet"}
         label="Bullet list"
@@ -320,26 +341,33 @@ function EditorToolbar() {
       >
         <ListOrdered aria-hidden size={15} />
       </ToolbarButton>
-      <ToolbarButton
-        active={active.block === "quote"}
-        label="Quote"
-        onClick={() => formatBlock("quote")}
-      >
-        <Quote aria-hidden size={15} />
-      </ToolbarButton>
-      <ToolbarButton
-        active={active.block === "code" || active.code}
-        label="Code"
-        onClick={() => formatBlock("code")}
-      >
-        <Code2 aria-hidden size={15} />
-      </ToolbarButton>
+      {email ? null : (
+        <>
+          <ToolbarButton
+            active={active.block === "quote"}
+            label="Quote"
+            onClick={() => formatBlock("quote")}
+          >
+            <Quote aria-hidden size={15} />
+          </ToolbarButton>
+          <ToolbarButton
+            active={active.block === "code" || active.code}
+            label="Code"
+            onClick={() => formatBlock("code")}
+          >
+            <Code2 aria-hidden size={15} />
+          </ToolbarButton>
+        </>
+      )}
       <ToolbarDivider />
       <ToolbarButton
         label="Add link"
         onClick={() => {
-          const url = window.prompt("Link URL", "https://");
-          if (url?.trim() && isSafeUrl(url.trim())) {
+          const url = window.prompt(
+            "Link URL",
+            email ? "mailto:" : "https://",
+          );
+          if (url?.trim() && isSafeUrl(url.trim(), variant)) {
             editor.dispatchCommand(TOGGLE_LINK_COMMAND, url.trim());
           }
         }}
@@ -385,49 +413,55 @@ function ToolbarDivider() {
   return <span aria-hidden className="mx-1 w-px bg-[var(--border)]" />;
 }
 
-function normalizeContent(content: unknown) {
-  if (isLexicalDocument(content)) return JSON.stringify(content);
+function normalizeContent(content: unknown): { editorState: string } {
+  if (isLexicalDocument(content)) {
+    return { editorState: JSON.stringify(content) };
+  }
 
   if (typeof content === "string" && content.trim()) {
     try {
       const parsed = JSON.parse(content);
-      if (isLexicalDocument(parsed)) return JSON.stringify(parsed);
+      if (isLexicalDocument(parsed)) {
+        return { editorState: JSON.stringify(parsed) };
+      }
     } catch {
       // Not JSON — fall through
     }
     if (/<[a-z][\s\S]*>/i.test(content)) {
-      return htmlToLexicalJson(content);
+      return { editorState: htmlToLexicalJson(content) };
     }
-    return JSON.stringify({
-      root: {
-        ...emptyDocument.root,
-        children: [
-          {
-            children: [
-              {
-                detail: 0,
-                format: 0,
-                mode: "normal",
-                style: "",
-                text: content,
-                type: "text",
-                version: 1,
-              },
-            ],
-            direction: null,
-            format: "",
-            indent: 0,
-            textFormat: 0,
-            textStyle: "",
-            type: "paragraph",
-            version: 1,
-          },
-        ],
-      },
-    });
+    return {
+      editorState: JSON.stringify({
+        root: {
+          ...emptyDocument.root,
+          children: [
+            {
+              children: [
+                {
+                  detail: 0,
+                  format: 0,
+                  mode: "normal",
+                  style: "",
+                  text: content,
+                  type: "text",
+                  version: 1,
+                },
+              ],
+              direction: null,
+              format: "",
+              indent: 0,
+              textFormat: 0,
+              textStyle: "",
+              type: "paragraph",
+              version: 1,
+            },
+          ],
+        },
+      }),
+    };
   }
 
-  return JSON.stringify(emptyDocument);
+  return { editorState: JSON.stringify(emptyDocument) };
 }
 
 function isLexicalDocument(
@@ -439,6 +473,7 @@ function isLexicalDocument(
   return (root as Record<string, unknown>).type === "root";
 }
 
-function isSafeUrl(url: string) {
-  return /^https?:\/\//i.test(url);
+function isSafeUrl(url: string, variant: RichTextEditorVariant = "document") {
+  if (/^https?:\/\//i.test(url)) return true;
+  return variant === "email" && /^mailto:/i.test(url);
 }

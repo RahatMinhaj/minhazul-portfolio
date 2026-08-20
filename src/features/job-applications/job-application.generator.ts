@@ -5,21 +5,17 @@ import {
   type CandidateContext,
   candidateContextToPlainText,
 } from "./candidate-context";
-import type { ArtifactKind } from "./job-application-types";
+import type { ArtifactKind, GeneratedArtifacts } from "./job-application-types";
+import {
+  extractJsonObject,
+  parseArtifacts,
+  parseSingleArtifact,
+  stripCodeFences,
+} from "./job-application-parse";
 
-export type { ArtifactKind } from "./job-application-types";
+export type { ArtifactKind, GeneratedArtifacts } from "./job-application-types";
 export { ARTIFACT_KIND_LABELS } from "./job-application-types";
-
-export type GeneratedArtifacts = {
-  subject: string;
-  summary: string;
-  coverLetter: string;
-  emailMessage: string;
-  linkedinMessage: string;
-  keyMatches: string[];
-  gaps: string[];
-  interviewPoints: string[];
-};
+export { parseSingleArtifact } from "./job-application-parse";
 
 export type ExtractedMetadata = {
   companyName: string;
@@ -50,6 +46,36 @@ type OpenRouterResponse = {
   }>;
   error?: { message?: string };
   model?: string;
+};
+
+type TextCompletion = {
+  text: string;
+  provider: string;
+  model: string;
+};
+
+type CompletionOptions = {
+  maxOutputTokens: number;
+  temperature: number;
+  timeoutMs: number;
+};
+
+const ARTIFACT_COMPLETION: CompletionOptions = {
+  maxOutputTokens: 4096,
+  temperature: 0.3,
+  timeoutMs: 60_000,
+};
+
+const METADATA_COMPLETION: CompletionOptions = {
+  maxOutputTokens: 1024,
+  temperature: 0.1,
+  timeoutMs: 30_000,
+};
+
+const EMAIL_COMPLETION: CompletionOptions = {
+  maxOutputTokens: 4096,
+  temperature: 0.3,
+  timeoutMs: 30_000,
 };
 
 class ProviderError extends Error {
@@ -108,7 +134,9 @@ function buildAllArtifactsPrompt({
     "",
     "=== JOB CIRCULAR ===",
     circularContent,
-  ].filter(Boolean).join("\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 function buildSingleArtifactPrompt({
@@ -138,8 +166,7 @@ function buildSingleArtifactPrompt({
       "Generate a LinkedIn connection request message under 300 characters. Write in first person.",
     keyMatches:
       "Analyze the job requirements and list each one the candidate matches, with evidence from their profile. Return as a JSON array of strings.",
-    gaps:
-      "Analyze the job requirements and list any the candidate is missing or that are unclear. Return as a JSON array of strings.",
+    gaps: "Analyze the job requirements and list any the candidate is missing or that are unclear. Return as a JSON array of strings.",
     interviewPoints:
       "Generate 5-7 talking points the candidate should prepare for an interview for this role.",
   };
@@ -161,7 +188,9 @@ function buildSingleArtifactPrompt({
     if (existingArtifacts.summary)
       contextLines.push(`Summary: ${existingArtifacts.summary}`);
     if (existingArtifacts.coverLetter)
-      contextLines.push(`Cover Letter: ${existingArtifacts.coverLetter.slice(0, 500)}...`);
+      contextLines.push(
+        `Cover Letter: ${existingArtifacts.coverLetter.slice(0, 500)}...`,
+      );
     if (existingArtifacts.emailMessage)
       contextLines.push(`Email: ${existingArtifacts.emailMessage}`);
     if (existingArtifacts.linkedinMessage)
@@ -190,26 +219,74 @@ function buildSingleArtifactPrompt({
   return contextLines.filter(Boolean).join("\n");
 }
 
+function buildFinalEmailPrompt({
+  bodyHtml,
+  coverLetter,
+  signatureHtml,
+  companyName,
+  roleTitle,
+}: {
+  bodyHtml: string;
+  coverLetter?: string | undefined;
+  signatureHtml?: string | undefined;
+  companyName?: string | undefined;
+  roleTitle?: string | undefined;
+}) {
+  return [
+    "You are a professional email writer. Polish the following job application email HTML.",
+    "Keep the provided structure and content. Do not invent facts, employers, skills, or claims.",
+    "Rules:",
+    "- Output ONLY the HTML body content, no <html>, <head>, or <body> tags.",
+    "- Preserve existing formatting: paragraphs, lists, links, bold/italic/underline.",
+    "- Use simple tags: p, br, strong, em, u, ul, ol, li, a, hr, h2, h3.",
+    "- If a cover letter section is present, keep it after the main body, separated by a horizontal line.",
+    "- If a signature is present, keep it at the end.",
+    "- Keep the tone professional and friendly.",
+    "",
+    "=== EMAIL HTML ===",
+    bodyHtml,
+    "",
+    coverLetter ? "=== COVER LETTER (already included above if present; use only as reference) ===" : "",
+    coverLetter || "",
+    "",
+    signatureHtml
+      ? "=== SIGNATURE (already included above if present; use only as reference) ==="
+      : "",
+    signatureHtml || "",
+    "",
+    "=== CONTEXT ===",
+    `Company: ${companyName || "Not specified"}`,
+    `Role: ${roleTitle || "Not specified"}`,
+  ]
+    .filter((line, i, arr) => {
+      if (line === "" && arr[i + 1] === "") return false;
+      return true;
+    })
+    .join("\n");
+}
+
 export async function extractMetadataFromCircular(
   circularContent: string,
 ): Promise<GenerationResult & { metadata: ExtractedMetadata }> {
   const prompt = buildMetadataExtractionPrompt(circularContent);
+  const completion = await completePrompt(prompt, METADATA_COMPLETION);
+  const emptyArtifacts: GeneratedArtifacts = {
+    subject: "",
+    summary: "",
+    coverLetter: "",
+    emailMessage: "",
+    linkedinMessage: "",
+    keyMatches: [],
+    gaps: [],
+    interviewPoints: [],
+  };
 
-  if (env.GEMINI_API_KEY) {
-    try {
-      return await generateGeminiMetadata(prompt);
-    } catch (error) {
-      if (!(error instanceof ProviderError) || !error.fallbackEligible) throw error;
-      if (!env.OPENROUTER_API_KEY) throw error;
-      console.warn("Gemini unavailable for metadata extraction; using OpenRouter.");
-    }
-  }
-
-  if (env.OPENROUTER_API_KEY) {
-    return generateOpenRouterMetadata(prompt);
-  }
-
-  throw new Error("No AI provider is configured.");
+  return {
+    artifacts: emptyArtifacts,
+    metadata: parseMetadata(completion.text),
+    provider: completion.provider,
+    model: completion.model,
+  };
 }
 
 export async function generateAllArtifacts({
@@ -222,22 +299,12 @@ export async function generateAllArtifacts({
   tone?: string | undefined;
 }): Promise<GenerationResult> {
   const prompt = buildAllArtifactsPrompt({ candidate, circularContent, tone });
-
-  if (env.GEMINI_API_KEY) {
-    try {
-      return await generateGemini(prompt);
-    } catch (error) {
-      if (!(error instanceof ProviderError) || !error.fallbackEligible) throw error;
-      if (!env.OPENROUTER_API_KEY) throw error;
-      console.warn("Gemini unavailable for job generation; using OpenRouter.");
-    }
-  }
-
-  if (env.OPENROUTER_API_KEY) {
-    return generateOpenRouter(prompt);
-  }
-
-  throw new Error("No AI provider is configured.");
+  const completion = await completePrompt(prompt, ARTIFACT_COMPLETION);
+  return {
+    artifacts: parseArtifacts(completion.text),
+    provider: completion.provider,
+    model: completion.model,
+  };
 }
 
 export async function regenerateSingleArtifact({
@@ -261,44 +328,75 @@ export async function regenerateSingleArtifact({
     existingArtifacts,
   });
 
-  let result: GenerationResult;
+  const completion = await completePrompt(prompt, ARTIFACT_COMPLETION);
+  const content = parseSingleArtifact(completion.text, kind);
+  if (!content.trim()) {
+    throw new Error(`Provider returned no ${kind} content.`);
+  }
+
+  return {
+    content,
+    provider: completion.provider,
+    model: completion.model,
+  };
+}
+
+export async function generateFinalEmailHtml({
+  bodyHtml,
+  coverLetter,
+  signatureHtml,
+  companyName,
+  roleTitle,
+}: {
+  bodyHtml: string;
+  coverLetter?: string | undefined;
+  signatureHtml?: string | undefined;
+  companyName?: string | undefined;
+  roleTitle?: string | undefined;
+}): Promise<{ html: string; provider: string; model: string }> {
+  const prompt = buildFinalEmailPrompt({
+    bodyHtml,
+    coverLetter,
+    signatureHtml,
+    companyName,
+    roleTitle,
+  });
+  const completion = await completePrompt(prompt, EMAIL_COMPLETION);
+  const html = stripCodeFences(completion.text);
+  if (!html) throw new Error("AI returned empty content.");
+
+  return {
+    html,
+    provider: completion.provider,
+    model: completion.model,
+  };
+}
+
+async function completePrompt(
+  prompt: string,
+  options: CompletionOptions,
+): Promise<TextCompletion> {
   if (env.GEMINI_API_KEY) {
     try {
-      result = await generateGemini(prompt);
+      return await completeGemini(prompt, options);
     } catch (error) {
       if (!(error instanceof ProviderError) || !error.fallbackEligible) throw error;
       if (!env.OPENROUTER_API_KEY) throw error;
-      result = await generateOpenRouter(prompt);
+      console.warn("Gemini unavailable for job generation; using OpenRouter.");
     }
-  } else if (env.OPENROUTER_API_KEY) {
-    result = await generateOpenRouter(prompt);
-  } else {
-    throw new Error("No AI provider is configured.");
   }
 
-  const artifacts = result.artifacts;
-  let content: string;
-
-  switch (kind) {
-    case "keyMatches":
-      content = artifacts.keyMatches.join("\n");
-      break;
-    case "gaps":
-      content = artifacts.gaps.join("\n");
-      break;
-    case "interviewPoints":
-      content = artifacts.interviewPoints.join("\n");
-      break;
-    default:
-      content = artifacts[kind] ?? "";
+  if (env.OPENROUTER_API_KEY) {
+    return completeOpenRouter(prompt, options);
   }
 
-  return { content, provider: result.provider, model: result.model };
+  throw new Error("No AI provider is configured.");
 }
 
-async function generateGeminiMetadata(
+async function completeGemini(
   prompt: string,
-): Promise<GenerationResult & { metadata: ExtractedMetadata }> {
+  options: CompletionOptions,
+): Promise<TextCompletion> {
   if (!env.GEMINI_API_KEY) throw new ProviderError("Gemini not configured.", true);
 
   let response: Response;
@@ -314,115 +412,13 @@ async function generateGeminiMetadata(
         body: JSON.stringify({
           contents: [{ role: "user", parts: [{ text: prompt }] }],
           generationConfig: {
-            maxOutputTokens: 1024,
-            temperature: 0.1,
+            maxOutputTokens: options.maxOutputTokens,
+            temperature: options.temperature,
             thinkingConfig: { thinkingBudget: 0 },
           },
         }),
         cache: "no-store",
-        signal: AbortSignal.timeout(30_000),
-      },
-    );
-  } catch (error) {
-    console.error("Gemini metadata request failed", error);
-    throw new ProviderError("Gemini request failed.", true);
-  }
-
-  if (!response.ok) {
-    const payload = (await response.json().catch(() => null)) as GeminiResponse | null;
-    const msg = payload?.error?.message ?? "No detail";
-    console.error(`Gemini metadata failed (${response.status}): ${msg}`);
-    throw new ProviderError(`Gemini failed with status ${response.status}.`, isFallbackStatus(response.status));
-  }
-
-  const payload = (await response.json()) as GeminiResponse;
-  const text = payload.candidates?.[0]?.content?.parts
-    ?.map((p) => p.text ?? "")
-    .join("")
-    .trim();
-
-  if (!text) throw new ProviderError("Gemini returned no content.", true);
-
-  const metadata = parseMetadata(text);
-  return {
-    artifacts: { subject: "", summary: "", coverLetter: "", emailMessage: "", linkedinMessage: "", keyMatches: [], gaps: [], interviewPoints: [] },
-    metadata,
-    provider: "gemini",
-    model: env.GEMINI_MODEL,
-  };
-}
-
-async function generateOpenRouterMetadata(
-  prompt: string,
-): Promise<GenerationResult & { metadata: ExtractedMetadata }> {
-  if (!env.OPENROUTER_API_KEY) throw new Error("OpenRouter not configured.");
-
-  let response: Response;
-  try {
-    response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${env.OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": env.NEXT_PUBLIC_SITE_URL,
-        "X-OpenRouter-Title": "Job Application Assistant",
-      },
-      body: JSON.stringify({
-        model: env.OPENROUTER_MODEL,
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: 1024,
-        temperature: 0.1,
-      }),
-      cache: "no-store",
-      signal: AbortSignal.timeout(30_000),
-    });
-  } catch (error) {
-    console.error("OpenRouter metadata failed", error);
-    throw new Error("OpenRouter request failed.");
-  }
-
-  if (!response.ok) {
-    const payload = (await response.json().catch(() => null)) as OpenRouterResponse | null;
-    console.error(`OpenRouter failed (${response.status}): ${payload?.error?.message ?? "No detail"}`);
-    throw new Error(`OpenRouter failed with status ${response.status}.`);
-  }
-
-  const payload = (await response.json()) as OpenRouterResponse;
-  const text = payload.choices?.[0]?.message?.content?.trim();
-  if (!text) throw new Error("OpenRouter returned empty content.");
-
-  const metadata = parseMetadata(text);
-  return {
-    artifacts: { subject: "", summary: "", coverLetter: "", emailMessage: "", linkedinMessage: "", keyMatches: [], gaps: [], interviewPoints: [] },
-    metadata,
-    provider: "openrouter",
-    model: payload.model ?? env.OPENROUTER_MODEL,
-  };
-}
-
-async function generateGemini(prompt: string): Promise<GenerationResult> {
-  if (!env.GEMINI_API_KEY) throw new ProviderError("Gemini not configured.", true);
-
-  let response: Response;
-  try {
-    response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(env.GEMINI_MODEL)}:generateContent`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": env.GEMINI_API_KEY,
-        },
-        body: JSON.stringify({
-          contents: [{ role: "user", parts: [{ text: prompt }] }],
-          generationConfig: {
-            maxOutputTokens: 4096,
-            temperature: 0.3,
-            thinkingConfig: { thinkingBudget: 0 },
-          },
-        }),
-        cache: "no-store",
-        signal: AbortSignal.timeout(60_000),
+        signal: AbortSignal.timeout(options.timeoutMs),
       },
     );
   } catch (error) {
@@ -434,7 +430,10 @@ async function generateGemini(prompt: string): Promise<GenerationResult> {
     const payload = (await response.json().catch(() => null)) as GeminiResponse | null;
     const msg = payload?.error?.message ?? "No detail";
     console.error(`Gemini job generation failed (${response.status}): ${msg}`);
-    throw new ProviderError(`Gemini failed with status ${response.status}.`, isFallbackStatus(response.status));
+    throw new ProviderError(
+      `Gemini failed with status ${response.status}.`,
+      isFallbackStatus(response.status),
+    );
   }
 
   const payload = (await response.json()) as GeminiResponse;
@@ -445,10 +444,13 @@ async function generateGemini(prompt: string): Promise<GenerationResult> {
 
   if (!text) throw new ProviderError("Gemini returned no content.", true);
 
-  return { artifacts: parseArtifacts(text), provider: "gemini", model: env.GEMINI_MODEL };
+  return { text, provider: "gemini", model: env.GEMINI_MODEL };
 }
 
-async function generateOpenRouter(prompt: string): Promise<GenerationResult> {
+async function completeOpenRouter(
+  prompt: string,
+  options: CompletionOptions,
+): Promise<TextCompletion> {
   if (!env.OPENROUTER_API_KEY) throw new Error("OpenRouter not configured.");
 
   let response: Response;
@@ -464,11 +466,11 @@ async function generateOpenRouter(prompt: string): Promise<GenerationResult> {
       body: JSON.stringify({
         model: env.OPENROUTER_MODEL,
         messages: [{ role: "user", content: prompt }],
-        max_tokens: 4096,
-        temperature: 0.3,
+        max_tokens: options.maxOutputTokens,
+        temperature: options.temperature,
       }),
       cache: "no-store",
-      signal: AbortSignal.timeout(60_000),
+      signal: AbortSignal.timeout(options.timeoutMs),
     });
   } catch (error) {
     console.error("OpenRouter job generation failed", error);
@@ -477,7 +479,9 @@ async function generateOpenRouter(prompt: string): Promise<GenerationResult> {
 
   if (!response.ok) {
     const payload = (await response.json().catch(() => null)) as OpenRouterResponse | null;
-    console.error(`OpenRouter failed (${response.status}): ${payload?.error?.message ?? "No detail"}`);
+    console.error(
+      `OpenRouter failed (${response.status}): ${payload?.error?.message ?? "No detail"}`,
+    );
     throw new Error(`OpenRouter failed with status ${response.status}.`);
   }
 
@@ -486,24 +490,15 @@ async function generateOpenRouter(prompt: string): Promise<GenerationResult> {
   if (!text) throw new Error("OpenRouter returned empty content.");
 
   return {
-    artifacts: parseArtifacts(text),
+    text,
     provider: "openrouter",
     model: payload.model ?? env.OPENROUTER_MODEL,
   };
 }
 
 function parseMetadata(text: string): ExtractedMetadata {
-  const cleaned = text.replace(/^```json\n?|\n?```$/g, "").trim();
-  try {
-    const parsed = JSON.parse(cleaned) as Record<string, unknown>;
-    return {
-      companyName: String(parsed.companyName ?? ""),
-      roleTitle: String(parsed.roleTitle ?? ""),
-      recipientEmail: parsed.recipientEmail ? String(parsed.recipientEmail) : null,
-      contactName: parsed.contactName ? String(parsed.contactName) : null,
-      sourceUrl: parsed.sourceUrl ? String(parsed.sourceUrl) : null,
-    };
-  } catch {
+  const parsed = extractJsonObject(text);
+  if (!parsed) {
     return {
       companyName: "",
       roleTitle: "",
@@ -512,38 +507,14 @@ function parseMetadata(text: string): ExtractedMetadata {
       sourceUrl: null,
     };
   }
-}
 
-function parseArtifacts(text: string): GeneratedArtifacts {
-  const cleaned = text.replace(/^```json\n?|\n?```$/g, "").trim();
-  try {
-    const parsed = JSON.parse(cleaned) as Record<string, unknown>;
-    return {
-      subject: String(parsed.subject ?? ""),
-      summary: String(parsed.summary ?? ""),
-      coverLetter: String(parsed.coverLetter ?? ""),
-      emailMessage: String(parsed.emailMessage ?? ""),
-      linkedinMessage: String(parsed.linkedinMessage ?? ""),
-      keyMatches: Array.isArray(parsed.keyMatches)
-        ? parsed.keyMatches.map(String)
-        : [],
-      gaps: Array.isArray(parsed.gaps) ? parsed.gaps.map(String) : [],
-      interviewPoints: Array.isArray(parsed.interviewPoints)
-        ? parsed.interviewPoints.map(String)
-        : [],
-    };
-  } catch {
-    return {
-      subject: "",
-      summary: text.slice(0, 200),
-      coverLetter: text,
-      emailMessage: "",
-      linkedinMessage: "",
-      keyMatches: [],
-      gaps: [],
-      interviewPoints: [],
-    };
-  }
+  return {
+    companyName: String(parsed.companyName ?? ""),
+    roleTitle: String(parsed.roleTitle ?? ""),
+    recipientEmail: parsed.recipientEmail ? String(parsed.recipientEmail) : null,
+    contactName: parsed.contactName ? String(parsed.contactName) : null,
+    sourceUrl: parsed.sourceUrl ? String(parsed.sourceUrl) : null,
+  };
 }
 
 function isFallbackStatus(status: number) {

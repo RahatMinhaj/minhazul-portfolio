@@ -1,5 +1,6 @@
 import "server-only";
 
+import { env } from "@/config/env";
 import { contactRepository } from "@/features/contact/contact.repository";
 
 export class ContactRateLimitError extends Error {
@@ -17,7 +18,7 @@ export type ContactMessageInput = {
 };
 
 export function contactMessagingIsAvailable() {
-  return Boolean(process.env.DATABASE_URL);
+  return Boolean(env.DATABASE_URL);
 }
 
 export async function createContactMessage(input: ContactMessageInput) {

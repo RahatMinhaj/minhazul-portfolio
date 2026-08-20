@@ -1,41 +1,45 @@
 "use server";
 
+import { z } from "zod";
+
+import { isValidRecipientEmail } from "@/features/job-applications/saved-email";
+import {
+  deleteSavedRecipientEmail,
+  listSavedRecipientEmails,
+  rememberSavedRecipientEmail,
+} from "@/features/job-applications/saved-email.service";
 import { requireAdmin } from "@/lib/auth/session";
 import { failure, success } from "@/server/actions/action-helpers";
 import type { ActionState } from "@/types/action-state";
 
-export async function getSavedEmails(): Promise<string[]> {
-  await requireAdmin();
-  const { getDatabase } = await import("@/lib/db/client");
-  const db = getDatabase();
+const emailSchema = z.string().trim().email().max(320);
 
-  type SavedEmailRow = { email: string };
-  const rows = await db.$queryRaw<SavedEmailRow[]>`
-    SELECT email FROM "SavedEmail" ORDER BY "useCount" DESC, "updatedAt" DESC LIMIT 20
-  `;
-  return rows.map((r) => r.email);
+export async function getSavedEmails(query?: string): Promise<string[]> {
+  await requireAdmin();
+  return listSavedRecipientEmails(query);
 }
 
+/** Persist a newly typed recipient so it appears in future suggestions. */
 export async function saveSentEmail(
   _state: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
   await requireAdmin();
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  if (!email || !email.includes("@")) return failure("Invalid email address.");
+  const parsed = emailSchema.safeParse(formData.get("email"));
+  if (!parsed.success || !isValidRecipientEmail(parsed.data)) {
+    return failure("Invalid email address.");
+  }
 
-  const { getDatabase } = await import("@/lib/db/client");
-  const db = getDatabase();
+  const bump = formData.get("bumpUseCount") === "1";
+  const result = await rememberSavedRecipientEmail(parsed.data, {
+    bumpUseCount: bump,
+  });
+  if (!result.ok) return failure(result.message);
 
-  await db.$executeRaw`
-    INSERT INTO "SavedEmail" ("id", "email", "useCount", "createdAt", "updatedAt")
-    VALUES (gen_random_uuid(), ${email}, 1, NOW(), NOW())
-    ON CONFLICT ("email") DO UPDATE SET
-      "useCount" = "SavedEmail"."useCount" + 1,
-      "updatedAt" = NOW()
-  `;
-
-  return success("Email saved.");
+  return success(
+    result.created ? "Email saved for suggestions." : "Email already saved.",
+    { email: result.email, created: result.created },
+  );
 }
 
 export async function deleteSavedEmail(
@@ -43,12 +47,9 @@ export async function deleteSavedEmail(
   formData: FormData,
 ): Promise<ActionState> {
   await requireAdmin();
-  const email = String(formData.get("email") ?? "").trim();
-  if (!email) return failure("Invalid email.");
+  const parsed = emailSchema.safeParse(formData.get("email"));
+  if (!parsed.success) return failure("Invalid email.");
 
-  const { getDatabase } = await import("@/lib/db/client");
-  const db = getDatabase();
-
-  await db.$executeRaw`DELETE FROM "SavedEmail" WHERE "email" = ${email}`;
+  await deleteSavedRecipientEmail(parsed.data);
   return success("Email removed.");
 }

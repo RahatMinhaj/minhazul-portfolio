@@ -2,6 +2,7 @@ import "server-only";
 
 import { compare } from "bcryptjs";
 
+import { env } from "@/config/env";
 import { authRepository } from "@/features/auth/auth.repository";
 import {
   clearLoginFailures,
@@ -23,8 +24,8 @@ export async function authenticateAdministrator(
 ): Promise<AuthenticationResult> {
   if (await isLoginBlocked(username)) return { status: "blocked" };
 
-  const configuredUsername = process.env.ADMIN_USERNAME?.trim() || "admin";
-  const configuredEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  const configuredUsername = env.ADMIN_USERNAME;
+  const configuredEmail = env.ADMIN_EMAIL?.toLowerCase();
   const user =
     username === configuredUsername && configuredEmail
       ? await authRepository.findAdministratorByEmail(configuredEmail)

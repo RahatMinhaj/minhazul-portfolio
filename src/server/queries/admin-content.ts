@@ -1,11 +1,15 @@
 import "server-only";
 
+import {
+  getAdminChatSessionById as fetchSessionById,
+  getAdminChatSessions as fetchSessions,
+} from "@/features/chat/chat.repository";
+import {
+  getAdminJobApplicationById as fetchJobApplicationById,
+  getAdminJobApplications as fetchJobApplications,
+} from "@/features/job-applications/job-application.repository";
 import { requireAdmin } from "@/lib/auth/session";
 import * as repository from "@/server/repositories/admin-content.repository";
-import {
-  getAdminChatSessions as fetchSessions,
-  getAdminChatSessionById as fetchSessionById,
-} from "@/features/chat/chat.session";
 
 async function authorized<T>(query: () => Promise<T>) {
   await requireAdmin();
@@ -83,17 +87,9 @@ export function getAdminJobApplications(params: {
   page: number;
   pageSize: number;
 }) {
-  return authorized(() =>
-    import("@/features/job-applications/job-application.repository").then((m) =>
-      m.getAdminJobApplications(params),
-    ),
-  );
+  return authorized(() => fetchJobApplications(params));
 }
 
 export function getAdminJobApplication(id: string) {
-  return authorized(() =>
-    import("@/features/job-applications/job-application.repository").then((m) =>
-      m.getAdminJobApplicationById(id),
-    ),
-  );
+  return authorized(() => fetchJobApplicationById(id));
 }

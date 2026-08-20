@@ -20,6 +20,11 @@ export default async function AdminChatSessionDetailPage({
       className="mx-auto max-w-4xl px-5 py-10 sm:px-8"
     >
       <AdminPageHeader
+        breadcrumbs={[
+          { label: "Admin", href: "/admin" },
+          { label: "Chat sessions", href: "/admin/chat-sessions" },
+          { label: "Session" },
+        ]}
         description={`Session created ${formatDate(session.createdAt)} · ${session.messageCount} messages`}
         title="Chat session detail"
       />

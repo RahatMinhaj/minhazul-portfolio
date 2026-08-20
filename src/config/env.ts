@@ -2,6 +2,11 @@ import "server-only";
 
 import { z } from "zod";
 
+const optionalNonEmptyString = z.preprocess(
+  (value) => (value === "" ? undefined : value),
+  z.string().trim().min(1).optional(),
+);
+
 const serverEnvironmentSchema = z.object({
   NODE_ENV: z
     .enum(["development", "test", "production"])
@@ -10,6 +15,16 @@ const serverEnvironmentSchema = z.object({
     .url()
     .default("http://localhost:3000")
     .transform((url) => url.replace(/\/$/, "")),
+  AUTH_SECRET: z
+    .string()
+    .trim()
+    .min(32, "AUTH_SECRET must contain at least 32 characters."),
+  ADMIN_USERNAME: z.string().trim().min(1).default("admin"),
+  ADMIN_EMAIL: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().trim().email().optional(),
+  ),
+  DATABASE_URL: optionalNonEmptyString,
   GEMINI_API_KEY: z.preprocess(
     (value) => (value === "" ? undefined : value),
     z.string().trim().min(20).optional(),
@@ -20,39 +35,22 @@ const serverEnvironmentSchema = z.object({
     z.string().trim().min(20).optional(),
   ),
   OPENROUTER_MODEL: z.string().trim().min(1).default("openrouter/free"),
-  SMTP_HOST: z.preprocess(
-    (value) => (value === "" ? undefined : value),
-    z.string().trim().min(1).optional(),
-  ),
-  SMTP_PORT: z.preprocess(
-    (value) => (value === "" ? undefined : value),
-    z.string().trim().min(1).optional(),
-  ),
-  SMTP_USERNAME: z.preprocess(
-    (value) => (value === "" ? undefined : value),
-    z.string().trim().min(1).optional(),
-  ),
-  SMTP_PASSWORD: z.preprocess(
-    (value) => (value === "" ? undefined : value),
-    z.string().trim().min(1).optional(),
-  ),
-  SMTP_SECURE: z.preprocess(
-    (value) => (value === "" ? undefined : value),
-    z.string().trim().min(1).optional(),
-  ),
-  SMTP_FROM_EMAIL: z.preprocess(
-    (value) => (value === "" ? undefined : value),
-    z.string().trim().min(1).optional(),
-  ),
-  SMTP_FROM_NAME: z.preprocess(
-    (value) => (value === "" ? undefined : value),
-    z.string().trim().min(1).optional(),
-  ),
+  SMTP_HOST: optionalNonEmptyString,
+  SMTP_PORT: optionalNonEmptyString,
+  SMTP_USERNAME: optionalNonEmptyString,
+  SMTP_PASSWORD: optionalNonEmptyString,
+  SMTP_SECURE: optionalNonEmptyString,
+  SMTP_FROM_EMAIL: optionalNonEmptyString,
+  SMTP_FROM_NAME: optionalNonEmptyString,
 });
 
 const parsedEnvironment = serverEnvironmentSchema.safeParse({
   NODE_ENV: process.env.NODE_ENV,
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+  AUTH_SECRET: process.env.AUTH_SECRET,
+  ADMIN_USERNAME: process.env.ADMIN_USERNAME,
+  ADMIN_EMAIL: process.env.ADMIN_EMAIL,
+  DATABASE_URL: process.env.DATABASE_URL,
   GEMINI_API_KEY: process.env.GEMINI_API_KEY,
   GEMINI_MODEL: process.env.GEMINI_MODEL,
   OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,

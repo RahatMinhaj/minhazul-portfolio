@@ -2,17 +2,12 @@ import "server-only";
 
 import { createHmac } from "node:crypto";
 
+import { env } from "@/config/env";
 import { authRepository } from "@/features/auth/auth.repository";
 import { LOGIN_MAX_FAILURES, LOGIN_WINDOW_MS } from "@/lib/auth/constants";
 
 function getRateLimitKey(identifier: string) {
-  const secret = process.env.AUTH_SECRET;
-
-  if (!secret || secret.length < 32) {
-    throw new Error("AUTH_SECRET must contain at least 32 characters.");
-  }
-
-  return createHmac("sha256", secret)
+  return createHmac("sha256", env.AUTH_SECRET)
     .update(identifier.trim().toLowerCase())
     .digest("hex");
 }

@@ -20,6 +20,11 @@ export default async function AdminBlogEditPage({
   return (
     <main id="main-content" className="mx-auto max-w-5xl px-5 py-10 sm:px-8">
       <AdminPageHeader
+        breadcrumbs={[
+          { label: "Admin", href: "/admin" },
+          { label: "Blog", href: "/admin/blog" },
+          { label: post.title },
+        ]}
         description="Edit rich content, tags, publication state, and search metadata."
         title={post.title}
       />

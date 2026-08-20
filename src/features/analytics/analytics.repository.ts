@@ -13,4 +13,36 @@ export const analyticsRepository = {
   createEvent(data: Prisma.VisitorEventUncheckedCreateInput) {
     return getDatabase().visitorEvent.create({ data });
   },
+
+  countCvDownloadsSince(sessionHash: string, windowStart: Date) {
+    return getDatabase().visitorEvent.count({
+      where: {
+        eventType: "cv_download",
+        sessionHash,
+        createdAt: { gte: windowStart },
+      },
+    });
+  },
+
+  findOldestCvDownloadSince(sessionHash: string, windowStart: Date) {
+    return getDatabase().visitorEvent.findFirst({
+      where: {
+        eventType: "cv_download",
+        sessionHash,
+        createdAt: { gte: windowStart },
+      },
+      orderBy: { createdAt: "asc" },
+      select: { createdAt: true },
+    });
+  },
+
+  createCvDownloadEvent(sessionHash: string) {
+    return getDatabase().visitorEvent.create({
+      data: {
+        eventType: "cv_download",
+        pathname: "/api/resume",
+        sessionHash,
+      },
+    });
+  },
 };

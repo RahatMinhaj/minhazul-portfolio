@@ -11,15 +11,23 @@ import {
   generateAllArtifacts,
   regenerateSingleArtifact,
   PROMPT_VERSION,
+} from "./job-application.generator";
+import {
+  ARTIFACT_SORT_ORDER,
+  TEXT_ARTIFACT_KINDS,
   type ArtifactKind,
   type GeneratedArtifacts,
-} from "./job-application.generator";
+} from "./job-application-types";
 import { readCv } from "@/features/cv/cv-storage";
 import { sendEmail } from "@/features/email/email.provider";
 import { richTextToPlainText, parseRichTextDocument } from "@/lib/content/rich-text";
 
 export type JobApplicationResult =
   | { ok: true; message: string }
+  | { ok: false; message: string };
+
+export type RegenerateArtifactResult =
+  | { ok: true; message: string; content: string; kind: ArtifactKind }
   | { ok: false; message: string };
 
 function circularToPlainText(circularContent: string): string {
@@ -135,7 +143,7 @@ export async function generateArtifacts(
 export async function regenerateArtifact(
   applicationId: string,
   kind: ArtifactKind,
-): Promise<JobApplicationResult> {
+): Promise<RegenerateArtifactResult> {
   const application = await repository.getAdminJobApplicationById(applicationId);
   if (!application) return { ok: false, message: "Application not found." };
 
@@ -144,13 +152,17 @@ export async function regenerateArtifact(
   const candidate = await buildCandidateContext();
 
   const existingArtifacts: Partial<GeneratedArtifacts> = {};
+  const textKinds = new Set<string>(TEXT_ARTIFACT_KINDS);
   for (const a of application.artifacts) {
-    if (a.kind in ["subject", "summary", "coverLetter", "emailMessage", "linkedinMessage"]) {
+    if (textKinds.has(a.kind)) {
       (existingArtifacts as Record<string, string>)[a.kind] = a.content;
     }
-    if (a.kind === "keyMatches") existingArtifacts.keyMatches = a.content.split("\n").filter(Boolean);
-    if (a.kind === "gaps") existingArtifacts.gaps = a.content.split("\n").filter(Boolean);
-    if (a.kind === "interviewPoints") existingArtifacts.interviewPoints = a.content.split("\n").filter(Boolean);
+    if (a.kind === "keyMatches")
+      existingArtifacts.keyMatches = a.content.split("\n").filter(Boolean);
+    if (a.kind === "gaps")
+      existingArtifacts.gaps = a.content.split("\n").filter(Boolean);
+    if (a.kind === "interviewPoints")
+      existingArtifacts.interviewPoints = a.content.split("\n").filter(Boolean);
   }
 
   const result = await regenerateSingleArtifact({
@@ -161,25 +173,12 @@ export async function regenerateArtifact(
     existingArtifacts,
   });
 
-  const sortOrderMap: Record<string, number> = {
-    subject: 0,
-    summary: 1,
-    coverLetter: 2,
-    emailMessage: 3,
-    linkedinMessage: 4,
-    keyMatches: 5,
-    gaps: 6,
-    interviewPoints: 7,
-  };
-
-  await repository.upsertArtifacts(applicationId, [
-    {
-      kind,
-      content: result.content,
-      sortOrder: sortOrderMap[kind] ?? 99,
-      generated: true,
-    },
-  ]);
+  await repository.upsertArtifactByKind(applicationId, {
+    kind,
+    content: result.content,
+    sortOrder: ARTIFACT_SORT_ORDER[kind],
+    generated: true,
+  });
 
   await repository.createGeneration({
     applicationId,
@@ -194,7 +193,7 @@ export async function regenerateArtifact(
     status: "completed",
   });
 
-  return { ok: true, message: `Regenerated ${kind}.` };
+  return { ok: true, message: `Regenerated ${kind}.`, content: result.content, kind };
 }
 
 export async function updateArtifact(
@@ -208,29 +207,11 @@ export async function updateArtifact(
   const existing = application.artifacts.find((a: { id: string }) => a.id === artifactId);
   if (!existing) return { ok: false, message: "Artifact not found." };
 
-  await repository.upsertArtifacts(
-    applicationId,
-    application.artifacts.map((a) =>
-      a.id === artifactId
-        ? {
-            kind: data.kind ?? a.kind,
-            title: data.title ?? a.title,
-            content: data.content,
-            format: a.format,
-            sortOrder: a.sortOrder,
-            generated: a.generated,
-          }
-        : {
-            kind: a.kind,
-            customKind: a.customKind,
-            title: a.title,
-            content: a.content,
-            format: a.format,
-            sortOrder: a.sortOrder,
-            generated: a.generated,
-          },
-    ),
-  );
+  await repository.updateArtifactById(artifactId, {
+    content: data.content,
+    title: data.title ?? existing.title,
+    kind: data.kind ?? existing.kind,
+  });
 
   return { ok: true, message: "Artifact updated." };
 }
@@ -366,6 +347,7 @@ export async function sendComposedEmail(
     replyTo: string;
     subjectSnapshot: string;
     textSnapshot: string;
+    htmlSnapshot?: string;
     attachmentName: string;
   } = {
     applicationId,
@@ -378,6 +360,7 @@ export async function sendComposedEmail(
     textSnapshot: data.body,
     attachmentName: "minhazul-islam-resume.pdf",
   };
+  if (data.htmlBody) deliveryData.htmlSnapshot = data.htmlBody;
 
   const delivery = await repository.createDelivery(deliveryData);
 
@@ -430,7 +413,13 @@ export async function sendComposedEmail(
     await repository.updateJobApplication(applicationId, {
       status: "SENT",
       sentAt: new Date(),
+      recipientEmail: data.to.trim().toLowerCase(),
     });
+
+    const { rememberSavedRecipientEmail } = await import(
+      "@/features/job-applications/saved-email.service"
+    );
+    await rememberSavedRecipientEmail(data.to, { bumpUseCount: true });
 
     return { ok: true, message: "Email sent successfully." };
   } catch (error) {
@@ -445,7 +434,7 @@ export async function sendComposedEmail(
   }
 }
 
-export async function deleteJobApplicationAction(
+export async function deleteJobApplication(
   id: string,
 ): Promise<JobApplicationResult> {
   await repository.deleteJobApplication(id);

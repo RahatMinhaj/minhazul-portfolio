@@ -2,18 +2,22 @@ import "server-only";
 
 import type { Prisma } from "@/generated/prisma/client";
 import { blogRepository } from "@/features/blog/blog.repository";
+import type { BlogPostWriteInput } from "@/features/blog/blog-types";
 
-type BlogWriteData = Omit<
-  Prisma.BlogPostUncheckedCreateInput,
-  "publishedAt"
-> & {
-  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
-};
-
-export async function saveBlogPost(id: string, input: BlogWriteData) {
+export async function saveBlogPost(id: string, input: BlogPostWriteInput) {
   const current = id ? await blogRepository.findPublication(id) : null;
   const data: Prisma.BlogPostUncheckedCreateInput = {
-    ...input,
+    title: input.title,
+    slug: input.slug,
+    excerpt: input.excerpt,
+    content: input.content as Prisma.InputJsonValue,
+    tags: input.tags,
+    status: input.status,
+    readingTime: input.readingTime,
+    seoTitle: input.seoTitle,
+    seoDescription: input.seoDescription,
+    featured: input.featured,
+    ...(input.coverImage !== undefined ? { coverImage: input.coverImage } : {}),
     publishedAt:
       input.status === "PUBLISHED"
         ? (current?.publishedAt ?? new Date())

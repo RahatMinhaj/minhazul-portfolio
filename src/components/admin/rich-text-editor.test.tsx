@@ -36,4 +36,39 @@ describe("RichTextEditor", () => {
       expect(document.root?.children?.[0]?.children).toHaveLength(1);
     });
   });
+
+  it("resets document content when contentKey changes", async () => {
+    const { container, rerender } = render(
+      <RichTextEditor
+        contentKey="one"
+        initialContent="<p>First version</p>"
+        label="Description"
+        name="description"
+      />,
+    );
+
+    await waitFor(() => {
+      const value = container.querySelector<HTMLInputElement>(
+        'input[name="description"]',
+      )?.value;
+      expect(value).toContain("First version");
+    });
+
+    rerender(
+      <RichTextEditor
+        contentKey="two"
+        initialContent="<p>Second version</p>"
+        label="Description"
+        name="description"
+      />,
+    );
+
+    await waitFor(() => {
+      const value = container.querySelector<HTMLInputElement>(
+        'input[name="description"]',
+      )?.value;
+      expect(value).toContain("Second version");
+      expect(value).not.toContain("First version");
+    });
+  });
 });

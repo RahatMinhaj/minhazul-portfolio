@@ -8,7 +8,7 @@ import {
   createContactMessage,
 } from "@/features/contact/contact.service";
 import { contactSchema, type ContactState } from "@/lib/validation/contact";
-import { getAdminSettings } from "@/server/queries/admin-content";
+import { getPublicSiteSettings } from "@/server/queries/public-content";
 
 export async function submitContactMessage(
   _previousState: ContactState,
@@ -45,7 +45,7 @@ export async function submitContactMessage(
     };
   }
 
-  const settings = await getAdminSettings();
+  const settings = await getPublicSiteSettings();
   if (settings?.contactEnabled === false) {
     return {
       status: "error",

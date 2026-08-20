@@ -1,8 +1,14 @@
 "use client";
 
+import {
+  createColumnHelper,
+  type ColumnDef,
+} from "@tanstack/react-table";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useMemo } from "react";
 
+import { AdminDataTable } from "@/components/admin/admin-data-table";
 import { AdminMutationForm } from "@/components/admin/admin-mutation-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +24,8 @@ type SessionRow = {
   updatedAt: Date;
   turns: Array<{ content: string; role: string }>;
 };
+
+const columnHelper = createColumnHelper<SessionRow>();
 
 export function ChatSessionsTable({
   sessions,
@@ -43,54 +51,66 @@ export function ChatSessionsTable({
     return `${pathname}?${sp.toString()}`;
   }
 
+  const columns = useMemo(
+    () =>
+      [
+        columnHelper.display({
+          id: "preview",
+          header: "Preview",
+          cell: ({ row }) => {
+            const preview = row.original.turns[0]?.content ?? "No messages";
+            const truncated =
+              preview.length > 100 ? `${preview.slice(0, 100)}...` : preview;
+            return (
+              <Link
+                className="text-sm font-medium text-[var(--accent)] hover:underline"
+                href={`/admin/chat-sessions/${row.original.id}`}
+              >
+                {truncated}
+              </Link>
+            );
+          },
+        }),
+        columnHelper.accessor("messageCount", {
+          header: "Turns",
+          cell: (info) => <Badge variant="neutral">{info.getValue()}</Badge>,
+        }),
+        columnHelper.accessor("status", {
+          header: "Status",
+          cell: (info) => <Badge variant="neutral">{info.getValue()}</Badge>,
+        }),
+        columnHelper.accessor("createdAt", {
+          header: "Created",
+          cell: (info) => (
+            <span className="text-xs text-[var(--muted)]">
+              {formatDate(info.getValue())}
+            </span>
+          ),
+        }),
+        columnHelper.display({
+          id: "actions",
+          header: "Actions",
+          cell: ({ row }) => (
+            <AdminMutationForm
+              action={deleteChatSessionAction}
+              confirmMessage="Delete this chat session permanently?"
+              submitLabel="delete"
+            >
+              <input name="id" type="hidden" value={row.original.id} />
+            </AdminMutationForm>
+          ),
+        }),
+      ] as ColumnDef<SessionRow, unknown>[],
+    [],
+  );
+
   return (
     <div className="space-y-4">
-      <div className="overflow-x-auto rounded-[var(--radius-card)] border border-[var(--border)]">
-        <table className="w-full border-collapse text-left text-sm">
-          <thead className="bg-[var(--surface-raised)]">
-            <tr>
-              <th className="px-4 py-3 font-medium">Preview</th>
-              <th className="px-4 py-3 font-medium">Turns</th>
-              <th className="px-4 py-3 font-medium">Status</th>
-              <th className="px-4 py-3 font-medium">Created</th>
-              <th className="px-4 py-3 font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[var(--border)]">
-            {sessions.map((session) => (
-              <tr key={session.id}>
-                <td className="px-4 py-4">
-                  <Link
-                    className="text-sm font-medium text-[var(--accent)] hover:underline"
-                    href={`/admin/chat-sessions/${session.id}`}
-                  >
-                    {session.turns[0]?.content?.slice(0, 100) ?? "No messages"}
-                    {(session.turns[0]?.content?.length ?? 0) > 100 ? "..." : ""}
-                  </Link>
-                </td>
-                <td className="px-4 py-4">
-                  <Badge variant="neutral">{session.messageCount}</Badge>
-                </td>
-                <td className="px-4 py-4">
-                  <Badge variant="neutral">{session.status}</Badge>
-                </td>
-                <td className="px-4 py-4 text-xs text-[var(--muted)]">
-                  {formatDate(session.createdAt)}
-                </td>
-                <td className="px-4 py-4">
-                  <AdminMutationForm
-                    action={deleteChatSessionAction}
-                    confirmMessage="Delete this chat session permanently?"
-                    submitLabel="delete"
-                  >
-                    <input name="id" type="hidden" value={session.id} />
-                  </AdminMutationForm>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <AdminDataTable
+        columns={columns}
+        data={sessions}
+        emptyMessage="No chat sessions found."
+      />
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
@@ -98,10 +118,15 @@ export function ChatSessionsTable({
             {total} sessions · page {page} of {totalPages}
           </p>
           <div className="flex gap-2">
-            <Button asChild size="sm" variant="ghost" disabled={page <= 1}>
+            <Button asChild disabled={page <= 1} size="sm" variant="ghost">
               <Link href={buildHref({ page: String(page - 1) })}>Previous</Link>
             </Button>
-            <Button asChild size="sm" variant="ghost" disabled={page >= totalPages}>
+            <Button
+              asChild
+              disabled={page >= totalPages}
+              size="sm"
+              variant="ghost"
+            >
               <Link href={buildHref({ page: String(page + 1) })}>Next</Link>
             </Button>
           </div>

@@ -5,7 +5,7 @@ import { z } from "zod";
 
 import { requireAdmin } from "@/lib/auth/session";
 import { storeUploadedImage } from "@/features/media/image-storage";
-import { registerMediaAsset } from "@/features/media/service";
+import { registerMediaAsset } from "@/features/media/media.service";
 import { failure, success } from "@/server/actions/action-helpers";
 import type { ActionState } from "@/types/action-state";
 

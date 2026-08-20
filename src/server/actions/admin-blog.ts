@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import type { Prisma } from "@/generated/prisma/client";
 import { deleteBlogPost, saveBlogPost } from "@/features/blog/blog.service";
+import type { BlogPostWriteInput } from "@/features/blog/blog-types";
 import { requireAdmin } from "@/lib/auth/session";
 import { parseRichTextDocument } from "@/lib/content/rich-text";
 import {
@@ -53,9 +53,9 @@ export async function saveBlogPostAction(
   }
 
   const { id, readingTime, ...values } = parsed.data;
-  const data = {
+  const data: BlogPostWriteInput = {
     ...values,
-    content: content as Prisma.InputJsonValue,
+    content,
     tags: readStringList(formData.get("tags")),
     readingTime: readingTime === "" ? null : readingTime,
     seoTitle: values.seoTitle || null,

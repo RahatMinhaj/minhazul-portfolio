@@ -1,11 +1,13 @@
 import "server-only";
 
-import { getPublicProfile } from "@/server/repositories/public-content.repository";
-import { getVisibleExperiences } from "@/server/repositories/public-content.repository";
-import { getVisibleProjects } from "@/server/repositories/public-content.repository";
-import { getVisibleSkillCategories } from "@/server/repositories/public-content.repository";
-import { getVisibleCertifications } from "@/server/repositories/public-content.repository";
-import { getVisibleEducation } from "@/server/repositories/public-content.repository";
+import {
+  getCandidateCertifications,
+  getCandidateEducation,
+  getCandidateExperiences,
+  getCandidateProfile,
+  getCandidateProjects,
+  getCandidateSkillCategories,
+} from "@/features/job-applications/candidate-context.repository";
 import { richTextToPlainText } from "@/lib/content/rich-text";
 
 export type CandidateContext = {
@@ -52,12 +54,12 @@ export type CandidateContext = {
 export async function buildCandidateContext(): Promise<CandidateContext> {
   const [profile, experiences, projects, skillCategories, certifications, education] =
     await Promise.all([
-      getPublicProfile(),
-      getVisibleExperiences(),
-      getVisibleProjects(),
-      getVisibleSkillCategories(),
-      getVisibleCertifications(),
-      getVisibleEducation(),
+      getCandidateProfile(),
+      getCandidateExperiences(),
+      getCandidateProjects(),
+      getCandidateSkillCategories(),
+      getCandidateCertifications(),
+      getCandidateEducation(),
     ]);
 
   return {

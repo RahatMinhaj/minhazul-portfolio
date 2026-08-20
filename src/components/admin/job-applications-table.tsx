@@ -1,13 +1,20 @@
 "use client";
 
+import {
+  createColumnHelper,
+  type ColumnDef,
+} from "@tanstack/react-table";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useMemo } from "react";
 
+import { AdminDataTable } from "@/components/admin/admin-data-table";
 import { AdminMutationForm } from "@/components/admin/admin-mutation-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { deleteJobApplicationAction2 } from "@/server/actions/admin-job-applications";
+import { deleteJobApplicationAction } from "@/server/actions/admin-job-applications";
 import { formatDate } from "@/lib/utils/date";
+import { cn } from "@/lib/utils/cn";
 
 type ApplicationRow = {
   id: string;
@@ -21,14 +28,16 @@ type ApplicationRow = {
 };
 
 const statusColors: Record<string, string> = {
-  DRAFT: "bg-yellow-500/10 text-yellow-500",
-  GENERATED: "bg-blue-500/10 text-blue-500",
-  READY: "bg-green-500/10 text-green-500",
-  SENDING: "bg-orange-500/10 text-orange-500",
-  SENT: "bg-green-500/10 text-green-500",
-  FAILED: "bg-red-500/10 text-red-500",
-  ARCHIVED: "bg-gray-500/10 text-gray-500",
+  DRAFT: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
+  GENERATED: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+  READY: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  SENDING: "bg-orange-500/10 text-orange-600 dark:text-orange-400",
+  SENT: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  FAILED: "bg-red-500/10 text-red-600 dark:text-red-400",
+  ARCHIVED: "bg-[var(--surface-raised)] text-[var(--muted)]",
 };
+
+const columnHelper = createColumnHelper<ApplicationRow>();
 
 export function JobApplicationsTable({
   applications,
@@ -54,90 +63,114 @@ export function JobApplicationsTable({
     return `${pathname}?${sp.toString()}`;
   }
 
+  const columns = useMemo(
+    () =>
+      [
+        columnHelper.accessor("companyName", {
+          header: "Company / Role",
+          cell: ({ row }) => (
+            <div>
+              <Link
+                className="text-sm font-medium text-[var(--accent)] hover:underline"
+                href={`/admin/job-applications/${row.original.id}`}
+              >
+                {row.original.companyName}
+              </Link>
+              <p className="mt-1 text-xs text-[var(--muted)]">
+                {row.original.roleTitle}
+              </p>
+            </div>
+          ),
+        }),
+        columnHelper.accessor("recipientEmail", {
+          header: "Recipient",
+          cell: (info) => (
+            <span className="text-xs text-[var(--muted)]">
+              {info.getValue() ?? "—"}
+            </span>
+          ),
+        }),
+        columnHelper.accessor("status", {
+          header: "Status",
+          cell: (info) => (
+            <Badge
+              className={cn(statusColors[info.getValue()] ?? "")}
+              variant="neutral"
+            >
+              {info.getValue()}
+            </Badge>
+          ),
+        }),
+        columnHelper.accessor("updatedAt", {
+          header: "Updated",
+          cell: (info) => (
+            <span className="text-xs text-[var(--muted)]">
+              {formatDate(info.getValue())}
+            </span>
+          ),
+        }),
+        columnHelper.display({
+          id: "actions",
+          header: "Actions",
+          cell: ({ row }) => (
+            <div className="flex flex-wrap gap-2">
+              <Button asChild size="sm" variant="outline">
+                <Link href={`/admin/job-applications/${row.original.id}`}>
+                  Open
+                </Link>
+              </Button>
+              <AdminMutationForm
+                action={deleteJobApplicationAction}
+                confirmMessage="Delete this application permanently?"
+                submitLabel="Delete"
+              >
+                <input name="id" type="hidden" value={row.original.id} />
+              </AdminMutationForm>
+            </div>
+          ),
+        }),
+      ] as ColumnDef<ApplicationRow, unknown>[],
+    [],
+  );
+
   return (
     <div className="space-y-4">
-      <div className="overflow-x-auto rounded-[var(--radius-card)] border border-[var(--border)]">
-        <table className="w-full border-collapse text-left text-sm">
-          <thead className="bg-[var(--surface-raised)]">
-            <tr>
-              <th className="px-4 py-3 font-medium">Company / Role</th>
-              <th className="px-4 py-3 font-medium">Recipient</th>
-              <th className="px-4 py-3 font-medium">Status</th>
-              <th className="px-4 py-3 font-medium">Updated</th>
-              <th className="px-4 py-3 font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[var(--border)]">
-            {applications.map((app) => (
-              <tr key={app.id}>
-                <td className="px-4 py-4">
-                  <Link
-                    className="text-sm font-medium text-[var(--accent)] hover:underline"
-                    href={`/admin/job-applications/${app.id}`}
-                  >
-                    {app.companyName}
-                  </Link>
-                  <p className="mt-1 text-xs text-[var(--muted)]">
-                    {app.roleTitle}
-                  </p>
-                </td>
-                <td className="px-4 py-4 text-xs text-[var(--muted)]">
-                  {app.recipientEmail ?? "—"}
-                </td>
-                <td className="px-4 py-4">
-                  <Badge
-                    className={statusColors[app.status] ?? ""}
-                    variant="neutral"
-                  >
-                    {app.status}
-                  </Badge>
-                </td>
-                <td className="px-4 py-4 text-xs text-[var(--muted)]">
-                  {formatDate(app.updatedAt)}
-                </td>
-                <td className="px-4 py-4">
-                  <div className="flex gap-2">
-                    <Button asChild size="sm" variant="ghost">
-                      <Link href={`/admin/job-applications/${app.id}`}>
-                        Edit
-                      </Link>
-                    </Button>
-                    <AdminMutationForm
-                      action={deleteJobApplicationAction2}
-                      confirmMessage="Delete this application permanently?"
-                      submitLabel="delete"
-                    >
-                      <input name="id" type="hidden" value={app.id} />
-                    </AdminMutationForm>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <AdminDataTable
+        columns={columns}
+        data={applications}
+        emptyMessage="No applications found."
+      />
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
+      {totalPages > 1 ? (
+        <div className="flex items-center justify-between gap-3">
           <p className="text-xs text-[var(--muted)]">
             {total} applications · page {page} of {totalPages}
           </p>
           <div className="flex gap-2">
-            <Button asChild size="sm" variant="ghost" disabled={page <= 1}>
-              <Link href={buildHref({ page: String(page - 1) })}>
+            {page > 1 ? (
+              <Button asChild size="sm" variant="ghost">
+                <Link href={buildHref({ page: String(page - 1) })}>
+                  Previous
+                </Link>
+              </Button>
+            ) : (
+              <Button disabled size="sm" variant="ghost">
                 Previous
-              </Link>
-            </Button>
-            <Button
-              asChild
-              size="sm"
-              variant="ghost"
-              disabled={page >= totalPages}
-            >
-              <Link href={buildHref({ page: String(page + 1) })}>Next</Link>
-            </Button>
+              </Button>
+            )}
+            {page < totalPages ? (
+              <Button asChild size="sm" variant="ghost">
+                <Link href={buildHref({ page: String(page + 1) })}>Next</Link>
+              </Button>
+            ) : (
+              <Button disabled size="sm" variant="ghost">
+                Next
+              </Button>
+            )}
           </div>
         </div>
+      ) : (
+        <p className="text-xs text-[var(--muted)]">{total} applications</p>
       )}
     </div>
   );

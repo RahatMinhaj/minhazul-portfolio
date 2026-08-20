@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { Prisma } from "@/generated/prisma/client";
 import {
   deleteCertification,
   deleteEducation,
@@ -12,6 +11,11 @@ import {
   saveEducation,
   saveExperience,
 } from "@/features/career/career.service";
+import type {
+  CertificationWriteInput,
+  EducationWriteInput,
+  ExperienceWriteInput,
+} from "@/features/career/career-types";
 import { requireAdmin } from "@/lib/auth/session";
 import { resolveImageField } from "@/features/media/image-storage";
 import { optionalImageReferenceSchema } from "@/lib/validation/media";
@@ -57,13 +61,13 @@ export async function saveExperienceAction(
   if (!richDescription)
     return failure("Experience description contains invalid rich text.");
 
-  const data = {
+  const data: ExperienceWriteInput = {
     company: parsed.data.company,
     position: parsed.data.position,
     location: parsed.data.location || null,
     richDescription: richTextDocumentHasContent(richDescription)
-      ? (richDescription as Prisma.InputJsonValue)
-      : Prisma.DbNull,
+      ? richDescription
+      : null,
     startDate: parseOptionalDate(formData.get("startDate")),
     endDate: parseOptionalDate(formData.get("endDate")),
     currentlyWorking: formData.get("currentlyWorking") === "on",
@@ -142,8 +146,9 @@ export async function saveCertificationAction(
         : "The image could not be uploaded.",
     );
   }
-  const data = {
-    ...values,
+  const data: CertificationWriteInput = {
+    name: values.name,
+    issuer: values.issuer,
     credentialId: values.credentialId || null,
     credentialUrl: values.credentialUrl || null,
     certificateImage,
@@ -151,6 +156,7 @@ export async function saveCertificationAction(
     description: values.description || null,
     issueDate: parseOptionalDate(formData.get("issueDate")),
     expiryDate: parseOptionalDate(formData.get("expiryDate")),
+    sortOrder: values.sortOrder,
     featured: formData.get("featured") === "on",
     visible: formData.get("visible") === "on",
   };
@@ -220,16 +226,16 @@ export async function saveEducationAction(
         : "The logo could not be uploaded.",
     );
   }
-  const data = {
-    ...values,
+  const data: EducationWriteInput = {
+    institution: values.institution,
+    degree: values.degree,
     field: values.field || null,
     grade: values.grade || null,
     logo,
-    description: richTextDocumentHasContent(description)
-      ? (description as Prisma.InputJsonValue)
-      : Prisma.DbNull,
+    description: richTextDocumentHasContent(description) ? description : null,
     startDate: parseOptionalDate(formData.get("startDate")),
     endDate: parseOptionalDate(formData.get("endDate")),
+    sortOrder: values.sortOrder,
     visible: formData.get("visible") === "on",
   };
 

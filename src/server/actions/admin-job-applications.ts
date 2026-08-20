@@ -17,7 +17,7 @@ import {
   regenerateArtifact,
   updateArtifact,
   sendJobApplication,
-  deleteJobApplicationAction,
+  deleteJobApplication,
 } from "@/features/job-applications/job-application.service";
 import type { ArtifactKind } from "@/features/job-applications/job-application.generator";
 
@@ -126,7 +126,7 @@ export async function regenerateArtifactAction(
   if (!result.ok) return failure(result.message);
 
   revalidatePath(`/admin/job-applications/${id.data}`);
-  return success(result.message);
+  return success(result.message, { content: result.content, kind: result.kind });
 }
 
 export async function saveArtifactAction(
@@ -175,7 +175,7 @@ export async function sendJobApplicationAction(
   return success(result.message);
 }
 
-export async function deleteJobApplicationAction2(
+export async function deleteJobApplicationAction(
   _state: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
@@ -183,7 +183,7 @@ export async function deleteJobApplicationAction2(
   const id = idSchema.safeParse(formData.get("id"));
   if (!id.success) return failure("Invalid application ID.");
 
-  const result = await deleteJobApplicationAction(id.data);
+  const result = await deleteJobApplication(id.data);
   if (!result.ok) return failure(result.message);
 
   revalidatePath("/admin/job-applications");
@@ -297,106 +297,36 @@ export async function generateFinalEmailBodyAction(
   formData: FormData,
 ): Promise<ActionState> {
   await requireAdmin();
-  const rawBody = String(formData.get("body") ?? "").trim();
+  const bodyHtml = String(
+    formData.get("bodyHtml") ?? formData.get("body") ?? "",
+  ).trim();
   const coverLetter = String(formData.get("coverLetter") ?? "").trim();
   const signatureHtml = String(formData.get("signatureHtml") ?? "").trim();
   const companyName = String(formData.get("companyName") ?? "").trim();
   const roleTitle = String(formData.get("roleTitle") ?? "").trim();
 
-  let body = rawBody;
-  try {
-    const parsed = JSON.parse(rawBody);
-    if (parsed && typeof parsed === "object" && parsed.root) {
-      const { richTextToPlainText } = await import("@/lib/content/rich-text");
-      body = richTextToPlainText(parsed);
-    }
-  } catch {
-    // Not JSON — use as-is
+  if (!bodyHtml) return failure("Email body is required.");
+
+  const { jobAiIsConfigured, generateFinalEmailHtml } = await import(
+    "@/features/job-applications/job-application.generator"
+  );
+  if (!jobAiIsConfigured()) {
+    return failure(
+      "No AI provider configured. Set GEMINI_API_KEY or OPENROUTER_API_KEY.",
+    );
   }
 
-  if (!body) return failure("Email body is required.");
-
-  const { env } = await import("@/config/env");
-  if (!env.GEMINI_API_KEY && !env.OPENROUTER_API_KEY) {
-    return failure("No AI provider configured. Set GEMINI_API_KEY or OPENROUTER_API_KEY.");
-  }
-
-  const prompt = [
-    "You are a professional email writer. Generate a polished, final job application email in HTML format.",
-    "Combine the email body, optional cover letter, and optional signature into a clean, professional HTML email.",
-    "Rules:",
-    "- Output ONLY the HTML body content, no <html>, <head>, or <body> tags.",
-    "- Use simple inline styles (font-family, font-size, color, margin, padding).",
-    "- Use <p> tags for paragraphs, <br> for line breaks.",
-    "- If a cover letter is provided, include it after the main email body, separated by a horizontal line.",
-    "- If a signature is provided, include it at the very end after the cover letter (if present) or after the main body.",
-    "- Keep the tone professional and friendly.",
-    "- Do not invent any content not provided.",
-    "",
-    "=== EMAIL BODY ===",
-    body,
-    "",
-    coverLetter ? "=== COVER LETTER ===" : "",
-    coverLetter || "",
-    "",
-    signatureHtml ? "=== SIGNATURE ===" : "",
-    signatureHtml || "",
-    "",
-    `=== CONTEXT ===`,
-    `Company: ${companyName || "Not specified"}`,
-    `Role: ${roleTitle || "Not specified"}`,
-  ].filter((line, i, arr) => {
-    if (line === "" && arr[i + 1] === "") return false;
-    return true;
-  }).join("\n");
-
   try {
-    let html: string;
-    if (env.GEMINI_API_KEY) {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(env.GEMINI_MODEL)}:generateContent`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-goog-api-key": env.GEMINI_API_KEY,
-          },
-          body: JSON.stringify({
-            contents: [{ role: "user", parts: [{ text: prompt }] }],
-            generationConfig: { maxOutputTokens: 4096, temperature: 0.3 },
-          }),
-          signal: AbortSignal.timeout(30_000),
-        },
-      );
-      if (!response.ok) throw new Error(`Gemini failed (${response.status})`);
-      const payload = await response.json();
-      html = payload.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text ?? "").join("").trim() ?? "";
-    } else {
-      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${env.OPENROUTER_API_KEY}`,
-          "Content-Type": "application/json",
-          "HTTP-Referer": env.NEXT_PUBLIC_SITE_URL,
-          "X-OpenRouter-Title": "Email Generator",
-        },
-        body: JSON.stringify({
-          model: env.OPENROUTER_MODEL,
-          messages: [{ role: "user", content: prompt }],
-          max_tokens: 4096,
-          temperature: 0.3,
-        }),
-        signal: AbortSignal.timeout(30_000),
-      });
-      if (!response.ok) throw new Error(`OpenRouter failed (${response.status})`);
-      const payload = await response.json();
-      html = payload.choices?.[0]?.message?.content?.trim() ?? "";
-    }
-
+    const result = await generateFinalEmailHtml({
+      bodyHtml,
+      coverLetter,
+      signatureHtml,
+      companyName,
+      roleTitle,
+    });
+    const { sanitizeEmailHtml } = await import("@/lib/content/sanitize-html");
+    const html = sanitizeEmailHtml(result.html);
     if (!html) return failure("AI returned empty content.");
-
-    html = html.replace(/^```html\n?|\n?```$/g, "").trim();
-
     return success("Final email body generated.", { html });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
