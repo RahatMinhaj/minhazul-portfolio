@@ -1,4 +1,5 @@
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { SystemHealthCheck } from "@/components/admin/system-health-check";
 import { VisitorChart } from "@/components/admin/visitor-chart";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -75,6 +76,9 @@ export default async function AdminDashboardPage() {
         ) : (
           <p className="text-sm text-[var(--muted)]">No messages yet.</p>
         )}
+      </section>
+      <section className="mt-10">
+        <SystemHealthCheck />
       </section>
     </main>
   );

@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import type { ActionState } from "@/types/action-state";
 
-export const idSchema = z.cuid();
+export const idSchema = z.union([z.cuid(), z.string().uuid()]);
 export const slugSchema = z
   .string()
   .trim()

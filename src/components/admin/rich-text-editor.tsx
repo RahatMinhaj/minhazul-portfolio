@@ -13,6 +13,7 @@ import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
+import { htmlToLexicalJson } from "@/lib/content/rich-text";
 import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
@@ -106,10 +107,12 @@ export function RichTextEditor({
   initialContent,
   label = "Rich text content",
   name = "content",
+  onChange,
 }: {
   initialContent?: unknown;
   label?: string;
   name?: string;
+  onChange?: (value: string) => void;
 }) {
   const initialState = normalizeContent(initialContent);
   const [serialized, setSerialized] = useState(initialState);
@@ -157,7 +160,9 @@ export function RichTextEditor({
           <OnChangePlugin
             ignoreSelectionChange
             onChange={(editorState) => {
-              setSerialized(JSON.stringify(editorState.toJSON()));
+              const json = JSON.stringify(editorState.toJSON());
+              setSerialized(json);
+              onChange?.(json);
             }}
           />
         </div>
@@ -388,7 +393,10 @@ function normalizeContent(content: unknown) {
       const parsed = JSON.parse(content);
       if (isLexicalDocument(parsed)) return JSON.stringify(parsed);
     } catch {
-      // Not JSON — fall through to plain text handling
+      // Not JSON — fall through
+    }
+    if (/<[a-z][\s\S]*>/i.test(content)) {
+      return htmlToLexicalJson(content);
     }
     return JSON.stringify({
       root: {

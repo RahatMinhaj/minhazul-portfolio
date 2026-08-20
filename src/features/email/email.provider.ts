@@ -55,9 +55,9 @@ export async function sendEmail(
       user: config.username,
       pass: config.password,
     },
-    connectionTimeout: 15_000,
-    greetingTimeout: 10_000,
-    socketTimeout: 20_000,
+    connectionTimeout: 30_000,
+    greetingTimeout: 15_000,
+    socketTimeout: 30_000,
   };
 
   const transport = nodemailer.createTransport(transportOptions);

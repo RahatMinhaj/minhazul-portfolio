@@ -250,6 +250,11 @@ export async function sendJobApplication(
     return { ok: false, message: "Subject and email message artifacts are required." };
   }
 
+  const cvBuffer = await readCv();
+  if (!cvBuffer) {
+    return { ok: false, message: "No CV found. Upload a CV in the CV menu before sending." };
+  }
+
   const idempotencyKey = `job-${applicationId}-${Date.now()}`;
   const deliveryData: {
     applicationId: string;
@@ -279,24 +284,9 @@ export async function sendJobApplication(
   await repository.updateDelivery(delivery.id, { status: "SENDING" });
 
   try {
-    let cvBuffer: Buffer | null = null;
     let cvHash: string | null = null;
-
-    if (application.customCvPath) {
-      const { readFile } = await import("node:fs/promises");
-      try {
-        cvBuffer = await readFile(application.customCvPath);
-        cvHash = createHash("sha256").update(cvBuffer).digest("hex");
-      } catch {
-        cvBuffer = null;
-      }
-    }
-
-    if (!cvBuffer) {
-      cvBuffer = await readCv();
-      if (cvBuffer) {
-        cvHash = createHash("sha256").update(cvBuffer).digest("hex");
-      }
+    if (cvBuffer) {
+      cvHash = createHash("sha256").update(cvBuffer).digest("hex");
     }
 
     const emailInput: {
@@ -355,11 +345,16 @@ export async function sendComposedEmail(
     to: string;
     subject: string;
     body: string;
-    useCustomCv: boolean;
+    htmlBody?: string | undefined;
   },
 ): Promise<JobApplicationResult> {
   const application = await repository.getAdminJobApplicationById(applicationId);
   if (!application) return { ok: false, message: "Application not found." };
+
+  const cvBuffer = await readCv();
+  if (!cvBuffer) {
+    return { ok: false, message: "No CV found. Upload a CV in the CV menu before sending." };
+  }
 
   const idempotencyKey = `composed-${applicationId}-${Date.now()}`;
   const deliveryData: {
@@ -381,7 +376,7 @@ export async function sendComposedEmail(
     replyTo: data.to,
     subjectSnapshot: data.subject,
     textSnapshot: data.body,
-    attachmentName: application.customCvName ?? "resume.pdf",
+    attachmentName: "minhazul-islam-resume.pdf",
   };
 
   const delivery = await repository.createDelivery(deliveryData);
@@ -390,24 +385,9 @@ export async function sendComposedEmail(
   await repository.updateDelivery(delivery.id, { status: "SENDING" });
 
   try {
-    let cvBuffer: Buffer | null = null;
     let cvHash: string | null = null;
-
-    if (data.useCustomCv && application.customCvPath) {
-      const { readFile } = await import("node:fs/promises");
-      try {
-        cvBuffer = await readFile(application.customCvPath);
-        cvHash = createHash("sha256").update(cvBuffer).digest("hex");
-      } catch {
-        cvBuffer = null;
-      }
-    }
-
-    if (!cvBuffer) {
-      cvBuffer = await readCv();
-      if (cvBuffer) {
-        cvHash = createHash("sha256").update(cvBuffer).digest("hex");
-      }
+    if (cvBuffer) {
+      cvHash = createHash("sha256").update(cvBuffer).digest("hex");
     }
 
     const emailInput: {
@@ -415,6 +395,7 @@ export async function sendComposedEmail(
       to: string;
       subject: string;
       text: string;
+      html?: string;
       attachments?: Array<{ filename: string; content: Buffer; contentType: string }>;
     } = {
       from: { name: "Minhazul Islam", address: process.env.SMTP_FROM_EMAIL ?? data.to },
@@ -423,10 +404,14 @@ export async function sendComposedEmail(
       text: data.body,
     };
 
+    if (data.htmlBody) {
+      emailInput.html = data.htmlBody;
+    }
+
     if (cvBuffer) {
       emailInput.attachments = [
         {
-          filename: application.customCvName ?? "minhazul-islam-resume.pdf",
+          filename: "minhazul-islam-resume.pdf",
           content: cvBuffer,
           contentType: "application/pdf",
         },
