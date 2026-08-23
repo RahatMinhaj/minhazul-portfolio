@@ -10,7 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/themes/theme-provider";
 import { useEffect, useMemo, useState } from "react";
 
 import {

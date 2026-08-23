@@ -1,15 +1,18 @@
-import { BookOpen, Building2, GraduationCap } from "lucide-react";
+import { BookOpen, Building2, GraduationCap, School } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { CenteredLogoImage } from "@/components/shared/centered-logo-image";
 import { cn } from "@/lib/utils/cn";
 
 export type EducationRecord = {
   id: string;
   institution: string;
+  college?: string | null | undefined;
   logo?: string | null | undefined;
   degree: string;
   field?: string | null | undefined;
   period?: string | undefined;
+  modules?: readonly string[] | undefined;
   description?: React.ReactNode | undefined;
 };
 
@@ -51,15 +54,12 @@ export function EducationRecords({
               className="education-record-grid absolute inset-0"
               aria-hidden
             />
-            <div className="relative flex items-start gap-4 sm:gap-5">
+            <div className="relative flex items-center gap-4 sm:gap-5">
               <span className="grid size-11 shrink-0 place-items-center overflow-hidden rounded-[var(--radius-control)] border border-[var(--border-strong)] bg-[var(--surface-raised)] text-[var(--accent)] sm:size-12">
                 {record.logo ? (
                   <span className="grid size-full place-items-center bg-white p-1.5">
-                    {/* Admin-provided root-relative or HTTPS image URL. */}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                    <CenteredLogoImage
                       alt={`${record.institution} logo`}
-                      className="max-h-full max-w-full object-contain"
                       src={record.logo}
                     />
                   </span>
@@ -79,6 +79,12 @@ export function EducationRecords({
                     </Badge>
                   ) : null}
                 </div>
+                {record.college ? (
+                  <p className="mt-2 inline-flex items-center gap-2 text-xs leading-5 text-[var(--muted)]">
+                    <School aria-hidden size={13} />
+                    {record.college}
+                  </p>
+                ) : null}
                 <Heading
                   className={cn(
                     "mt-3 max-w-3xl font-semibold tracking-tight",
@@ -98,6 +104,25 @@ export function EducationRecords({
             {!compact && record.description ? (
               <div className="relative mt-7 border-t border-[var(--border)] pt-6 text-sm leading-7 text-[var(--muted)]">
                 {record.description}
+              </div>
+            ) : null}
+            {record.modules?.length ? (
+              <div
+                className={cn(
+                  "relative",
+                  compact || !record.description ? "mt-6" : "mt-7 border-t border-[var(--border)] pt-6",
+                )}
+              >
+                <p className="font-mono text-[10px] tracking-[0.16em] text-[var(--accent)] uppercase">
+                  Modules studied
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {record.modules.map((module) => (
+                    <Badge key={module} variant="neutral">
+                      {module}
+                    </Badge>
+                  ))}
+                </div>
               </div>
             ) : null}
           </article>

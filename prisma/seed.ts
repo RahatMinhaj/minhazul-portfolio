@@ -313,11 +313,13 @@ async function main() {
       });
       const educationData = {
         institution: education.institution,
+        college: education.college ?? null,
         degree: education.degree,
         field: education.field ?? null,
         startDate: optionalDate(education.startDate),
         endDate: optionalDate(education.endDate),
         description: education.description ?? Prisma.JsonNull,
+        modules: education.modules ?? [],
         sortOrder,
         visible: true,
       };
@@ -328,6 +330,14 @@ async function main() {
         await prisma.education.update({
           where: { id: existingEducation.id },
           data: educationData,
+        });
+      } else if (education.modules?.length) {
+        await prisma.education.updateMany({
+          where: {
+            id: existingEducation.id,
+            modules: { isEmpty: true },
+          },
+          data: { modules: education.modules },
         });
       }
     }

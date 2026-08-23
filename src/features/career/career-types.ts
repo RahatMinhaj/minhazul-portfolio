@@ -32,11 +32,13 @@ export type CertificationWriteInput = {
 
 export type EducationWriteInput = {
   institution: string;
+  college: string | null;
   degree: string;
   field: string | null;
   grade: string | null;
   logo: string | null;
   description: RichTextDocument | null;
+  modules: string[];
   startDate: Date | null;
   endDate: Date | null;
   sortOrder: number;

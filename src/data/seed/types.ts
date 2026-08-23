@@ -59,11 +59,13 @@ export type CertificationSeedData = {
 
 export type EducationSeedData = {
   institution: string;
+  college?: string;
   degree: string;
   field?: string;
   startDate?: string;
   endDate?: string;
   description?: RichTextSeedData;
+  modules?: string[];
 };
 
 export type SocialLinkSeedData = {

@@ -140,12 +140,14 @@ model Experience {
 model Education {
   id          String    @id @default(cuid())
   institution String
+  college     String?
   degree      String
   field       String?
   startDate   DateTime?
   endDate     DateTime?
   grade       String?
   description Json?
+  modules     String[]  @default([])
   logo        String?
   sortOrder   Int       @default(0)
   visible     Boolean   @default(true)

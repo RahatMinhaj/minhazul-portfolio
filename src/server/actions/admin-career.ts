@@ -185,6 +185,7 @@ export async function deleteCertificationAction(
 const educationSchema = z.object({
   id: z.union([idSchema, z.literal("")]),
   institution: z.string().trim().min(2).max(200),
+  college: z.string().trim().max(200),
   degree: z.string().trim().min(2).max(200),
   field: z.string().trim().max(200),
   grade: z.string().trim().max(100),
@@ -200,6 +201,7 @@ export async function saveEducationAction(
   const parsed = educationSchema.safeParse({
     id: formData.get("id") ?? "",
     institution: formData.get("institution"),
+    college: formData.get("college"),
     degree: formData.get("degree"),
     field: formData.get("field"),
     grade: formData.get("grade"),
@@ -208,8 +210,9 @@ export async function saveEducationAction(
   });
   if (!parsed.success) return failure("Education validation failed.");
   const description = parseRichTextDocument(formData.get("description"));
-  if (!description)
+  if (formData.get("description") && !description) {
     return failure("Education description contains invalid rich text.");
+  }
   const { id, ...values } = parsed.data;
   let logo: string | null;
   try {
@@ -228,11 +231,15 @@ export async function saveEducationAction(
   }
   const data: EducationWriteInput = {
     institution: values.institution,
+    college: values.college || null,
     degree: values.degree,
     field: values.field || null,
     grade: values.grade || null,
     logo,
-    description: richTextDocumentHasContent(description) ? description : null,
+    description: description && richTextDocumentHasContent(description)
+      ? description
+      : null,
+    modules: readStringList(formData.get("modules")),
     startDate: parseOptionalDate(formData.get("startDate")),
     endDate: parseOptionalDate(formData.get("endDate")),
     sortOrder: values.sortOrder,

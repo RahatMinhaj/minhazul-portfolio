@@ -155,14 +155,17 @@ function buildSources(
   }
 
   for (const education of content.education) {
-    if (education.degree.toLowerCase() === "needs confirmation") continue;
     sources.push({
       id: `education-${education.id}`,
       title: education.degree,
       href: "/education",
       text: [
+        education.college,
         education.institution,
         education.field,
+        education.modules.length
+          ? `Modules: ${education.modules.join(", ")}`
+          : null,
         richTextToPlainText(education.description),
       ]
         .filter(Boolean)

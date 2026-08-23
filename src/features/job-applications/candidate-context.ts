@@ -42,8 +42,10 @@ export type CandidateContext = {
   }>;
   education: Array<{
     institution: string;
+    college: string | undefined;
     degree: string;
     field: string | undefined;
+    modules: string[];
   }>;
   certifications: Array<{
     name: string;
@@ -100,8 +102,10 @@ export async function buildCandidateContext(): Promise<CandidateContext> {
     })),
     education: education.map((e) => ({
       institution: e.institution,
+      college: e.college || undefined,
       degree: e.degree,
       field: e.field || undefined,
+      modules: e.modules,
     })),
     certifications: certifications.map((c) => ({
       name: c.name,
@@ -150,7 +154,15 @@ export function candidateContextToPlainText(ctx: CandidateContext): string {
 
   lines.push("EDUCATION:");
   for (const e of ctx.education) {
-    lines.push(`- ${e.degree}${e.field ? ` in ${e.field}` : ""} from ${e.institution}`);
+    const affiliation = e.college
+      ? `${e.college}, ${e.institution}`
+      : e.institution;
+    lines.push(
+      `- ${e.degree}${e.field ? ` in ${e.field}` : ""} from ${affiliation}`,
+    );
+    if (e.modules.length) {
+      lines.push(`  Modules: ${e.modules.join(", ")}`);
+    }
   }
   lines.push("");
 

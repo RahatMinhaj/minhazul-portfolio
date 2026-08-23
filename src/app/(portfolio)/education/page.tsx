@@ -17,15 +17,15 @@ export const metadata: Metadata = {
 };
 
 export default async function EducationPage() {
-  const education = (await getVisibleEducation()).filter(
-    (item) => item.degree.toLowerCase() !== "needs confirmation",
-  );
+  const education = await getVisibleEducation();
   const records: EducationRecord[] = education.map((item) => ({
     id: item.id,
     institution: item.institution,
+    college: item.college,
     logo: item.logo,
     degree: item.degree,
     field: item.field,
+    modules: item.modules,
     period: item.startDate
       ? `${formatMonthYear(item.startDate)} - ${item.endDate ? formatMonthYear(item.endDate) : "Present"}`
       : undefined,

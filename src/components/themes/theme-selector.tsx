@@ -3,7 +3,7 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Check, Palette, X } from "lucide-react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/themes/theme-provider";
 import { useState, useSyncExternalStore } from "react";
 
 import { Button } from "@/components/ui/button";

@@ -62,11 +62,13 @@ export function deleteCertification(id: string) {
 export function saveEducation(id: string, input: EducationWriteInput) {
   const data: Prisma.EducationUncheckedCreateInput = {
     institution: input.institution,
+    college: input.college,
     degree: input.degree,
     field: input.field,
     grade: input.grade,
     logo: input.logo,
     description: toNullableJson(input.description),
+    modules: input.modules,
     startDate: input.startDate,
     endDate: input.endDate,
     sortOrder: input.sortOrder,

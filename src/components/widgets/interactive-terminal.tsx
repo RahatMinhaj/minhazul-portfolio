@@ -2,7 +2,7 @@
 
 import { ChevronRight, TerminalSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/themes/theme-provider";
 import { FormEvent, useState } from "react";
 
 import { themeIds } from "@/config/themes";
@@ -67,7 +67,7 @@ export function InteractiveTerminal({
       output = "Verified technologies are available on /skills.";
     } else if (command === "theme") {
       if (themeIds.includes(argument as (typeof themeIds)[number])) {
-        setTheme(argument);
+        setTheme(argument as (typeof themeIds)[number]);
         output = `Theme changed to ${argument}.`;
       } else {
         output = `Available themes: ${themeIds.join(", ")}`;

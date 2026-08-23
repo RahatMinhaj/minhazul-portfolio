@@ -2,6 +2,7 @@ import { Input } from "@/components/ui/input";
 
 export function AdminField({
   defaultValue,
+  description,
   label,
   max,
   maxLength,
@@ -14,6 +15,7 @@ export function AdminField({
   type = "text",
 }: {
   defaultValue?: string | number | undefined;
+  description?: string;
   label: string;
   max?: number | string;
   maxLength?: number;
@@ -28,6 +30,9 @@ export function AdminField({
   return (
     <label className="space-y-2 text-sm">
       <span className="font-medium">{label}</span>
+      {description ? (
+        <p className="text-xs leading-5 text-[var(--muted)]">{description}</p>
+      ) : null}
       <Input
         defaultValue={defaultValue}
         max={max}

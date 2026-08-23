@@ -27,6 +27,7 @@ import {
 } from "@/components/education/education-records";
 import { ContactForm } from "@/components/forms/contact-form";
 import { CompactSectionHeader } from "@/components/home/compact-section-header";
+import { CenteredLogoImage } from "@/components/shared/centered-logo-image";
 import { EngineeringSignature } from "@/components/home/engineering-ledger";
 import { HeroExperience } from "@/components/home/hero-experience";
 import { InteractiveLinkCard } from "@/components/home/interactive-link-card";
@@ -112,17 +113,16 @@ export default async function Home() {
       technologies: item.technologies,
       current: item.currentlyWorking,
     }));
-  const publicEducation = education.filter(
-    (item) => item.degree.toLowerCase() !== "needs confirmation",
-  );
-  const educationRecords: EducationRecord[] = publicEducation
+  const educationRecords: EducationRecord[] = education
     .slice(0, 3)
     .map((item) => ({
       id: item.id,
       institution: item.institution,
+      college: item.college,
       logo: item.logo,
       degree: item.degree,
       field: item.field,
+      modules: item.modules,
       period: item.startDate
         ? `${formatMonthYear(item.startDate)} - ${item.endDate ? formatMonthYear(item.endDate) : "Present"}`
         : undefined,
@@ -340,7 +340,7 @@ export default async function Home() {
         </section>
       )}
 
-      {publicEducation.length ? (
+      {education.length ? (
         <section className="landing-section" id="credentials-overview">
           <Container>
             <CompactSectionHeader
@@ -384,11 +384,8 @@ export default async function Home() {
                       </span>
                       {item.certificateImage ? (
                         <span className="relative grid size-20 place-items-center overflow-hidden rounded-2xl border border-[var(--border-strong)] bg-white p-2 shadow-[var(--shadow-control)]">
-                          {/* Admin-provided root-relative or HTTPS image URL. */}
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
+                          <CenteredLogoImage
                             alt={`${item.issuer} certification mark`}
-                            className="max-h-full max-w-full object-contain"
                             src={item.certificateImage}
                           />
                         </span>

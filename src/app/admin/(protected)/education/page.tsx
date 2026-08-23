@@ -1,6 +1,8 @@
 import type { Education } from "@/generated/prisma/client";
 
-import { AdminCheckbox, AdminField } from "@/components/admin/admin-fields";
+import { isEducationDegreePlaceholder } from "@/features/career/education-public";
+
+import { AdminCheckbox, AdminField, AdminTextarea } from "@/components/admin/admin-fields";
 import { AdminMutationForm } from "@/components/admin/admin-mutation-form";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { AdminImageField } from "@/components/admin/admin-image-field";
@@ -25,7 +27,7 @@ export default async function AdminEducationPage() {
   return (
     <main id="main-content" className="mx-auto max-w-6xl px-5 py-10 sm:px-8">
       <AdminPageHeader
-        description="Manage verified institutions, degrees, fields, dates, grades, order, and visibility."
+        description="Manage institutions, degrees, modules, descriptions, order, and visibility."
         title="Education"
       />
       <Card>
@@ -41,6 +43,13 @@ export default async function AdminEducationPage() {
           <Card key={record.id}>
             <CardHeader>
               <CardTitle>{record.degree}</CardTitle>
+              {isEducationDegreePlaceholder(record.degree) ? (
+                <p className="text-sm leading-6 text-amber-700 dark:text-amber-300">
+                  This degree is still a placeholder. Update it with the final
+                  program title so the record reads correctly on the public
+                  site.
+                </p>
+              ) : null}
             </CardHeader>
             <CardContent className="space-y-5">
               {record.logo ? (
@@ -89,12 +98,18 @@ function EducationForm({
       <input name="id" type="hidden" value={education?.id ?? ""} />
       <AdminField
         defaultValue={education?.institution}
-        label="Institution"
+        label="University / parent institution"
         name="institution"
         required
       />
       <AdminField
+        defaultValue={education?.college ?? undefined}
+        label="College / affiliated unit"
+        name="college"
+      />
+      <AdminField
         defaultValue={education?.degree}
+        description='Use the final program title. Avoid leaving "Needs confirmation" on public records.'
         label="Degree"
         name="degree"
         required
@@ -133,6 +148,14 @@ function EducationForm({
         name="sortOrder"
         type="number"
       />
+      <div className="md:col-span-2">
+        <AdminTextarea
+          defaultValue={education?.modules.join("\n")}
+          label="Modules studied · one per line"
+          name="modules"
+          rows={8}
+        />
+      </div>
       <div className="md:col-span-2">
         <p className="mb-2 text-sm font-medium">Description</p>
         <RichTextEditor

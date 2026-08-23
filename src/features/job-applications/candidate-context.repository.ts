@@ -107,8 +107,10 @@ export async function getCandidateEducation() {
     orderBy: [{ sortOrder: "asc" }, { startDate: "desc" }],
     select: {
       institution: true,
+      college: true,
       degree: true,
       field: true,
+      modules: true,
     },
   });
 }

@@ -244,12 +244,14 @@ export async function getVisibleEducation() {
     select: {
       id: true,
       institution: true,
+      college: true,
       degree: true,
       field: true,
       startDate: true,
       endDate: true,
       grade: true,
       description: true,
+      modules: true,
       logo: true,
     },
   });
