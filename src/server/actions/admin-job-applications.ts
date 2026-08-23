@@ -20,6 +20,15 @@ import {
   deleteJobApplication,
 } from "@/features/job-applications/job-application.service";
 import type { ArtifactKind } from "@/features/job-applications/job-application.generator";
+import { parseAiProviderPreference } from "@/features/job-applications/job-application-types";
+
+function readAiProvider(formData: FormData) {
+  const preference = parseAiProviderPreference(formData.get("aiProvider"));
+  if (!preference) {
+    return { ok: false as const, message: "Select an AI provider (Gemini or OpenRouter)." };
+  }
+  return { ok: true as const, preference };
+}
 
 export async function createFromCircularAction(
   _state: ActionState,
@@ -31,14 +40,22 @@ export async function createFromCircularAction(
     return failure("Please paste the full job circular (at least 20 characters).");
   }
 
-  const result = await createFromCircular(circularContent);
-  if (!result.ok) return failure(result.message);
+  const provider = readAiProvider(formData);
+  if (!provider.ok) return failure(provider.message);
 
-  revalidatePath("/admin/job-applications");
-  if (result.id) {
-    return success(result.message, { id: result.id });
+  try {
+    const result = await createFromCircular(circularContent, provider.preference);
+    if (!result.ok) return failure(result.message);
+
+    revalidatePath("/admin/job-applications");
+    if (result.id) {
+      return success(result.message, { id: result.id });
+    }
+    return success(result.message);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return failure(`AI generation failed: ${message}`);
   }
-  return success(result.message);
 }
 
 export async function createJobApplicationAction(
@@ -103,11 +120,19 @@ export async function generateJobApplicationAction(
   const id = idSchema.safeParse(formData.get("id"));
   if (!id.success) return failure("Invalid application ID.");
 
-  const result = await generateArtifacts(id.data);
-  if (!result.ok) return failure(result.message);
+  const provider = readAiProvider(formData);
+  if (!provider.ok) return failure(provider.message);
 
-  revalidatePath(`/admin/job-applications/${id.data}`);
-  return success(result.message);
+  try {
+    const result = await generateArtifacts(id.data, provider.preference);
+    if (!result.ok) return failure(result.message);
+
+    revalidatePath(`/admin/job-applications/${id.data}`);
+    return success(result.message);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return failure(`AI generation failed: ${message}`);
+  }
 }
 
 export async function regenerateArtifactAction(

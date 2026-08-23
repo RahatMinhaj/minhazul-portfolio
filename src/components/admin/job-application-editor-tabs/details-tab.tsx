@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import type { z } from "zod";
 
 import { AdminMutationForm } from "@/components/admin/admin-mutation-form";
+import { AiProviderSelect } from "@/components/admin/ai-provider-select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { jobApplicationUpdateSchema } from "@/lib/validation/job-application";
@@ -184,9 +185,11 @@ export function DetailsTab({ application }: { application: Application }) {
       <div className="flex flex-wrap gap-3">
         <AdminMutationForm
           action={generateAction}
+          className="space-y-4"
           submitLabel="Regenerate all artifacts"
         >
           <input name="id" type="hidden" value={application.id} />
+          <AiProviderSelect />
         </AdminMutationForm>
       </div>
     </div>

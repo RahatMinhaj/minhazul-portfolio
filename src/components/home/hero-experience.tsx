@@ -20,7 +20,10 @@ import Link from "next/link";
 import { MagneticElement } from "@/components/animations/primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { HeroCodeProperty } from "@/features/profile/hero-content";
+import {
+  getHeroCodeColorTextClass,
+  type HeroCodeProperty,
+} from "@/features/profile/hero-content";
 
 type HeroExperienceProps = {
   availability: string;
@@ -284,7 +287,7 @@ export function HeroExperience({
                     <span key={property.key}>
                       {"\n  "}
                       {property.key}:{" "}
-                      <CodePropertyValue value={property.value} />
+                      <CodePropertyValue property={property} />
                       {index < codeProperties.length - 1 ? "," : null}
                     </span>
                   ))}
@@ -321,13 +324,18 @@ export function HeroExperience({
   );
 }
 
-function CodePropertyValue({ value }: { value: HeroCodeProperty["value"] }) {
+function CodePropertyValue({ property }: { property: HeroCodeProperty }) {
+  const colorClass = getHeroCodeColorTextClass(property.color);
+  const { value } = property;
+
   if (typeof value === "string") {
-    return <span className="text-amber-200">{JSON.stringify(value)}</span>;
+    return (
+      <span className={colorClass}>{JSON.stringify(value)}</span>
+    );
   }
 
   return (
-    <span className="text-emerald-300">
+    <span className={colorClass}>
       {value === null ? "null" : String(value)}
     </span>
   );

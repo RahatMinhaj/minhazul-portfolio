@@ -1,6 +1,7 @@
 "use client";
 
 import { AdminMutationForm } from "@/components/admin/admin-mutation-form";
+import { AiProviderSelect } from "@/components/admin/ai-provider-select";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import {
   saveJobApplicationAction,
@@ -70,12 +71,14 @@ export function CircularTab({ application }: { application: Application }) {
         </div>
       </AdminMutationForm>
 
-      <div className="flex flex-wrap gap-3">
+      <div className="space-y-4">
         <AdminMutationForm
           action={generateAction}
+          className="space-y-4"
           submitLabel="Generate all artifacts with AI"
         >
           <input name="id" type="hidden" value={application.id} />
+          <AiProviderSelect />
         </AdminMutationForm>
       </div>
     </div>

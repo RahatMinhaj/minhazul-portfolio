@@ -57,3 +57,26 @@ export type GeneratedArtifacts = {
   gaps: string[];
   interviewPoints: string[];
 };
+
+/** Explicit provider, or `auto` for Gemini-first with OpenRouter fallback. */
+export type AiProviderPreference = "auto" | "gemini" | "openrouter";
+
+export const AI_PROVIDER_PREFERENCES = [
+  "auto",
+  "gemini",
+  "openrouter",
+] as const satisfies readonly AiProviderPreference[];
+
+export function parseAiProviderPreference(
+  value: unknown,
+): AiProviderPreference | null {
+  const parsed = String(value ?? "").trim();
+  if (
+    parsed === "auto" ||
+    parsed === "gemini" ||
+    parsed === "openrouter"
+  ) {
+    return parsed;
+  }
+  return null;
+}

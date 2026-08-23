@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 
+import { AiProviderSelect } from "@/components/admin/ai-provider-select";
 import { Button } from "@/components/ui/button";
 import { LoaderCircle } from "lucide-react";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
@@ -26,7 +27,7 @@ function SubmitButton({ label }: { label: string }) {
 
 export function NewJobApplicationForm() {
   const router = useRouter();
-  const [, formAction, isPending] = useActionState(
+  const [state, formAction, isPending] = useActionState(
     async (_state: ActionState, formData: FormData): Promise<ActionState> => {
       const result = await createFromCircularAction(_state, formData);
       if (result.status === "success" && result.data?.id) {
@@ -55,8 +56,14 @@ export function NewJobApplicationForm() {
           />
         </div>
 
+        <AiProviderSelect />
+
         <SubmitButton label="Create from circular" />
       </form>
+
+      {state.status === "error" && state.message ? (
+        <p className="text-sm text-red-500">{state.message}</p>
+      ) : null}
 
       {isPending ? (
         <div className="flex items-center gap-3 rounded-[var(--radius-card)] border border-[var(--accent)]/20 bg-[var(--surface-raised)] p-4">

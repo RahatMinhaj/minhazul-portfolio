@@ -12,6 +12,7 @@ import {
   regenerateSingleArtifact,
   PROMPT_VERSION,
 } from "./job-application.generator";
+import type { AiProviderPreference } from "./job-application-types";
 import {
   ARTIFACT_SORT_ORDER,
   TEXT_ARTIFACT_KINDS,
@@ -38,9 +39,10 @@ function circularToPlainText(circularContent: string): string {
 
 export async function createFromCircular(
   circularContent: string,
+  provider: AiProviderPreference = "auto",
 ): Promise<JobApplicationResult & { id?: string }> {
   const plainText = circularToPlainText(circularContent);
-  const result = await extractMetadataFromCircular(plainText);
+  const result = await extractMetadataFromCircular(plainText, provider);
 
   const id = crypto.randomUUID();
   const createData: {
@@ -66,7 +68,7 @@ export async function createFromCircular(
 
   await repository.createJobApplication(createData);
 
-  const genResult = await generateArtifacts(id);
+  const genResult = await generateArtifacts(id, provider);
   if (!genResult.ok) {
     return { ok: true, message: "Application created (artifact generation failed: " + genResult.message + ").", id };
   }
@@ -102,6 +104,7 @@ export async function saveJobApplication(
 
 export async function generateArtifacts(
   applicationId: string,
+  provider: AiProviderPreference = "auto",
 ): Promise<JobApplicationResult> {
   const application = await repository.getAdminJobApplicationById(applicationId);
   if (!application) return { ok: false, message: "Application not found." };
@@ -113,6 +116,7 @@ export async function generateArtifacts(
     candidate,
     circularContent,
     tone: application.tone ?? undefined,
+    provider,
   });
 
   const artifacts = artifactsToList(result.artifacts);
@@ -143,6 +147,7 @@ export async function generateArtifacts(
 export async function regenerateArtifact(
   applicationId: string,
   kind: ArtifactKind,
+  provider: AiProviderPreference = "auto",
 ): Promise<RegenerateArtifactResult> {
   const application = await repository.getAdminJobApplicationById(applicationId);
   if (!application) return { ok: false, message: "Application not found." };
@@ -171,6 +176,7 @@ export async function regenerateArtifact(
     kind,
     tone: application.tone ?? undefined,
     existingArtifacts,
+    provider,
   });
 
   await repository.upsertArtifactByKind(applicationId, {

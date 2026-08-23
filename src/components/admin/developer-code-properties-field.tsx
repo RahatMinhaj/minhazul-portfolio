@@ -5,7 +5,12 @@ import { useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { HeroCodeProperty } from "@/features/profile/hero-content";
+import {
+  getDefaultHeroCodeColor,
+  HERO_CODE_COLORS,
+  type HeroCodeColor,
+  type HeroCodeProperty,
+} from "@/features/profile/hero-content";
 
 type PropertyType = "string" | "number" | "boolean" | "null";
 type EditableProperty = {
@@ -13,6 +18,7 @@ type EditableProperty = {
   key: string;
   type: PropertyType;
   value: string;
+  color: HeroCodeColor;
 };
 
 function getPropertyType(value: HeroCodeProperty["value"]): PropertyType {
@@ -30,15 +36,17 @@ export function DeveloperCodePropertiesField({
   const nextId = useRef(initialProperties.length);
   const [properties, setProperties] = useState<EditableProperty[]>(() =>
     initialProperties.map((property, index) => ({
-      ...property,
       id: index,
+      key: property.key,
       type: getPropertyType(property.value),
       value: property.value === null ? "" : String(property.value),
+      color: property.color ?? getDefaultHeroCodeColor(property.value),
     })),
   );
 
-  const serializedProperties = properties.map(({ key, type, value }) => ({
+  const serializedProperties = properties.map(({ key, type, value, color }) => ({
     key,
+    color,
     value:
       type === "number"
         ? Number(value)
@@ -66,6 +74,10 @@ export function DeveloperCodePropertiesField({
     updateProperty(property.id, { type, value });
   }
 
+  function getColorOption(colorId: HeroCodeColor) {
+    return HERO_CODE_COLORS.find((color) => color.id === colorId) ?? HERO_CODE_COLORS[0];
+  }
+
   function moveProperty(index: number, offset: -1 | 1) {
     setProperties((current) => {
       const targetIndex = index + offset;
@@ -91,7 +103,8 @@ export function DeveloperCodePropertiesField({
           <legend className="text-sm font-medium">Object properties</legend>
           <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
             Add, edit, or remove up to 16 fields. Property names must be valid
-            JavaScript identifiers.
+            JavaScript identifiers. Pick a highlight color for each value in the
+            hero code panel.
           </p>
         </div>
         <Button
@@ -100,7 +113,7 @@ export function DeveloperCodePropertiesField({
             const id = nextId.current++;
             setProperties((current) => [
               ...current,
-              { id, key: "", type: "string", value: "" },
+              { id, key: "", type: "string", value: "", color: "cyan" },
             ]);
           }}
           size="sm"
@@ -112,9 +125,12 @@ export function DeveloperCodePropertiesField({
         </Button>
       </div>
 
-      {properties.map((property) => (
+      {properties.map((property) => {
+        const selectedColor = getColorOption(property.color);
+
+        return (
         <div
-          className="grid gap-3 rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--surface-raised)] p-4 sm:grid-cols-[minmax(0,1fr)_9rem_minmax(0,1fr)_auto]"
+          className="grid gap-3 rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--surface-raised)] p-4 sm:grid-cols-[minmax(0,1fr)_8rem_8rem_minmax(0,1fr)_auto]"
           key={property.id}
         >
           <label className="space-y-2 text-sm">
@@ -144,6 +160,30 @@ export function DeveloperCodePropertiesField({
               <option value="boolean">Boolean</option>
               <option value="null">Null</option>
             </select>
+          </label>
+          <label className="space-y-2 text-sm">
+            <span className="font-medium">Color</span>
+            <div className="flex h-10 items-center gap-2 rounded-[var(--radius-control)] border border-[var(--border-strong)] bg-[var(--surface)] px-3">
+              <span
+                aria-hidden
+                className={`size-3 shrink-0 rounded-full ${selectedColor.swatchClass}`}
+              />
+              <select
+                className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+                onChange={(event) =>
+                  updateProperty(property.id, {
+                    color: event.target.value as HeroCodeColor,
+                  })
+                }
+                value={property.color}
+              >
+                {HERO_CODE_COLORS.map((color) => (
+                  <option key={color.id} value={color.id}>
+                    {color.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </label>
           <label className="space-y-2 text-sm">
             <span className="font-medium">Value</span>
@@ -211,7 +251,8 @@ export function DeveloperCodePropertiesField({
             </Button>
           </div>
         </div>
-      ))}
+        );
+      })}
     </fieldset>
   );
 }

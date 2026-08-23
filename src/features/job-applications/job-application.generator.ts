@@ -6,6 +6,7 @@ import {
   candidateContextToPlainText,
 } from "./candidate-context";
 import type { ArtifactKind, GeneratedArtifacts } from "./job-application-types";
+import type { AiProviderPreference } from "./job-application-types";
 import {
   extractJsonObject,
   parseArtifacts,
@@ -13,8 +14,8 @@ import {
   stripCodeFences,
 } from "./job-application-parse";
 
-export type { ArtifactKind, GeneratedArtifacts } from "./job-application-types";
-export { ARTIFACT_KIND_LABELS } from "./job-application-types";
+export type { ArtifactKind, GeneratedArtifacts, AiProviderPreference } from "./job-application-types";
+export { ARTIFACT_KIND_LABELS, parseAiProviderPreference } from "./job-application-types";
 export { parseSingleArtifact } from "./job-application-parse";
 
 export type ExtractedMetadata = {
@@ -69,14 +70,18 @@ const ARTIFACT_COMPLETION: CompletionOptions = {
 const METADATA_COMPLETION: CompletionOptions = {
   maxOutputTokens: 1024,
   temperature: 0.1,
-  timeoutMs: 30_000,
+  timeoutMs: 45_000,
 };
 
 const EMAIL_COMPLETION: CompletionOptions = {
   maxOutputTokens: 4096,
   temperature: 0.3,
-  timeoutMs: 30_000,
+  timeoutMs: 60_000,
 };
+
+/** Free OpenRouter models often queue; give them more headroom than Gemini. */
+const OPENROUTER_TIMEOUT_MULTIPLIER = 2;
+const OPENROUTER_MIN_TIMEOUT_MS = 90_000;
 
 class ProviderError extends Error {
   constructor(
@@ -267,9 +272,10 @@ function buildFinalEmailPrompt({
 
 export async function extractMetadataFromCircular(
   circularContent: string,
+  provider: AiProviderPreference = "auto",
 ): Promise<GenerationResult & { metadata: ExtractedMetadata }> {
   const prompt = buildMetadataExtractionPrompt(circularContent);
-  const completion = await completePrompt(prompt, METADATA_COMPLETION);
+  const completion = await completePrompt(prompt, METADATA_COMPLETION, provider);
   const emptyArtifacts: GeneratedArtifacts = {
     subject: "",
     summary: "",
@@ -293,13 +299,15 @@ export async function generateAllArtifacts({
   candidate,
   circularContent,
   tone,
+  provider = "auto",
 }: {
   candidate: CandidateContext;
   circularContent: string;
   tone?: string | undefined;
+  provider?: AiProviderPreference;
 }): Promise<GenerationResult> {
   const prompt = buildAllArtifactsPrompt({ candidate, circularContent, tone });
-  const completion = await completePrompt(prompt, ARTIFACT_COMPLETION);
+  const completion = await completePrompt(prompt, ARTIFACT_COMPLETION, provider);
   return {
     artifacts: parseArtifacts(completion.text),
     provider: completion.provider,
@@ -313,12 +321,14 @@ export async function regenerateSingleArtifact({
   kind,
   tone,
   existingArtifacts,
+  provider = "auto",
 }: {
   candidate: CandidateContext;
   circularContent: string;
   kind: ArtifactKind;
   tone?: string | undefined;
   existingArtifacts?: Partial<GeneratedArtifacts> | undefined;
+  provider?: AiProviderPreference;
 }): Promise<{ content: string; provider: string; model: string }> {
   const prompt = buildSingleArtifactPrompt({
     candidate,
@@ -328,7 +338,7 @@ export async function regenerateSingleArtifact({
     existingArtifacts,
   });
 
-  const completion = await completePrompt(prompt, ARTIFACT_COMPLETION);
+  const completion = await completePrompt(prompt, ARTIFACT_COMPLETION, provider);
   const content = parseSingleArtifact(completion.text, kind);
   if (!content.trim()) {
     throw new Error(`Provider returned no ${kind} content.`);
@@ -347,12 +357,14 @@ export async function generateFinalEmailHtml({
   signatureHtml,
   companyName,
   roleTitle,
+  provider = "auto",
 }: {
   bodyHtml: string;
   coverLetter?: string | undefined;
   signatureHtml?: string | undefined;
   companyName?: string | undefined;
   roleTitle?: string | undefined;
+  provider?: AiProviderPreference;
 }): Promise<{ html: string; provider: string; model: string }> {
   const prompt = buildFinalEmailPrompt({
     bodyHtml,
@@ -361,7 +373,7 @@ export async function generateFinalEmailHtml({
     companyName,
     roleTitle,
   });
-  const completion = await completePrompt(prompt, EMAIL_COMPLETION);
+  const completion = await completePrompt(prompt, EMAIL_COMPLETION, provider);
   const html = stripCodeFences(completion.text);
   if (!html) throw new Error("AI returned empty content.");
 
@@ -375,7 +387,23 @@ export async function generateFinalEmailHtml({
 async function completePrompt(
   prompt: string,
   options: CompletionOptions,
+  preference: AiProviderPreference = "auto",
 ): Promise<TextCompletion> {
+  if (preference === "gemini") {
+    if (!env.GEMINI_API_KEY) {
+      throw new Error("Gemini is not configured. Set GEMINI_API_KEY.");
+    }
+    return completeGemini(prompt, options);
+  }
+
+  if (preference === "openrouter") {
+    if (!env.OPENROUTER_API_KEY) {
+      throw new Error("OpenRouter is not configured. Set OPENROUTER_API_KEY.");
+    }
+    return completeOpenRouter(prompt, options);
+  }
+
+  // auto: Gemini first, OpenRouter on eligible failure
   if (env.GEMINI_API_KEY) {
     try {
       return await completeGemini(prompt, options);
@@ -453,47 +481,99 @@ async function completeOpenRouter(
 ): Promise<TextCompletion> {
   if (!env.OPENROUTER_API_KEY) throw new Error("OpenRouter not configured.");
 
-  let response: Response;
-  try {
-    response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${env.OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": env.NEXT_PUBLIC_SITE_URL,
-        "X-OpenRouter-Title": "Job Application Assistant",
-      },
-      body: JSON.stringify({
-        model: env.OPENROUTER_MODEL,
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: options.maxOutputTokens,
-        temperature: options.temperature,
-      }),
-      cache: "no-store",
-      signal: AbortSignal.timeout(options.timeoutMs),
-    });
-  } catch (error) {
-    console.error("OpenRouter job generation failed", error);
-    throw new Error("OpenRouter request failed.");
+  const timeoutMs = Math.max(
+    options.timeoutMs * OPENROUTER_TIMEOUT_MULTIPLIER,
+    OPENROUTER_MIN_TIMEOUT_MS,
+  );
+
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const response = await fetch(
+        "https://openrouter.ai/api/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${env.OPENROUTER_API_KEY}`,
+            "Content-Type": "application/json",
+            "HTTP-Referer": env.NEXT_PUBLIC_SITE_URL,
+            "X-OpenRouter-Title": "Job Application Assistant",
+          },
+          body: JSON.stringify({
+            model: env.OPENROUTER_MODEL,
+            messages: [{ role: "user", content: prompt }],
+            max_tokens: options.maxOutputTokens,
+            temperature: options.temperature,
+            // Free/open models often spend the budget on hidden reasoning otherwise.
+            reasoning: { exclude: true },
+          }),
+          cache: "no-store",
+          signal: AbortSignal.timeout(timeoutMs),
+        },
+      );
+
+      if (!response.ok) {
+        const payload = (await response
+          .json()
+          .catch(() => null)) as OpenRouterResponse | null;
+        const detail = payload?.error?.message ?? "No detail";
+        console.error(`OpenRouter failed (${response.status}): ${detail}`);
+
+        if (attempt === 0 && isFallbackStatus(response.status)) {
+          console.warn(
+            `OpenRouter returned ${response.status}; retrying once before failing.`,
+          );
+          await wait(1_500);
+          continue;
+        }
+
+        throw new Error(`OpenRouter failed with status ${response.status}.`);
+      }
+
+      // Keep json() inside try: AbortSignal can fire while the body is still streaming.
+      const payload = (await response.json()) as OpenRouterResponse;
+      const text = payload.choices?.[0]?.message?.content?.trim();
+      if (!text) throw new Error("OpenRouter returned empty content.");
+
+      return {
+        text,
+        provider: "openrouter",
+        model: payload.model ?? env.OPENROUTER_MODEL,
+      };
+    } catch (error) {
+      lastError = error;
+      if (attempt === 0 && isTimeoutOrNetworkError(error)) {
+        console.warn("OpenRouter timed out or dropped; retrying once.");
+        await wait(1_500);
+        continue;
+      }
+      break;
+    }
   }
 
-  if (!response.ok) {
-    const payload = (await response.json().catch(() => null)) as OpenRouterResponse | null;
-    console.error(
-      `OpenRouter failed (${response.status}): ${payload?.error?.message ?? "No detail"}`,
+  console.error("OpenRouter job generation failed", lastError);
+  if (isTimeoutOrNetworkError(lastError)) {
+    throw new Error(
+      `OpenRouter timed out after ${Math.round(timeoutMs / 1000)}s. Free models can be slow — retry, or use Gemini.`,
     );
-    throw new Error(`OpenRouter failed with status ${response.status}.`);
   }
+  if (lastError instanceof Error) throw lastError;
+  throw new Error("OpenRouter request failed.");
+}
 
-  const payload = (await response.json()) as OpenRouterResponse;
-  const text = payload.choices?.[0]?.message?.content?.trim();
-  if (!text) throw new Error("OpenRouter returned empty content.");
+function isTimeoutOrNetworkError(error: unknown) {
+  if (!(error instanceof Error)) return false;
+  if (error.name === "TimeoutError" || error.name === "AbortError") return true;
+  return /aborted due to timeout|network|fetch failed|ECONNRESET|ETIMEDOUT/i.test(
+    error.message,
+  );
+}
 
-  return {
-    text,
-    provider: "openrouter",
-    model: payload.model ?? env.OPENROUTER_MODEL,
-  };
+function wait(ms: number) {
+  return new Promise<void>((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }
 
 function parseMetadata(text: string): ExtractedMetadata {
