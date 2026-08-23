@@ -72,6 +72,7 @@ const settingsSchema = z.object({
   engineeringSectionLabel: z.string().trim().min(2).max(80),
   engineeringLinkLabel: z.string().trim().min(2).max(80),
   engineeringCoreLabel: z.string().trim().min(2).max(80),
+  engineeringCoreDescription: z.string().trim().min(2).max(240),
   engineeringInventoryLabel: z.string().trim().min(2).max(80),
   engineeringScrollLabel: z.string().trim().min(2).max(80),
 });
@@ -91,6 +92,7 @@ export async function saveSettingsAction(
     engineeringSectionLabel: formData.get("engineeringSectionLabel"),
     engineeringLinkLabel: formData.get("engineeringLinkLabel"),
     engineeringCoreLabel: formData.get("engineeringCoreLabel"),
+    engineeringCoreDescription: formData.get("engineeringCoreDescription"),
     engineeringInventoryLabel: formData.get("engineeringInventoryLabel"),
     engineeringScrollLabel: formData.get("engineeringScrollLabel"),
   });

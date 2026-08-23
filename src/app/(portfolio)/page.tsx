@@ -8,12 +8,9 @@ import {
   Database,
   ExternalLink,
   Layers3,
-  Mail,
   MapPin,
-  MessageSquareText,
   Network,
   Server,
-  Sparkles,
   TerminalSquare,
   Wrench,
 } from "lucide-react";
@@ -28,6 +25,7 @@ import {
   EducationRecords,
   type EducationRecord,
 } from "@/components/education/education-records";
+import { ContactForm } from "@/components/forms/contact-form";
 import { CompactSectionHeader } from "@/components/home/compact-section-header";
 import { EngineeringSignature } from "@/components/home/engineering-ledger";
 import { HeroExperience } from "@/components/home/hero-experience";
@@ -41,7 +39,6 @@ import {
 import { Container } from "@/components/shared/container";
 import { RichTextDocument } from "@/components/shared/rich-text-document";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { formatMonthYear } from "@/lib/utils/date";
 import { defaultHeroContent } from "@/features/profile/hero-content";
 import {
@@ -171,6 +168,9 @@ export default async function Home() {
               settings?.engineeringSectionLabel ?? "01 / Engineering signature",
             link: settings?.engineeringLinkLabel ?? "Full skill map",
             core: settings?.engineeringCoreLabel ?? "Core strengths",
+            coreDescription:
+              settings?.engineeringCoreDescription ??
+              "Lead stack for architecture and delivery.",
             inventory:
               settings?.engineeringInventoryLabel ?? "Technology inventory",
             scroll: settings?.engineeringScrollLabel ?? "Scroll to explore",
@@ -531,66 +531,83 @@ export default async function Home() {
           id="contact-overview"
         >
           <Container>
-            <ScrollReveal className="relative overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-strong)] bg-[var(--surface)] p-7 shadow-[var(--shadow-card)] sm:p-9">
+            <ScrollReveal className="landing-contact-panel relative overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-strong)] bg-[var(--surface)] p-7 shadow-[var(--shadow-card)] sm:p-10 lg:p-12">
               <div className="landing-contact-orb" aria-hidden />
-              <div className="relative z-10 grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
-                <div>
-                  <div className="flex items-center gap-3">
-                    <Sparkles
-                      className="text-[var(--accent)]"
-                      aria-hidden
-                      size={18}
-                    />
-                    <p className="eyebrow">09 / Start a conversation</p>
-                  </div>
-                  <div className="mt-5 flex flex-wrap gap-x-6 gap-y-3 text-sm text-[var(--muted)]">
-                    {profile?.email ? (
-                      <a
-                        className="inline-flex items-center gap-2 hover:text-[var(--accent)]"
-                        href={`mailto:${profile.email}`}
-                      >
-                        <Mail aria-hidden size={15} />
-                        {profile.email}
-                      </a>
-                    ) : null}
+              <div className="landing-contact-scan" aria-hidden />
+              <div className="relative z-10 grid gap-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.15fr)] lg:items-start">
+                <div className="landing-contact-intro">
+                  <p className="eyebrow">09 / Start a conversation</p>
+                  <h2 className="mt-5 max-w-md text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+                    Ready for the next engineering conversation.
+                  </h2>
+                  <p className="mt-4 max-w-md text-sm leading-7 text-[var(--muted)]">
+                    Roles, architecture discussions, and collaboration inquiries
+                    go through the secure channel — not a public inbox.
+                  </p>
+
+                  <div className="landing-contact-meta mt-8 space-y-5 border-t border-[var(--border)] pt-6">
+                    <div>
+                      <p className="font-mono text-[10px] tracking-[0.14em] text-[var(--muted)] uppercase">
+                        Availability
+                      </p>
+                      <p className="mt-2 text-sm font-medium">
+                        {profile?.availabilityStatus ?? "Open to conversations"}
+                      </p>
+                    </div>
                     {profile?.location ? (
-                      <span className="inline-flex items-center gap-2">
-                        <MapPin aria-hidden size={15} />
-                        {profile.location}
-                      </span>
+                      <div>
+                        <p className="font-mono text-[10px] tracking-[0.14em] text-[var(--muted)] uppercase">
+                          Location
+                        </p>
+                        <p className="mt-2 inline-flex items-center gap-2 text-sm font-medium">
+                          <MapPin
+                            className="text-[var(--accent)]"
+                            aria-hidden
+                            size={14}
+                          />
+                          {profile.location}
+                        </p>
+                      </div>
                     ) : null}
+                    {socialLinks.length ? (
+                      <div>
+                        <p className="font-mono text-[10px] tracking-[0.14em] text-[var(--muted)] uppercase">
+                          Profiles
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
+                          {socialLinks.map((link) => (
+                            <a
+                              className="text-sm text-[var(--muted)] transition-colors hover:text-[var(--accent)]"
+                              href={link.url}
+                              key={link.id}
+                              rel="noreferrer"
+                              target="_blank"
+                            >
+                              {link.label}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                    <Link
+                      className="group inline-flex items-center gap-2 text-sm font-medium text-[var(--accent)]"
+                      data-cursor="Open resume"
+                      href="/resume"
+                    >
+                      View resume
+                      <ArrowRight
+                        className="transition-transform group-hover:translate-x-1"
+                        aria-hidden
+                        size={15}
+                      />
+                    </Link>
                   </div>
                 </div>
-                <div className="flex flex-col gap-3">
-                  <Button asChild size="lg">
-                    <Link data-cursor="Start a conversation" href="/contact">
-                      <MessageSquareText aria-hidden size={17} />
-                      Contact me
-                    </Link>
-                  </Button>
-                  <Button asChild size="lg" variant="outline">
-                    <Link data-cursor="Open resume" href="/resume">
-                      View resume
-                      <ArrowRight aria-hidden size={16} />
-                    </Link>
-                  </Button>
+
+                <div className="landing-contact-form relative rounded-[var(--radius-card)] border border-[var(--border)] bg-[color-mix(in_srgb,var(--background)_55%,transparent)] p-5 sm:p-6">
+                  <ContactForm />
                 </div>
               </div>
-              {socialLinks.length ? (
-                <div className="relative z-10 mt-7 flex flex-wrap gap-4 border-t border-[var(--border)] pt-5">
-                  {socialLinks.map((link) => (
-                    <a
-                      className="text-sm text-[var(--muted)] transition-colors hover:text-[var(--accent)]"
-                      href={link.url}
-                      key={link.id}
-                      rel="noreferrer"
-                      target="_blank"
-                    >
-                      {link.label}
-                    </a>
-                  ))}
-                </div>
-              ) : null}
             </ScrollReveal>
           </Container>
         </section>

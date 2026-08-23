@@ -57,7 +57,7 @@ export const publicNavigation: readonly PublicNavigationItem[] = [
   },
   {
     label: "Contact",
-    href: "/contact",
+    href: "/#contact-overview",
     landingHref: "/#contact-overview",
     primary: true,
     feature: "contact",

@@ -338,11 +338,12 @@ model SiteSettings {
   seoTitle                  String?
   seoDescription            String?
   seoImage                  String?
-  engineeringSectionLabel   String   @default("01 / Engineering signature")
-  engineeringLinkLabel      String   @default("Full skill map")
-  engineeringCoreLabel      String   @default("Core strengths")
-  engineeringInventoryLabel String   @default("Technology inventory")
-  engineeringScrollLabel    String   @default("Scroll to explore")
+  engineeringSectionLabel      String   @default("01 / Engineering signature")
+  engineeringLinkLabel         String   @default("Full skill map")
+  engineeringCoreLabel         String   @default("Core strengths")
+  engineeringCoreDescription   String   @default("Lead stack for architecture and delivery.")
+  engineeringInventoryLabel    String   @default("Technology inventory")
+  engineeringScrollLabel       String   @default("Scroll to explore")
   emailSignature           Json?
   createdAt                DateTime @default(now())
   updatedAt                DateTime @updatedAt

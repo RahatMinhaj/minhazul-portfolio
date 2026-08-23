@@ -134,16 +134,30 @@ const technologyLogos: Record<string, BrandIcon> = {
 export function EngineeringSignature({
   categories,
   fullName,
+  labels,
   professionalTitle,
   projectCount,
   yearsOfExperience,
 }: {
   categories: StackCategory[];
   fullName: string;
+  labels?: {
+    section?: string;
+    link?: string;
+    core?: string;
+    inventory?: string;
+    scroll?: string;
+  };
   professionalTitle: string;
   projectCount: number;
   yearsOfExperience: number | string;
 }) {
+  const sectionLabel = labels?.section ?? "01 / Engineering signature";
+  const linkLabel = labels?.link ?? "Full skill map";
+  const coreLabel = labels?.core ?? "Core strengths";
+  const inventoryLabel = labels?.inventory ?? "Technology inventory";
+  const scrollLabel = labels?.scroll ?? "Scroll to explore";
+
   const totalSkills = categories.reduce(
     (total, category) => total + category.skills.length,
     0,
@@ -159,12 +173,12 @@ export function EngineeringSignature({
       id="engineering-signature"
     >
       <ScrollReveal className="mb-5 flex items-center justify-between gap-4">
-        <p className="eyebrow">01 / Engineering signature</p>
+        <p className="eyebrow">{sectionLabel}</p>
         <Link
           className="group inline-flex items-center gap-2 text-xs font-semibold text-[var(--accent)]"
           href="/skills"
         >
-          Full skill map
+          {linkLabel}
           <ArrowRight
             className="transition-transform group-hover:translate-x-1"
             aria-hidden
@@ -204,38 +218,68 @@ export function EngineeringSignature({
         </div>
 
         {coreSkills.length ? (
-          <div className="relative grid border-b border-[var(--border)] md:grid-cols-[8rem_minmax(0,1fr)]">
-            <div className="flex items-center justify-between gap-2 bg-[color-mix(in_srgb,var(--accent)_7%,var(--surface))] px-2.5 py-1.5 md:block md:border-r md:border-[var(--border)] md:py-2">
-              <div>
-                <p className="font-mono text-[7px] tracking-[0.15em] text-[var(--accent)] uppercase">
-                  Priority lane
-                </p>
-                <h3 className="text-[10px] font-semibold">Core stack</h3>
-              </div>
-              <span className="font-mono text-[7px] text-[var(--muted)] uppercase md:mt-2 md:block">
-                {coreSkills.length} highlighted
+          <div className="relative grid border-b border-[var(--border)] lg:grid-cols-[13.5rem_minmax(0,1fr)]">
+            <aside className="relative overflow-hidden border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--surface-raised)_88%,var(--accent))] px-4 py-4 lg:border-r lg:border-b-0 lg:px-5 lg:py-5">
+              <span
+                aria-hidden
+                className="absolute inset-y-0 left-0 w-1 bg-[var(--accent)]"
+              />
+              <span
+                aria-hidden
+                className="pointer-events-none absolute -right-6 -bottom-8 text-[5.5rem] leading-none font-semibold tracking-[-0.06em] text-[color-mix(in_srgb,var(--accent)_12%,transparent)] select-none"
+              >
+                {coreSkills.length.toString().padStart(2, "0")}
               </span>
-            </div>
+              <div className="relative space-y-3">
+                <div className="inline-flex items-center gap-2 rounded-[var(--radius-control)] border border-[var(--border-strong)] bg-[var(--surface)] px-2.5 py-1">
+                  <Sparkles
+                    aria-hidden
+                    className="text-[var(--accent)]"
+                    size={12}
+                  />
+                  <span className="font-mono text-[9px] tracking-[0.14em] text-[var(--muted)] uppercase">
+                    Focus set
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-lg leading-tight font-semibold tracking-tight sm:text-xl">
+                    {coreLabel}
+                  </h3>
+                  <p className="mt-2 max-w-[14rem] text-xs leading-5 text-[var(--muted)]">
+                    The technologies I lead with across delivery, architecture,
+                    and day-to-day build work.
+                  </p>
+                </div>
+                <dl className="flex items-baseline gap-2 border-t border-[var(--border)] pt-3">
+                  <dd className="text-2xl font-semibold tracking-[-0.04em] text-[var(--accent)]">
+                    {coreSkills.length.toString().padStart(2, "0")}
+                  </dd>
+                  <dt className="font-mono text-[10px] tracking-[0.12em] text-[var(--muted)] uppercase">
+                    highlighted
+                  </dt>
+                </dl>
+              </div>
+            </aside>
 
             <StaggerContainer
-              aria-label="Core technologies"
-              className="flex snap-x [scrollbar-width:thin] [scrollbar-color:var(--accent)_transparent] gap-1 overflow-x-auto p-1.5"
+              aria-label={coreLabel}
+              className="grid gap-2 p-3 sm:grid-cols-2 xl:grid-cols-3"
               role="list"
-              tabIndex={0}
             >
-              {coreSkills.map((skill) => (
-                <StaggerItem
-                  className="min-w-32 flex-1 snap-start"
-                  key={skill.id}
-                  role="listitem"
-                >
-                  <div className="flex h-9 items-center gap-1.5 rounded-md border border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_6%,var(--surface))] px-1.5">
+              {coreSkills.map((skill, index) => (
+                <StaggerItem key={skill.id} role="listitem">
+                  <div className="group flex h-full min-h-14 items-center gap-3 rounded-[var(--radius-control)] border border-[var(--border-strong)] bg-[var(--surface)] px-3 py-2.5 transition-[border-color,background-color,transform] duration-200 hover:-translate-y-0.5 hover:border-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_6%,var(--surface))]">
                     <TechnologyMark name={skill.name} slug={skill.slug} />
-                    <div className="min-w-0">
-                      <p className="truncate text-[9px] font-semibold">
-                        {skill.name}
-                      </p>
-                      <p className="truncate font-mono text-[6px] tracking-[0.08em] text-[var(--muted)] uppercase">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="truncate text-sm font-semibold tracking-tight">
+                          {skill.name}
+                        </p>
+                        <span className="hidden font-mono text-[9px] tracking-[0.12em] text-[var(--muted)] uppercase sm:inline">
+                          {(index + 1).toString().padStart(2, "0")}
+                        </span>
+                      </div>
+                      <p className="mt-0.5 truncate text-xs text-[var(--muted)]">
                         {skill.categoryName}
                       </p>
                     </div>
@@ -253,13 +297,11 @@ export function EngineeringSignature({
                 Domain channels /{" "}
                 {categories.length.toString().padStart(2, "0")}
               </p>
-              <h3 className="text-xs font-semibold">
-                Browse the complete stack
-              </h3>
+              <h3 className="text-xs font-semibold">{inventoryLabel}</h3>
             </div>
             <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-raised)] px-2.5 py-1 font-mono text-[7px] tracking-[0.08em] text-[var(--muted)] uppercase">
               <MoveHorizontal aria-hidden size={12} />
-              Scroll domains
+              {scrollLabel}
             </span>
           </div>
 

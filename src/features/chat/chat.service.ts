@@ -203,8 +203,10 @@ function getSafeResponse(question: string): ChatAnswer | null {
   if (personalDataPattern.test(normalized)) {
     return {
       answer:
-        "I protect Minhazul's personal information, so I cannot provide email addresses, phone numbers, messaging handles, addresses, credentials, or other private details. For a professional inquiry, please use the portfolio contact page.",
-      sources: [{ title: "Professional contact page", href: "/contact" }],
+        "I protect Minhazul's personal information, so I cannot provide email addresses, phone numbers, messaging handles, addresses, credentials, or other private details. For a professional inquiry, please use the portfolio contact form.",
+      sources: [
+        { title: "Professional contact channel", href: "/#contact-overview" },
+      ],
     };
   }
 
@@ -215,8 +217,10 @@ function getSafeResponse(question: string): ChatAnswer | null {
   ) {
     return {
       answer:
-        "For a professional conversation with Minhazul, please use the portfolio contact page. It is the appropriate channel for project, role, and collaboration inquiries.",
-      sources: [{ title: "Professional contact page", href: "/contact" }],
+        "For a professional conversation with Minhazul, please use the portfolio contact form on the home page. It is the appropriate channel for project, role, and collaboration inquiries.",
+      sources: [
+        { title: "Professional contact channel", href: "/#contact-overview" },
+      ],
     };
   }
 

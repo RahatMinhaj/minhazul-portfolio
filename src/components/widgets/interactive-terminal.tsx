@@ -49,7 +49,7 @@ export function InteractiveTerminal({
       skills: "/skills",
       experience: "/experience",
       projects: "/projects",
-      contact: "/contact",
+      contact: "/#contact-overview",
       resume: "/resume",
     };
     let output = "";

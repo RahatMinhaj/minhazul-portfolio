@@ -122,6 +122,31 @@ export default async function AdminSettingsPage() {
               name="engineeringCoreLabel"
               required
             />
+            <div className="md:col-span-2">
+              <AdminTextarea
+                defaultValue={
+                  settings?.engineeringCoreDescription ??
+                  "Lead stack for architecture and delivery."
+                }
+                label="Core skills description"
+                name="engineeringCoreDescription"
+                required
+              />
+              <p className="mt-2 text-xs leading-5 text-[var(--muted)]">
+                The listed core technologies come from Skills marked as{" "}
+                <span className="font-medium text-[var(--foreground)]">
+                  Highlighted
+                </span>
+                . Manage them in{" "}
+                <a
+                  className="font-medium text-[var(--accent)] underline-offset-2 hover:underline"
+                  href="/admin/skills"
+                >
+                  Admin → Skills
+                </a>
+                .
+              </p>
+            </div>
             <AdminField
               defaultValue={
                 settings?.engineeringInventoryLabel ?? "Technology inventory"

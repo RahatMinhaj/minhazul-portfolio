@@ -50,6 +50,7 @@ export async function getPublicSiteSettings() {
       engineeringSectionLabel: true,
       engineeringLinkLabel: true,
       engineeringCoreLabel: true,
+      engineeringCoreDescription: true,
       engineeringInventoryLabel: true,
       engineeringScrollLabel: true,
     },

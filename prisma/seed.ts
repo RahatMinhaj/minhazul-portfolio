@@ -17,6 +17,12 @@ import {
 } from "../src/data/seed";
 import { Prisma, PrismaClient } from "../src/generated/prisma/client";
 
+/**
+ * Safe by default: only inserts missing rows.
+ * Set SEED_OVERWRITE=true to restore the old destructive update behavior.
+ */
+const overwriteExisting = process.env.SEED_OVERWRITE === "true";
+
 const adminSeedSchema = z
   .object({
     ADMIN_NAME: z.string().trim().min(2).optional(),
@@ -57,35 +63,34 @@ async function main() {
 
   try {
     for (const [sortOrder, theme] of themeDefinitions.entries()) {
+      const createData = {
+        name: theme.name,
+        slug: theme.id,
+        description: theme.description,
+        configuration: {
+          mode: theme.mode,
+          accent: theme.accent,
+          surface: theme.surface,
+          personality: theme.personality,
+        },
+        isDefault: theme.id === defaultTheme,
+        active: true,
+        sortOrder,
+      };
+
       await prisma.themeDefinition.upsert({
         where: { slug: theme.id },
-        create: {
-          name: theme.name,
-          slug: theme.id,
-          description: theme.description,
-          configuration: {
-            mode: theme.mode,
-            accent: theme.accent,
-            surface: theme.surface,
-            personality: theme.personality,
-          },
-          isDefault: theme.id === defaultTheme,
-          active: true,
-          sortOrder,
-        },
-        update: {
-          name: theme.name,
-          description: theme.description,
-          configuration: {
-            mode: theme.mode,
-            accent: theme.accent,
-            surface: theme.surface,
-            personality: theme.personality,
-          },
-          isDefault: theme.id === defaultTheme,
-          active: true,
-          sortOrder,
-        },
+        create: createData,
+        update: overwriteExisting
+          ? {
+              name: theme.name,
+              description: theme.description,
+              configuration: createData.configuration,
+              isDefault: theme.id === defaultTheme,
+              active: true,
+              sortOrder,
+            }
+          : {},
       });
     }
 
@@ -109,17 +114,18 @@ async function main() {
       learningGoals: [...profileSeedData.learningGoals],
       engineeringValues: [...profileSeedData.engineeringValues],
     };
-    if (existingProfile) {
-      await prisma.profile.update({
-        where: { id: existingProfile.id },
-        data: profileData,
-      });
-    } else {
+
+    if (!existingProfile) {
       await prisma.profile.create({
         data: {
           id: "primary-profile",
           ...profileData,
         },
+      });
+    } else if (overwriteExisting) {
+      await prisma.profile.update({
+        where: { id: existingProfile.id },
+        data: profileData,
       });
     }
 
@@ -131,13 +137,15 @@ async function main() {
           sortOrder,
           visible: true,
         },
-        update: {
-          platform: link.platform,
-          label: link.label,
-          icon: link.icon ?? null,
-          sortOrder,
-          visible: true,
-        },
+        update: overwriteExisting
+          ? {
+              platform: link.platform,
+              label: link.label,
+              icon: link.icon ?? null,
+              sortOrder,
+              visible: true,
+            }
+          : {},
       });
     }
 
@@ -166,13 +174,13 @@ async function main() {
         visible: true,
       };
 
-      if (existingExperience) {
+      if (!existingExperience) {
+        await prisma.experience.create({ data: experienceData });
+      } else if (overwriteExisting) {
         await prisma.experience.update({
           where: { id: existingExperience.id },
           data: experienceData,
         });
-      } else {
-        await prisma.experience.create({ data: experienceData });
       }
     }
 
@@ -193,18 +201,20 @@ async function main() {
           featured: project.featured ?? false,
           visible: true,
         },
-        update: {
-          title: project.title,
-          shortDescription: project.shortDescription,
-          richDescription: project.richDescription ?? Prisma.JsonNull,
-          projectType: project.projectType ?? null,
-          clientName: project.clientName ?? null,
-          status: project.status,
-          technologies: [...project.technologies],
-          sortOrder,
-          featured: project.featured ?? false,
-          visible: true,
-        },
+        update: overwriteExisting
+          ? {
+              title: project.title,
+              shortDescription: project.shortDescription,
+              richDescription: project.richDescription ?? Prisma.JsonNull,
+              projectType: project.projectType ?? null,
+              clientName: project.clientName ?? null,
+              status: project.status,
+              technologies: [...project.technologies],
+              sortOrder,
+              featured: project.featured ?? false,
+              visible: true,
+            }
+          : {},
       });
     }
 
@@ -217,15 +227,18 @@ async function main() {
           sortOrder,
           visible: true,
         },
-        update: {
-          name: category.name,
-          description: category.description,
-          icon: category.icon,
-          sortOrder,
-          visible: true,
-        },
-        select: { id: true },
+        update: overwriteExisting
+          ? {
+              name: category.name,
+              description: category.description,
+              icon: category.icon,
+              sortOrder,
+              visible: true,
+            }
+          : {},
+        select: { id: true, name: true },
       });
+      categoryIds.set(record.name, record.id);
       categoryIds.set(category.name, record.id);
     }
 
@@ -245,13 +258,15 @@ async function main() {
           sortOrder,
           visible: true,
         },
-        update: {
-          name: skill.name,
-          categoryId,
-          highlighted: skill.highlighted ?? false,
-          sortOrder,
-          visible: true,
-        },
+        update: overwriteExisting
+          ? {
+              name: skill.name,
+              categoryId,
+              highlighted: skill.highlighted ?? false,
+              sortOrder,
+              visible: true,
+            }
+          : {},
       });
     }
 
@@ -274,15 +289,17 @@ async function main() {
           featured: true,
           visible: true,
         },
-        update: {
-          issueDate: optionalDate(certification.issueDate),
-          credentialId: certification.credentialId ?? null,
-          credentialUrl: certification.credentialUrl ?? null,
-          description: certification.description ?? null,
-          sortOrder,
-          featured: true,
-          visible: true,
-        },
+        update: overwriteExisting
+          ? {
+              issueDate: optionalDate(certification.issueDate),
+              credentialId: certification.credentialId ?? null,
+              credentialUrl: certification.credentialUrl ?? null,
+              description: certification.description ?? null,
+              sortOrder,
+              featured: true,
+              visible: true,
+            }
+          : {},
       });
     }
 
@@ -305,39 +322,51 @@ async function main() {
         visible: true,
       };
 
-      if (existingEducation) {
+      if (!existingEducation) {
+        await prisma.education.create({ data: educationData });
+      } else if (overwriteExisting) {
         await prisma.education.update({
           where: { id: existingEducation.id },
           data: educationData,
         });
-      } else {
-        await prisma.education.create({ data: educationData });
       }
     }
 
-    await prisma.siteSettings.upsert({
-      where: { id: "site-settings" },
-      create: {
-        id: "site-settings",
-        siteName: `${profileSeedData.fullName} · Developer Portfolio`,
-        siteDescription: profileSeedData.shortBio,
-        defaultTheme,
-        contactEnabled: true,
-        blogEnabled: true,
-        playgroundEnabled: true,
-        analyticsEnabled: false,
-        maintenanceMode: false,
-        footerText: `Built by ${profileSeedData.fullName}.`,
-        seoTitle: `${profileSeedData.fullName} · ${profileSeedData.professionalTitle}`,
-        seoDescription: profileSeedData.shortBio,
-      },
-      update: {
-        siteName: `${profileSeedData.fullName} · Developer Portfolio`,
-        siteDescription: profileSeedData.shortBio,
-        seoTitle: `${profileSeedData.fullName} · ${profileSeedData.professionalTitle}`,
-        seoDescription: profileSeedData.shortBio,
-      },
+    const existingSettings = await prisma.siteSettings.findFirst({
+      select: { id: true },
     });
+    const settingsData = {
+      siteName: `${profileSeedData.fullName} · Developer Portfolio`,
+      siteDescription: profileSeedData.shortBio,
+      defaultTheme,
+      contactEnabled: true,
+      blogEnabled: true,
+      playgroundEnabled: true,
+      analyticsEnabled: false,
+      maintenanceMode: false,
+      footerText: `Built by ${profileSeedData.fullName}.`,
+      seoTitle: `${profileSeedData.fullName} · ${profileSeedData.professionalTitle}`,
+      seoDescription: profileSeedData.shortBio,
+    };
+
+    if (!existingSettings) {
+      await prisma.siteSettings.create({
+        data: {
+          id: "site-settings",
+          ...settingsData,
+        },
+      });
+    } else if (overwriteExisting) {
+      await prisma.siteSettings.update({
+        where: { id: existingSettings.id },
+        data: {
+          siteName: settingsData.siteName,
+          siteDescription: settingsData.siteDescription,
+          seoTitle: settingsData.seoTitle,
+          seoDescription: settingsData.seoDescription,
+        },
+      });
+    }
 
     const adminSeed = adminSeedSchema.parse({
       ADMIN_NAME: process.env.ADMIN_NAME,
@@ -346,6 +375,7 @@ async function main() {
       ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
     });
 
+    let adminSeeded = false;
     if (
       adminSeed.ADMIN_NAME &&
       adminSeed.ADMIN_USERNAME &&
@@ -353,13 +383,23 @@ async function main() {
       adminSeed.ADMIN_PASSWORD
     ) {
       const passwordHash = await hash(adminSeed.ADMIN_PASSWORD, 12);
-
       const existingAdministrator = await prisma.user.findFirst({
         where: { role: "ADMIN" },
         orderBy: { createdAt: "asc" },
         select: { id: true },
       });
-      if (existingAdministrator) {
+
+      if (!existingAdministrator) {
+        await prisma.user.create({
+          data: {
+            name: adminSeed.ADMIN_NAME,
+            email: adminSeed.ADMIN_EMAIL,
+            passwordHash,
+            active: true,
+          },
+        });
+        adminSeeded = true;
+      } else if (overwriteExisting) {
         await prisma.user.update({
           where: { id: existingAdministrator.id },
           data: {
@@ -369,22 +409,27 @@ async function main() {
             active: true,
           },
         });
-      } else {
-        await prisma.user.create({
-          data: {
-            name: adminSeed.ADMIN_NAME,
-            email: adminSeed.ADMIN_EMAIL,
-            passwordHash,
-            active: true,
-          },
-        });
+        adminSeeded = true;
       }
+    }
+
+    const mode = overwriteExisting ? "overwrite" : "create-missing";
+    if (adminSeeded) {
       process.stdout.write(
-        "CV content, administrator, themes, and settings seeded successfully.\n",
+        `Seed complete (${mode}): content, themes, settings, and administrator.\n`,
+      );
+    } else if (
+      adminSeed.ADMIN_NAME ||
+      adminSeed.ADMIN_USERNAME ||
+      adminSeed.ADMIN_EMAIL ||
+      adminSeed.ADMIN_PASSWORD
+    ) {
+      process.stdout.write(
+        `Seed complete (${mode}): content, themes, and settings. Administrator left unchanged.\n`,
       );
     } else {
       process.stdout.write(
-        "CV content, themes, and settings seeded. Administrator skipped because secure seed variables were not provided.\n",
+        `Seed complete (${mode}): content, themes, and settings. Administrator skipped (env vars not set).\n`,
       );
     }
   } finally {
