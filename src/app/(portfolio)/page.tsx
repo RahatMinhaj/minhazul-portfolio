@@ -153,6 +153,8 @@ export default async function Home() {
           profile?.shortBio ??
           "Building robust and scalable software with Java, Spring Boot, Angular, microservices, distributed systems, and AI integrations."
         }
+        {...(profile?.longBio != null ? { longBio: profile.longBio } : {})}
+        engineeringValues={profile?.engineeringValues ?? []}
         technologies={highlightedTechnologies}
         codeFileLabel={heroCode.fileLabel}
         codeVariableName={heroCode.variableName}

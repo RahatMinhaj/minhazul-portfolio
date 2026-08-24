@@ -18,6 +18,7 @@ import {
 import Link from "next/link";
 
 import { MagneticElement } from "@/components/animations/primitives";
+import { HeroNarrative } from "@/components/home/hero-narrative";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,6 +31,8 @@ type HeroExperienceProps = {
   fullName: string;
   professionalTitle: string;
   shortBio: string;
+  longBio?: unknown;
+  engineeringValues?: string[];
   currentFocus: string;
   technologies: string[];
   codeFileLabel: string;
@@ -42,6 +45,8 @@ export function HeroExperience({
   fullName,
   professionalTitle,
   shortBio,
+  longBio,
+  engineeringValues,
   currentFocus,
   technologies,
   codeFileLabel,
@@ -110,7 +115,9 @@ export function HeroExperience({
             <CircleDot className="mr-1 animate-pulse" aria-hidden size={11} />
             {availability}
           </Badge>
-          <p className="eyebrow">Java · Spring · AI · Distributed systems</p>
+          {technologies.length ? (
+            <p className="eyebrow">{technologies.slice(0, 4).join(" · ")}</p>
+          ) : null}
         </motion.div>
 
         <h1
@@ -193,14 +200,12 @@ export function HeroExperience({
           </span>
         </h1>
 
-        <motion.p
-          animate={{ opacity: 1, y: 0 }}
-          className="mt-8 max-w-2xl text-lg leading-8 text-[var(--muted)] sm:text-xl"
-          initial={reduceMotion ? false : { opacity: 0, y: 22 }}
-          transition={{ delay: 0.85, duration: 0.55 }}
-        >
-          {shortBio}
-        </motion.p>
+        <HeroNarrative
+          engineeringValues={engineeringValues ?? []}
+          highlightTerms={technologies}
+          shortBio={shortBio}
+          {...(longBio !== undefined ? { longBio } : {})}
+        />
 
         <motion.div
           animate={{ opacity: 1, y: 0 }}

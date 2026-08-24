@@ -2,10 +2,10 @@
 
 import {
   ArrowUp,
+  Atom,
   Bot,
   CheckCircle2,
   ExternalLink,
-  LoaderCircle,
   MessageCircleMore,
   RotateCcw,
   ShieldCheck,
@@ -235,18 +235,31 @@ export function PortfolioChatbot() {
       <AnimatePresence>
         {open ? (
           <motion.section
-            animate={{ opacity: 1, scale: 1, y: 0 }}
+            animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
             aria-describedby="portfolio-chat-description"
             aria-labelledby="portfolio-chat-title"
-            className="fixed right-2 bottom-2 z-50 flex h-[min(46rem,calc(100dvh-1rem))] w-[calc(100vw-1rem)] origin-bottom-right flex-col overflow-hidden rounded-[calc(var(--radius-card)+0.35rem)] border border-[var(--border-strong)] bg-[color-mix(in_srgb,var(--surface)_96%,transparent)] shadow-[0_30px_90px_rgba(0,0,0,0.36)] backdrop-blur-2xl sm:right-7 sm:bottom-24 sm:h-[min(43rem,78dvh)] sm:w-[29rem]"
-            exit={{ opacity: 0, scale: 0.96, y: 12 }}
+            className="fixed right-2 bottom-2 z-50 flex h-[min(46rem,calc(100dvh-1rem))] w-[calc(100vw-1rem)] origin-bottom-right flex-col overflow-hidden rounded-[calc(var(--radius-card)+0.5rem)] border border-[color-mix(in_srgb,var(--accent)_26%,var(--border-strong))] bg-[color-mix(in_srgb,var(--surface)_90%,transparent)] shadow-[0_36px_110px_rgba(0,0,0,0.42)] backdrop-blur-2xl sm:right-7 sm:bottom-24 sm:h-[min(43rem,78dvh)] sm:w-[29rem]"
+            exit={{ opacity: 0, scale: 0.96, y: 14, filter: "blur(3px)" }}
             id="portfolio-chat-panel"
-            initial={{ opacity: 0, scale: 0.96, y: 12 }}
+            initial={{ opacity: 0, scale: 0.94, y: 18, filter: "blur(4px)" }}
             ref={panelRef}
             role="dialog"
             aria-modal="false"
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
           >
+            <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+              <motion.span
+                animate={{ scale: [1, 1.08, 1], x: [0, 8, 0], y: [0, -6, 0] }}
+                className="absolute -top-24 -right-16 size-56 rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--accent)_28%,transparent),transparent_68%)] opacity-70"
+                transition={{ duration: 8, ease: "easeInOut", repeat: Infinity }}
+              />
+              <motion.span
+                animate={{ scale: [1, 1.12, 1], x: [0, -10, 0], y: [0, 10, 0] }}
+                className="absolute -bottom-28 -left-16 size-56 rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--accent)_16%,transparent),transparent_70%)] opacity-80"
+                transition={{ duration: 9.5, ease: "easeInOut", repeat: Infinity }}
+              />
+              <div className="absolute inset-0 bg-[linear-gradient(145deg,color-mix(in_srgb,var(--surface-raised)_42%,transparent),transparent_35%,color-mix(in_srgb,var(--accent)_6%,transparent))]" />
+            </div>
             <header className="relative overflow-hidden border-b border-[var(--border)] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--surface-raised)_94%,transparent),color-mix(in_srgb,var(--accent)_8%,var(--surface)))] p-5 pr-24">
               <div className="absolute inset-y-0 left-0 w-1 bg-[var(--accent)]" />
               <div
@@ -327,11 +340,13 @@ export function PortfolioChatbot() {
                     </p>
                     <div className="grid gap-2">
                       {suggestions.map((suggestion) => (
-                        <button
+                        <motion.button
                           className="group flex min-h-12 items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-3 text-left text-xs leading-5 text-[var(--muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--foreground)]"
                           key={suggestion}
                           onClick={() => void askQuestion(suggestion)}
                           type="button"
+                          whileHover={{ x: 3 }}
+                          whileTap={{ scale: 0.985 }}
                         >
                           {suggestion}
                           <Sparkles
@@ -339,7 +354,7 @@ export function PortfolioChatbot() {
                             aria-hidden
                             size={13}
                           />
-                        </button>
+                        </motion.button>
                       ))}
                     </div>
                   </div>
@@ -351,11 +366,7 @@ export function PortfolioChatbot() {
                       <Bot aria-hidden size={15} />
                     </span>
                     <div className="inline-flex items-center gap-2.5 rounded-2xl rounded-tl-sm border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-xs text-[var(--muted)] shadow-[var(--shadow-card)]">
-                      <LoaderCircle
-                        className="animate-spin"
-                        aria-hidden
-                        size={14}
-                      />
+                      <TypingDots />
                       Reviewing portfolio evidence
                     </div>
                   </div>
@@ -403,11 +414,7 @@ export function PortfolioChatbot() {
                     type="submit"
                   >
                     {pending ? (
-                      <LoaderCircle
-                        className="animate-spin"
-                        aria-hidden
-                        size={17}
-                      />
+                      <TypingDots />
                     ) : (
                       <ArrowUp aria-hidden size={18} strokeWidth={2.5} />
                     )}
@@ -484,7 +491,7 @@ export function PortfolioChatbot() {
         ) : null}
       </AnimatePresence>
 
-      <button
+      <motion.button
         aria-controls="portfolio-chat-panel"
         aria-expanded={open}
         aria-haspopup="dialog"
@@ -492,16 +499,29 @@ export function PortfolioChatbot() {
           open ? "Close portfolio assistant" : "Open portfolio assistant"
         }
         className={cn(
-          "group fixed right-4 bottom-4 z-50 flex items-center gap-3 rounded-2xl border border-[var(--border-strong)] bg-[color-mix(in_srgb,var(--surface)_94%,transparent)] p-2.5 pr-4 text-left shadow-[var(--shadow-card)] backdrop-blur-xl transition-[border-color,transform,box-shadow] hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[var(--shadow-glow)] sm:right-7 sm:bottom-7",
+          "group fixed right-4 bottom-4 z-50 flex items-center gap-3 overflow-hidden rounded-2xl border border-[color-mix(in_srgb,var(--accent)_30%,var(--border-strong))] bg-[color-mix(in_srgb,var(--surface)_90%,transparent)] p-2.5 pr-4 text-left shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur-xl transition-[border-color,transform,box-shadow] hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[var(--shadow-glow)] sm:right-7 sm:bottom-7",
           open && "max-sm:hidden",
         )}
         onClick={() => (open ? setOpen(false) : openChat())}
         ref={launcherRef}
         type="button"
+        whileTap={{ scale: 0.98 }}
       >
+        <motion.span
+          animate={open ? {} : { rotate: [0, 2, -2, 0] }}
+          className="pointer-events-none absolute inset-0 -z-10 rounded-2xl bg-[linear-gradient(130deg,color-mix(in_srgb,var(--accent)_22%,transparent),transparent_45%,color-mix(in_srgb,var(--accent)_18%,transparent))]"
+          transition={{ duration: 5, ease: "easeInOut", repeat: Infinity }}
+        />
         <span className="relative grid size-11 place-items-center overflow-visible rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)] shadow-[var(--shadow-control)]">
           {!open ? (
-            <span className="absolute inset-[-5px] -z-10 animate-pulse rounded-[1rem] border border-[color-mix(in_srgb,var(--accent)_45%,transparent)]" />
+            <>
+              <span className="absolute inset-[-6px] -z-10 animate-pulse rounded-[1rem] border border-[color-mix(in_srgb,var(--accent)_45%,transparent)]" />
+              <motion.span
+                animate={{ rotate: 360 }}
+                className="absolute inset-[-9px] -z-20 rounded-[1.25rem] border border-dashed border-[color-mix(in_srgb,var(--accent)_35%,transparent)]"
+                transition={{ duration: 8, ease: "linear", repeat: Infinity }}
+              />
+            </>
           ) : null}
           {open ? (
             <X aria-hidden size={19} />
@@ -516,11 +536,12 @@ export function PortfolioChatbot() {
           <span className="block text-sm font-semibold">
             {open ? "Close assistant" : "Chat with Minhaz AI"}
           </span>
-          <span className="mt-0.5 block text-[10px] tracking-wider text-[var(--muted)] uppercase">
+          <span className="mt-0.5 inline-flex items-center gap-1.5 text-[10px] tracking-wider text-[var(--muted)] uppercase">
+            <Atom aria-hidden size={11} />
             Portfolio guide
           </span>
         </span>
-      </button>
+      </motion.button>
     </>
   );
 }
@@ -537,7 +558,12 @@ function ChatMessageItem({
   const retryQuestion = message.retryQuestion;
 
   return (
-    <div className={cn("flex items-start gap-3", isUser && "flex-row-reverse")}>
+    <motion.div
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      className={cn("flex items-start gap-3", isUser && "flex-row-reverse")}
+      initial={{ opacity: 0, y: 8, scale: 0.98 }}
+      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+    >
       <span
         className={cn(
           "grid size-8 shrink-0 place-items-center rounded-xl border",
@@ -610,7 +636,27 @@ function ChatMessageItem({
           ) : null}
         </div>
       </div>
-    </div>
+    </motion.div>
+  );
+}
+
+function TypingDots() {
+  return (
+    <span className="inline-flex items-center gap-1" aria-hidden>
+      {[0, 1, 2].map((index) => (
+        <motion.span
+          animate={{ opacity: [0.25, 1, 0.25], y: [0, -2, 0] }}
+          className="size-1.5 rounded-full bg-current"
+          key={index}
+          transition={{
+            duration: 0.9,
+            ease: "easeInOut",
+            repeat: Infinity,
+            delay: index * 0.12,
+          }}
+        />
+      ))}
+    </span>
   );
 }
 

@@ -43,12 +43,30 @@ export default async function AdminProfilePage() {
               />
             </div>
             <div className="md:col-span-2">
-              <p className="mb-2 text-sm font-medium">Full biography</p>
+              <p className="mb-2 text-sm font-medium">
+                Full biography / hero objective
+              </p>
+              <p className="mb-3 text-xs leading-5 text-[var(--muted)]">
+                Shown under the name on the homepage. Use separate paragraphs
+                for each idea.
+              </p>
               <RichTextEditor
                 initialContent={profile?.longBio}
                 label="Full biography"
                 name="longBio"
               />
+            </div>
+            <div className="md:col-span-2">
+              <AdminTextarea
+                defaultValue={profile?.engineeringValues?.join("\n") ?? ""}
+                label="Engineering values · one per line"
+                name="engineeringValues"
+                rows={5}
+              />
+              <p className="mt-2 text-xs leading-5 text-[var(--muted)]">
+                Rendered as chips under the hero objective and on the About
+                page.
+              </p>
             </div>
             <AdminField
               defaultValue={profile?.email ?? undefined}

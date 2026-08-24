@@ -13,7 +13,16 @@ export const profileSeedData: ProfileSeedData = {
         content: [
           {
             type: "text",
-            text: "I believe that every problem is an opportunity to innovate. My goal is to design and build software solutions that are not only robust and scalable but also intuitive and forward-thinking.",
+            text: "I believe that every problem is an opportunity to innovate.",
+          },
+        ],
+      },
+      {
+        type: "paragraph",
+        content: [
+          {
+            type: "text",
+            text: "My goal is to design and build software solutions that are not only robust and scalable but also intuitive and forward-thinking.",
           },
         ],
       },
@@ -40,6 +49,5 @@ export const profileSeedData: ProfileSeedData = {
     "Robust and scalable systems",
     "Clean and maintainable architecture",
     "Creative and practical problem-solving",
-    "Software engineering best practices",
   ],
 };

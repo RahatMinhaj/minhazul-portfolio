@@ -7,7 +7,11 @@ import { Prisma } from "@/generated/prisma/client";
 import { saveProfile } from "@/features/profile/profile.service";
 import { heroDeveloperCodeSchema } from "@/features/profile/hero-content";
 import { requireAdmin } from "@/lib/auth/session";
-import { failure, success } from "@/server/actions/action-helpers";
+import {
+  failure,
+  readStringList,
+  success,
+} from "@/server/actions/action-helpers";
 import type { ActionState } from "@/types/action-state";
 import {
   parseRichTextDocument,
@@ -86,6 +90,7 @@ export async function saveProfileAction(
     currentRole: parsed.data.currentRole || null,
     currentFocus: parsed.data.currentFocus || null,
     yearsOfExperience: parsed.data.yearsOfExperience,
+    engineeringValues: readStringList(formData.get("engineeringValues")),
     longBio: richTextDocumentHasContent(longBio)
       ? (longBio as Prisma.InputJsonValue)
       : Prisma.DbNull,
