@@ -8,6 +8,8 @@ import {
   getAdminJobApplicationById as fetchJobApplicationById,
   getAdminJobApplications as fetchJobApplications,
 } from "@/features/job-applications/job-application.repository";
+import { ensureStarterTopics } from "@/features/interview-prep/interview-prep.service";
+import * as interviewPrepRepository from "@/features/interview-prep/interview-prep.repository";
 import { requireAdmin } from "@/lib/auth/session";
 import * as repository from "@/server/repositories/admin-content.repository";
 
@@ -92,4 +94,84 @@ export function getAdminJobApplications(params: {
 
 export function getAdminJobApplication(id: string) {
   return authorized(() => fetchJobApplicationById(id));
+}
+
+export async function getAdminInterviewPrepDashboard() {
+  await requireAdmin();
+  await ensureStarterTopics();
+  return interviewPrepRepository.getDashboardStats();
+}
+
+export async function getAdminInterviewTopics() {
+  await requireAdmin();
+  await ensureStarterTopics();
+  return interviewPrepRepository.listTopics();
+}
+
+export async function getAdminInterviewQuestions(
+  filters: Parameters<typeof interviewPrepRepository.listQuestions>[0],
+) {
+  await requireAdmin();
+  await ensureStarterTopics();
+  return interviewPrepRepository.listQuestions(filters);
+}
+
+export async function getAdminInterviewQuestion(id: string) {
+  await requireAdmin();
+  return interviewPrepRepository.getQuestionById(id);
+}
+
+export async function getAdminInterviewExams(page: number, pageSize: number) {
+  await requireAdmin();
+  return interviewPrepRepository.listExams(page, pageSize);
+}
+
+export async function getAdminInterviewExam(id: string) {
+  await requireAdmin();
+  return interviewPrepRepository.getExamById(id);
+}
+
+export async function getAdminInterviewLearningItems(params: {
+  status?: Parameters<typeof interviewPrepRepository.listLearningItems>[0]["status"];
+  page: number;
+  pageSize: number;
+}) {
+  await requireAdmin();
+  return interviewPrepRepository.listLearningItems({
+    page: params.page,
+    pageSize: params.pageSize,
+    ...(params.status ? { status: params.status } : {}),
+  });
+}
+
+export async function getAdminInterviewLearningItem(id: string) {
+  await requireAdmin();
+  return interviewPrepRepository.getLearningItemById(id);
+}
+
+export async function getAdminInterviewPacks() {
+  await requireAdmin();
+  await ensureStarterTopics();
+  return interviewPrepRepository.listPacks();
+}
+
+export async function getAdminInterviewPack(id: string) {
+  await requireAdmin();
+  return interviewPrepRepository.getPackById(id);
+}
+
+export async function getAdminInterviewQuestionPicker() {
+  await requireAdmin();
+  return interviewPrepRepository.listQuestionsForPicker();
+}
+
+export async function getAdminInterviewAnalytics() {
+  await requireAdmin();
+  await ensureStarterTopics();
+  return interviewPrepRepository.getAnalytics();
+}
+
+export async function getAdminInterviewSkillCategories() {
+  await requireAdmin();
+  return interviewPrepRepository.listSkillCategories();
 }

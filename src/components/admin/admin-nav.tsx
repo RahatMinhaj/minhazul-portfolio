@@ -3,6 +3,7 @@
 import {
   Award,
   BookOpen,
+  Brain,
   BriefcaseBusiness,
   ChevronRight,
   FolderKanban,
@@ -77,6 +78,26 @@ const adminNavGroups: NavGroup[] = [
       { label: "Certifications", href: "/admin/certifications", icon: Award },
       { label: "Education", href: "/admin/education", icon: GraduationCap },
       { label: "Blog", href: "/admin/blog", icon: BookOpen },
+    ],
+  },
+  {
+    id: "prep",
+    label: "Prep",
+    items: [
+      {
+        label: "Interview prep",
+        href: "/admin/interview-prep",
+        icon: Brain,
+        children: [
+          { label: "Dashboard", href: "/admin/interview-prep" },
+          { label: "Library", href: "/admin/interview-prep/library" },
+          { label: "Exams", href: "/admin/interview-prep/exams" },
+          { label: "Packs", href: "/admin/interview-prep/packs" },
+          { label: "Learning", href: "/admin/interview-prep/learning" },
+          { label: "Analytics", href: "/admin/interview-prep/analytics" },
+          { label: "Topics", href: "/admin/interview-prep/topics" },
+        ],
+      },
     ],
   },
   {

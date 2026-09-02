@@ -519,3 +519,270 @@ model MediaAsset {
 
   @@index([provider, createdAt])
 }
+
+enum InterviewDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum InterviewQuestionType {
+  CONCEPTUAL
+  BEHAVIORAL
+  SYSTEM_DESIGN
+  CODING
+  DEBUGGING
+  PORTFOLIO_WALKTHROUGH
+}
+
+enum InterviewMastery {
+  UNKNOWN
+  WEAK
+  OK
+  STRONG
+}
+
+enum InterviewExamMode {
+  RANDOM
+  WEAK_FOCUS
+  TOPIC_FOCUS
+  PACK_FOCUS
+  DUE_FOCUS
+}
+
+enum InterviewExamStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+enum InterviewExamItemResult {
+  UNANSWERED
+  CORRECT
+  PARTIAL
+  INCORRECT
+  SKIPPED
+}
+
+enum InterviewLearningStatus {
+  SUGGESTED
+  ACCEPTED
+  IN_PROGRESS
+  DONE
+  DISMISSED
+}
+
+enum InterviewLearningSource {
+  PORTFOLIO_GAP
+  JOB_GAP
+  MANUAL
+  EXAM_WEAKNESS
+  AI_SCAN
+}
+
+enum InterviewLearningContentKind {
+  NOTES
+  CHEATSHEET
+  PRACTICE_QUESTIONS
+  PROJECT_IDEA
+}
+
+model InterviewTopic {
+  id            String                  @id @default(cuid())
+  name          String
+  slug          String                  @unique
+  parentId      String?
+  parent        InterviewTopic?         @relation("TopicTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children      InterviewTopic[]        @relation("TopicTree")
+  description   String?
+  sortOrder     Int                     @default(0)
+  visible       Boolean                 @default(true)
+  questions     InterviewQuestion[]
+  learningItems InterviewLearningItem[]
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+
+  @@index([parentId, sortOrder])
+  @@index([visible, sortOrder])
+}
+
+model InterviewQuestion {
+  id               String                @id @default(cuid())
+  topicId          String?
+  topic            InterviewTopic?       @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  prompt           String
+  questionType     InterviewQuestionType @default(CONCEPTUAL)
+  difficulty       InterviewDifficulty   @default(MEDIUM)
+  tags             String[]              @default([])
+  source           String                @default("manual")
+  sourceRef        String?
+  confidence       Int?
+  mastery          InterviewMastery      @default(UNKNOWN)
+  starred          Boolean               @default(false)
+  timesAsked       Int                   @default(0)
+  timesCorrect     Int                   @default(0)
+  lastReviewedAt   DateTime?
+  nextReviewAt     DateTime?
+  relatedSkillId   String?
+  relatedProjectId String?
+  jobApplicationId String?
+  answers          InterviewAnswer[]
+  examItems        InterviewExamItem[]
+  packItems        InterviewPackItem[]
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+
+  @@index([topicId, mastery])
+  @@index([nextReviewAt])
+  @@index([starred])
+  @@index([mastery, difficulty])
+  @@index([jobApplicationId])
+}
+
+model InterviewAnswer {
+  id            String            @id @default(cuid())
+  questionId    String
+  question      InterviewQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  content       String
+  format        String            @default("MARKDOWN")
+  version       Int               @default(1)
+  isCurrent     Boolean           @default(true)
+  generated     Boolean           @default(false)
+  provider      String?
+  model         String?
+  promptVersion String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([questionId, isCurrent])
+}
+
+model InterviewExam {
+  id            String              @id @default(cuid())
+  mode          InterviewExamMode   @default(RANDOM)
+  topicIds      String[]            @default([])
+  packId        String?
+  pack          InterviewPack?      @relation(fields: [packId], references: [id], onDelete: SetNull)
+  questionCount Int
+  timeLimitSec  Int?
+  status        InterviewExamStatus @default(IN_PROGRESS)
+  scorePct      Float?
+  startedAt     DateTime            @default(now())
+  completedAt   DateTime?
+  items         InterviewExamItem[]
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@index([status, startedAt])
+  @@index([packId])
+}
+
+model InterviewExamItem {
+  id                     String                  @id @default(cuid())
+  examId                 String
+  exam                   InterviewExam           @relation(fields: [examId], references: [id], onDelete: Cascade)
+  questionId             String
+  question               InterviewQuestion       @relation(fields: [questionId], references: [id], onDelete: Restrict)
+  sortOrder              Int                     @default(0)
+  promptSnapshot         String
+  expectedAnswerSnapshot String                  @default("")
+  userAnswer             String?
+  result                 InterviewExamItemResult @default(UNANSWERED)
+  selfScore              Int?
+  aiFeedback             String?
+  timeSpentSec           Int?
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+
+  @@index([examId, sortOrder])
+  @@index([questionId])
+}
+
+model InterviewLearningItem {
+  id               String                     @id @default(cuid())
+  title            String
+  description      String?
+  status           InterviewLearningStatus    @default(SUGGESTED)
+  source           InterviewLearningSource    @default(MANUAL)
+  priority         Int                        @default(0)
+  relatedSkillName String?
+  topicId          String?
+  topic            InterviewTopic?            @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  skillId          String?
+  projectId        String?
+  jobApplicationId String?
+  contents         InterviewLearningContent[]
+  createdAt        DateTime                   @default(now())
+  updatedAt        DateTime                   @updatedAt
+
+  @@index([status, priority])
+  @@index([source])
+}
+
+model InterviewLearningContent {
+  id             String                       @id @default(cuid())
+  learningItemId String
+  learningItem   InterviewLearningItem        @relation(fields: [learningItemId], references: [id], onDelete: Cascade)
+  kind           InterviewLearningContentKind
+  title          String
+  content        String
+  generated      Boolean                      @default(false)
+  provider       String?
+  model          String?
+  createdAt      DateTime                     @default(now())
+  updatedAt      DateTime                     @updatedAt
+
+  @@index([learningItemId, kind])
+}
+
+model InterviewPrepGeneration {
+  id             String    @id @default(cuid())
+  targetType     String
+  targetId       String
+  provider       String
+  model          String
+  promptVersion  String
+  inputSnapshot  Json
+  outputSnapshot Json?
+  status         String
+  errorCode      String?
+  errorMessage   String?
+  createdAt      DateTime  @default(now())
+  completedAt    DateTime?
+
+  @@index([targetType, targetId, createdAt])
+}
+
+model InterviewPack {
+  id               String              @id @default(cuid())
+  title            String
+  companyName      String?
+  roleTitle        String?
+  notes            String?
+  targetDate       DateTime?
+  jobApplicationId String?
+  items            InterviewPackItem[]
+  exams            InterviewExam[]
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  @@index([jobApplicationId])
+  @@index([targetDate])
+  @@index([updatedAt])
+}
+
+model InterviewPackItem {
+  id         String            @id @default(cuid())
+  packId     String
+  pack       InterviewPack     @relation(fields: [packId], references: [id], onDelete: Cascade)
+  questionId String
+  question   InterviewQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  sortOrder  Int               @default(0)
+  notes      String?
+  createdAt  DateTime          @default(now())
+
+  @@unique([packId, questionId])
+  @@index([packId, sortOrder])
+  @@index([questionId])
+}
+

@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  ensureLexicalJson,
   htmlToLexicalJson,
   lexicalJsonToHtml,
+  markdownishToHtml,
   richTextToPlainText,
   TEXT_FORMAT,
 } from "./rich-text";
@@ -64,5 +66,31 @@ describe("rich text HTML conversion", () => {
     });
 
     expect(richTextToPlainText(json)).toBe("Plain from json");
+  });
+});
+
+describe("ensureLexicalJson", () => {
+  it("converts markdownish answers into lexical lists and headings", () => {
+    const json = ensureLexicalJson(`## Hook
+Core idea.
+
+- Point one
+- Point two`);
+    const html = lexicalJsonToHtml(json);
+    expect(html).toContain("<h2>");
+    expect(html).toContain("<ul>");
+    expect(richTextToPlainText(json)).toContain("Point one");
+  });
+
+  it("keeps existing lexical documents", () => {
+    const original = htmlToLexicalJson("<p>Already structured</p>");
+    expect(ensureLexicalJson(original)).toBe(original);
+  });
+});
+
+describe("markdownishToHtml", () => {
+  it("formats bold and code", () => {
+    expect(markdownishToHtml("Use **JWT** with `exp`")).toContain("<strong>JWT</strong>");
+    expect(markdownishToHtml("Use **JWT** with `exp`")).toContain("<code>exp</code>");
   });
 });

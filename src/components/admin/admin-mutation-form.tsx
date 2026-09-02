@@ -14,12 +14,16 @@ export function AdminMutationForm({
   children,
   className,
   confirmMessage,
+  encType,
+  id,
   submitLabel = "Save changes",
 }: {
   action: (state: ActionState, formData: FormData) => Promise<ActionState>;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   className?: string;
   confirmMessage?: string;
+  encType?: "multipart/form-data";
+  id?: string;
   submitLabel?: string;
 }) {
   const [state, formAction] = useActionState(action, initialActionState);
@@ -38,8 +42,11 @@ export function AdminMutationForm({
     <form
       action={formAction}
       className={className}
+      encType={encType}
+      id={id}
       onSubmit={(event) => {
-        if (confirmMessage && !window.confirm(confirmMessage)) {
+        const autoSubmitted = event.currentTarget.dataset.autoSubmitted === "1";
+        if (confirmMessage && !autoSubmitted && !window.confirm(confirmMessage)) {
           event.preventDefault();
           return;
         }

@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Brain } from "lucide-react";
 
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { InterviewPrepRedirectForm } from "@/components/admin/interview-prep-redirect-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,6 +12,7 @@ import { getAdminJobApplication } from "@/server/queries/admin-content";
 import { getEmailSignature } from "@/features/settings/settings.service";
 import { getCvMetadata } from "@/features/cv/cv-storage";
 import { formatDate } from "@/lib/utils/date";
+import { importJobApplicationAction } from "@/server/actions/admin-interview-prep";
 
 export default async function AdminJobApplicationDetailPage({
   params,
@@ -32,12 +34,22 @@ export default async function AdminJobApplicationDetailPage({
     >
       <AdminPageHeader
         actions={
-          <Button asChild size="sm" variant="ghost">
-            <Link href="/admin/job-applications">
-              <ArrowLeft aria-hidden size={15} />
-              Back to list
-            </Link>
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <InterviewPrepRedirectForm
+              action={importJobApplicationAction}
+              className="inline-flex"
+              redirectToPrefix="/admin/interview-prep/packs"
+              submitLabel="Import to interview prep"
+            >
+              <input name="applicationId" type="hidden" value={application.id} />
+            </InterviewPrepRedirectForm>
+            <Button asChild size="sm" variant="ghost">
+              <Link href="/admin/job-applications">
+                <ArrowLeft aria-hidden size={15} />
+                Back to list
+              </Link>
+            </Button>
+          </div>
         }
         breadcrumbs={[
           { label: "Admin", href: "/admin" },
@@ -63,6 +75,13 @@ export default async function AdminJobApplicationDetailPage({
           ) : (
             <span className="text-xs text-[var(--muted)]">No recipient yet</span>
           )}
+          <Link
+            className="inline-flex items-center gap-1 text-xs text-[var(--muted)] hover:text-[var(--foreground)]"
+            href="/admin/interview-prep/packs"
+          >
+            <Brain aria-hidden size={12} />
+            Interview prep packs
+          </Link>
         </CardContent>
       </Card>
 

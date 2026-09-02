@@ -103,6 +103,104 @@ export function plainTextToHtml(text: string): string {
     .join("");
 }
 
+/** Light markdown → HTML for AI answers and pasted study notes. */
+export function markdownishToHtml(text: string): string {
+  const trimmed = text.replace(/\r\n/g, "\n").trim();
+  if (!trimmed) return "";
+
+  const blocks: string[] = [];
+  const fenceParts = trimmed.split(/(```[\s\S]*?```)/);
+
+  for (const part of fenceParts) {
+    if (!part) continue;
+    if (part.startsWith("```")) {
+      const code = part.replace(/^```[^\n]*\n?/, "").replace(/\n?```$/, "");
+      blocks.push(`<pre><code>${escapeHtml(code)}</code></pre>`);
+      continue;
+    }
+
+    for (const block of part.split(/\n{2,}/)) {
+      let lines = block
+        .split("\n")
+        .map((line) => line.trimEnd())
+        .filter((line) => line.length > 0);
+      if (!lines.length) continue;
+
+      if (/^###\s+/.test(lines[0]!)) {
+        blocks.push(
+          `<h3>${formatInlineMarkdown(lines[0]!.replace(/^###\s+/, ""))}</h3>`,
+        );
+        lines = lines.slice(1);
+        if (!lines.length) continue;
+      } else if (/^##\s+/.test(lines[0]!)) {
+        blocks.push(
+          `<h2>${formatInlineMarkdown(lines[0]!.replace(/^##\s+/, ""))}</h2>`,
+        );
+        lines = lines.slice(1);
+        if (!lines.length) continue;
+      }
+
+      if (lines.every((line) => /^[-*•]\s+/.test(line))) {
+        blocks.push(
+          `<ul>${lines
+            .map((line) => `<li>${formatInlineMarkdown(line.replace(/^[-*•]\s+/, ""))}</li>`)
+            .join("")}</ul>`,
+        );
+        continue;
+      }
+      if (lines.every((line) => /^\d+[.)]\s+/.test(line))) {
+        blocks.push(
+          `<ol>${lines
+            .map((line) => `<li>${formatInlineMarkdown(line.replace(/^\d+[.)]\s+/, ""))}</li>`)
+            .join("")}</ol>`,
+        );
+        continue;
+      }
+
+      blocks.push(
+        `<p>${lines.map((line) => formatInlineMarkdown(line)).join("<br />")}</p>`,
+      );
+    }
+  }
+
+  return blocks.join("");
+}
+
+function formatInlineMarkdown(text: string): string {
+  return escapeHtml(text)
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*([^*]+)\*/g, "<em>$1</em>");
+}
+
+/**
+ * Normalize any answer/paste payload into Lexical JSON for storage.
+ * Accepts Lexical JSON, HTML, markdown-ish, or plain text.
+ */
+export function ensureLexicalJson(value: unknown): string {
+  if (value == null) return JSON.stringify(emptyDoc());
+
+  if (typeof value === "object") {
+    return isRichTextDocument(value)
+      ? JSON.stringify(value)
+      : JSON.stringify(emptyDoc());
+  }
+
+  if (typeof value !== "string") return JSON.stringify(emptyDoc());
+
+  const trimmed = value.trim();
+  if (!trimmed) return JSON.stringify(emptyDoc());
+
+  const parsed = parseRichTextDocument(trimmed);
+  if (parsed) return JSON.stringify(parsed);
+
+  if (/<[a-z][\s\S]*>/i.test(trimmed) && !trimmed.startsWith("{")) {
+    return htmlToLexicalJson(trimmed);
+  }
+
+  return htmlToLexicalJson(markdownishToHtml(trimmed));
+}
+
 export function richTextToHtml(value: unknown): string {
   if (value == null) return "";
   if (typeof value === "string") {

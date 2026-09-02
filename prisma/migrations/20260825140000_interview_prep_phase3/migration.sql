@@ -1,0 +1,1 @@
+ALTER TABLE "InterviewExam" ADD COLUMN IF NOT EXISTS "timeLimitSec" INTEGER;
